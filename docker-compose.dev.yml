@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:alpine
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: lbmuser
+      POSTGRES_PASSWORD: lbmsupersecurepassword
+      POSTGRES_DB: lbmdb
+    volumes:
+      - lbm_data:/var/lib/postgresql/data
+
+volumes:
+  lbm_data:
+    driver: local

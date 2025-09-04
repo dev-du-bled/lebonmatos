@@ -3,15 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev:docker": "docker compose -f docker-compose.dev.yml up -d",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "@tanstack/react-query": "^5.86.0",
+    "@trpc/client": "^11.5.0",
+    "@trpc/react-query": "^11.5.0",
+    "@trpc/server": "^11.5.0",
+    "better-auth": "^1.3.8",
+    "client-only": "^0.0.1",
+    "next": "15.5.2",
+    "prisma": "^6.15.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.2"
+    "server-only": "^0.0.1",
+    "superjson": "^2.2.2",
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "typescript": "^5",
