@@ -1,0 +1,141 @@
+model Component {
+    id             String       @id @default(cuid())
+    name           String       @db.VarChar(50)
+    estimatedPrice Int?
+    color          String?      @db.VarChar(10)
+    Cpu            Cpu?
+    Motherboard    Motherboard?
+    Ram            Ram?
+    Ssd            Ssd?
+    Post           Post[]
+
+    @@map("component")
+}
+
+model Cpu {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    coreCount   Int       @db.SmallInt
+    coreClock   Decimal
+    boostClock  Decimal
+    microarch   String    @db.VarChar(20)
+    tdp         Int       @db.SmallInt
+    graphics    String?   @db.VarChar(50)
+
+    @@map("cpu")
+}
+
+model Motherboard {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    socket      String    @db.VarChar(10)
+    formFactor  String    @db.VarChar(20)
+    maxMemory   Int       @db.SmallInt
+    memorySlots Int       @db.SmallInt
+
+    @@map("motherboard")
+}
+
+model Ram {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    type        String    @db.VarChar(10)
+    speed       Int       @db.SmallInt
+    modules     Int       @db.SmallInt
+    size        Int       @db.SmallInt
+    casLatency  Int       @db.SmallInt
+
+    @@map("ram")
+}
+
+model Ssd {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    capacity    Int       @db.SmallInt
+    cache       Int?      @db.SmallInt
+    interface   String    @db.VarChar(50)
+    formFactor  String    @db.VarChar(50)
+
+    @@map("ssd")
+}
+
+model Hdd {
+    id         String  @id @default(cuid())
+    capacity   Int     @db.SmallInt
+    rpm        Int     @db.SmallInt
+    cache      Int?    @db.SmallInt
+    formFactor Decimal
+    interface  String  @db.VarChar(50)
+
+    @@map("hdd")
+}
+
+model PowerSupply {
+    id         String  @id @default(cuid())
+    wattage    Int     @db.SmallInt
+    efficiency String  @db.VarChar(50)
+    modular    Boolean @default(false)
+
+    @@map("powerSupply")
+}
+
+model CpuCooler {
+    id         String @id @default(cuid())
+    rpm        Int    @db.SmallInt
+    noiseLevel Int    @db.SmallInt
+    size       String @db.VarChar(10)
+
+    @@map("cpuCooler")
+}
+
+enum SIDE_PANEL {
+    TEMPERED_GLASS
+    TINTED_TEMPERED_GLASS
+    MESH
+    ACRYLIC
+}
+
+model Case {
+    id        String      @id @default(cuid())
+    type      String      @db.VarChar(20)
+    color     String      @db.VarChar(10)
+    sidePanel SIDE_PANEL?
+    volume    Int         @db.SmallInt
+    bays3_5   Int         @db.SmallInt
+
+    @@map("case")
+}
+
+model CaseFan {
+    id      String   @id @default(cuid())
+    size    Int      @db.SmallInt
+    rpm     Int?     @db.SmallInt
+    airflow Decimal?
+    noise   Decimal?
+    pwm     Boolean  @default(false)
+
+    @@map("caseFan")
+}
+
+model SoundCard {
+    id           String    @id @default(cuid())
+    channels     Decimal[]
+    digitalAudio Int       @db.SmallInt
+    snr          Int       @db.SmallInt
+    sample_rate  Int       @db.SmallInt
+    chipset      String    @db.VarChar(75)
+    interface    String    @db.VarChar(20)
+
+    @@map("soundCard")
+}
+
+model NetworkCard {
+    id        String @id @default(cuid())
+    interface String @db.VarChar(50)
+
+    @@map("networkCard")
+}
