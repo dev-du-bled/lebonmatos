@@ -18,8 +18,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
-import AuthImage from "@/assets/auth-lateral.jpg";
-import Image from "next/image";
 
 const signupSchema = z
   .object({
@@ -85,7 +83,7 @@ export function SignupForm() {
 
   return (
     <Card className="overflow-hidden p-0">
-      <CardContent className="grid p-0 md:grid-cols-2">
+      <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 md:p-8">
             <FieldGroup>
@@ -190,14 +188,6 @@ export function SignupForm() {
             </FieldGroup>
           </form>
         </Form>
-        <div className="relative hidden md:block h-full">
-          <Image
-            src={AuthImage}
-            alt="Auth image"
-            fill
-            className="object-cover"
-          />
-        </div>
       </CardContent>
     </Card>
   );
