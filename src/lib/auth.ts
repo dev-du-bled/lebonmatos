@@ -7,7 +7,6 @@ const forbiddenUsernames = [
   "admin",
   "root",
   "super",
-  "admin",
   "moderator",
   "user",
   "guest",
