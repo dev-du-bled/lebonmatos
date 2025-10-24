@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
@@ -24,6 +25,18 @@ const signupSchema = z
     name: z.string().min(2, {
       message: "Le nom doit contenir au moins 2 caractères.",
     }),
+    username: z
+      .string()
+      .min(5, {
+        message: "Le nom d'utilisateur doit contenir au moins 5 caractères.",
+      })
+      .max(32, {
+        message: "Le nom d'utilisateur doit contenir au plus 32 caractères.",
+      })
+      .regex(/^[a-zA-Z0-9_.]+$/, {
+        message:
+          "Le nom d'utilisateur ne peut contenir que des lettres, des chiffres et des underscores.",
+      }),
     email: z.email({
       message: "Veuillez entrer une adresse email valide.",
     }),
@@ -42,11 +55,13 @@ type SignupFormData = z.infer<typeof signupSchema>;
 export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
+      username: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -56,10 +71,33 @@ export function SignupForm() {
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
     try {
+      // Execute reCAPTCHA v3
+      if (!executeRecaptcha) {
+        form.setError("root", {
+          message: "reCAPTCHA n'est pas disponible. Veuillez réessayer.",
+        });
+        return;
+      }
+
+      const recaptchaToken = await executeRecaptcha("signup");
+
+      if (!recaptchaToken) {
+        form.setError("root", {
+          message: "Erreur de vérification reCAPTCHA. Veuillez réessayer.",
+        });
+        return;
+      }
+
       const result = await authClient.signUp.email({
         email: data.email,
         password: data.password,
+        username: data.username,
         name: data.name,
+        fetchOptions: {
+          headers: {
+            "x-captcha-response": recaptchaToken,
+          },
+        },
       });
 
       if (result.error) {
@@ -111,6 +149,25 @@ export function SignupForm() {
                       <Input
                         type="text"
                         placeholder="Jean Dupont"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nom d&apos;utilisateur</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="jean_dupont78"
                         disabled={isLoading}
                         {...field}
                       />

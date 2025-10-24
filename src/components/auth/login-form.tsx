@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
@@ -34,6 +35,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -46,9 +48,31 @@ export function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
+      // Execute reCAPTCHA v3
+      if (!executeRecaptcha) {
+        form.setError("root", {
+          message: "reCAPTCHA n'est pas disponible. Veuillez réessayer.",
+        });
+        return;
+      }
+
+      const recaptchaToken = await executeRecaptcha("login");
+
+      if (!recaptchaToken) {
+        form.setError("root", {
+          message: "Erreur de vérification reCAPTCHA. Veuillez réessayer.",
+        });
+        return;
+      }
+
       const result = await authClient.signIn.email({
         email: data.email,
         password: data.password,
+        fetchOptions: {
+          headers: {
+            "x-captcha-response": recaptchaToken,
+          },
+        },
       });
 
       if (result.error) {
