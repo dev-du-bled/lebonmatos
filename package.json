@@ -8,7 +8,9 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint .",
-    "prisma:generate": "prisma generate --schema prisma/schema/"
+    "prisma:generate": "prisma generate --schema prisma/schema/",
+    "prisma:data": "bun ./prisma/seed/data.ts",
+    "prisma:reset": "prisma migrate reset --schema prisma/schema/"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
