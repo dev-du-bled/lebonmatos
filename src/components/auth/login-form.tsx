@@ -95,7 +95,7 @@ export function LoginForm() {
   };
   return (
     <Card className="overflow-hidden p-0">
-      <CardContent className=" p-0">
+      <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 md:p-8">
             <FieldGroup>
