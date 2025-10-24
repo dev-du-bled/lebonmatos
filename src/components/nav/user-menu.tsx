@@ -2,7 +2,7 @@
 
 import { Button } from "../ui/button";
 
-import { UserIcon } from "lucide-react";
+import { BellIcon, MessageCircleIcon, UserIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,21 +33,31 @@ export function UserMenu({ initialSession }: { initialSession?: unknown }) {
     );
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <div>
+      <Button variant="ghost" size="icon">
+        <BellIcon className="size-4 shrink-0 opacity-50" />
+      </Button>
+      <Link className="shrink-0" href="/messages">
         <Button variant="ghost" size="icon">
-          <UserIcon className="size-4 shrink-0 opacity-50" />
+          <MessageCircleIcon className="size-4 shrink-0 opacity-50" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={8} collisionPadding={12}>
-        <DropdownMenuLabel>
-          Bienvenue, <span className="font-bold">{session.user.name}</span>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => authClient.signOut()}>
-          Se déconnecter
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </Link>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <UserIcon className="size-4 shrink-0 opacity-50" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={8} collisionPadding={12}>
+          <DropdownMenuLabel>
+            Bienvenue, <span className="font-bold">{session.user.name}</span>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => authClient.signOut()}>
+            Se déconnecter
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
