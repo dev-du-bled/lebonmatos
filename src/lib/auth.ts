@@ -13,9 +13,6 @@ const forbiddenUsernames = [
   "test",
   "demo",
   "example",
-  "test",
-  "demo",
-  "example",
 ];
 
 export const auth = betterAuth({
