@@ -135,15 +135,6 @@ async function addDisk() {
           },
         });
       }
-
-      return prisma.component.create({
-        data: {
-          name: d.name,
-          estimatedPrice: d.price ?? null,
-          color: d.color,
-          ...data,
-        },
-      });
     })
   );
 }
