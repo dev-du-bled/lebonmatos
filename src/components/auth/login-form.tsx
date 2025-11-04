@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
@@ -19,8 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import AuthImage from "@/assets/auth-lateral.jpg";
-import Image from "next/image";
 
 const loginSchema = z.object({
   email: z.email({
@@ -36,6 +35,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -48,9 +48,31 @@ export function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
+      // Execute reCAPTCHA v3
+      if (!executeRecaptcha) {
+        form.setError("root", {
+          message: "reCAPTCHA n'est pas disponible. Veuillez réessayer.",
+        });
+        return;
+      }
+
+      const recaptchaToken = await executeRecaptcha("login");
+
+      if (!recaptchaToken) {
+        form.setError("root", {
+          message: "Erreur de vérification reCAPTCHA. Veuillez réessayer.",
+        });
+        return;
+      }
+
       const result = await authClient.signIn.email({
         email: data.email,
         password: data.password,
+        fetchOptions: {
+          headers: {
+            "x-captcha-response": recaptchaToken,
+          },
+        },
       });
 
       if (result.error) {
@@ -73,7 +95,7 @@ export function LoginForm() {
   };
   return (
     <Card className="overflow-hidden p-0">
-      <CardContent className="grid p-0 md:grid-cols-2">
+      <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 md:p-8">
             <FieldGroup>
@@ -150,14 +172,6 @@ export function LoginForm() {
             </FieldGroup>
           </form>
         </Form>
-        <div className="relative hidden md:block h-full">
-          <Image
-            src={AuthImage}
-            alt="Auth image"
-            fill
-            className="object-cover"
-          />
-        </div>
       </CardContent>
     </Card>
   );
