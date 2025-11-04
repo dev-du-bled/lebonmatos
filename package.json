@@ -7,7 +7,10 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "prisma:generate": "prisma generate --schema prisma/schema/",
+    "prisma:data": "bun ./prisma/seed/data.ts",
+    "prisma:reset": "prisma migrate reset --schema prisma/schema/"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

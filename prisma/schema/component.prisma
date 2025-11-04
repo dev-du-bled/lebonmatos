@@ -1,0 +1,174 @@
+model Component {
+    id             String       @id @default(cuid())
+    name           String       @db.VarChar(255)
+    estimatedPrice Int?
+    color          String?      @db.VarChar(50)
+    Cpu            Cpu?
+    Motherboard    Motherboard?
+    Ram            Ram?
+    Ssd            Ssd?
+    Post           Post[]
+    Hdd            Hdd?
+    Psu            Psu?
+    CpuCooler      CpuCooler?
+    Case           Case?
+    CaseFan        CaseFan?
+    SoundCard      SoundCard?
+    NetworkCard    NetworkCard?
+    Gpu            Gpu?
+
+    @@map("component")
+}
+
+model Cpu {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    coreCount   Int       @db.SmallInt
+    coreClock   Decimal   @db.Decimal(6, 2)
+    boostClock  Decimal?  @db.Decimal(6, 2)
+    microarch   String    @db.VarChar(20)
+    tdp         Int       @db.SmallInt
+    graphics    String?   @db.VarChar(50)
+
+    @@map("cpu")
+}
+
+model Gpu {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    chipset     String    @db.VarChar(100)
+    memory      Int       @db.SmallInt
+    coreClock   Int?      @db.SmallInt
+    boostClock  Int?      @db.SmallInt
+    length      Int?      @db.SmallInt
+
+    @@map("gpu")
+}
+
+model Motherboard {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    socket      String    @db.VarChar(50)
+    formFactor  String    @db.VarChar(25)
+    maxMemory   Int       @db.SmallInt
+    memorySlots Int       @db.SmallInt
+
+    @@map("motherboard")
+}
+
+model Ram {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    type        String?   @db.VarChar(10)
+    speed       Int?      @db.SmallInt
+    modules     Int       @db.SmallInt
+    size        Int       @db.SmallInt
+    casLatency  Int       @db.SmallInt
+
+    @@map("ram")
+}
+
+model Ssd {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    capacity    Int
+    cache       Int?
+    interface   String    @db.VarChar(50)
+    formFactor  String    @db.VarChar(50)
+
+    @@map("ssd")
+}
+
+model Hdd {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    capacity    Int
+    cache       Int?
+    formFactor  String    @db.VarChar(50)
+    interface   String    @db.VarChar(50)
+
+    @@map("hdd")
+}
+
+model Psu {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    type        String    @db.VarChar(20)
+    wattage     Int       @db.SmallInt
+    efficiency  String?   @db.VarChar(50)
+    modular     String?   @db.VarChar(20)
+
+    @@map("powerSupply")
+}
+
+model CpuCooler {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    rpmIdle     Int?      @db.SmallInt
+    rpmMax      Int?      @db.SmallInt
+    noiseIdle   Decimal?  @db.Decimal(6, 1)
+    noiseMax    Decimal?  @db.Decimal(6, 1)
+    size        Int?      @db.SmallInt
+
+    @@map("cpuCooler")
+}
+
+model Case {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    type        String    @db.VarChar(50)
+    sidePanel   String?   @db.VarChar(50)
+    volume      Decimal?  @db.Decimal(6, 2)
+    bays3_5     Int       @db.SmallInt
+
+    @@map("case")
+}
+
+model CaseFan {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    size        Int       @db.SmallInt
+    rpmIdle     Int?      @db.SmallInt
+    rpmMax      Int?      @db.SmallInt
+    noiseIdle   Decimal?  @db.Decimal(6, 1)
+    noiseMax    Decimal?  @db.Decimal(6, 1)
+    airflowIdle Decimal?  @db.Decimal(6, 1)
+    airflowMax  Decimal?  @db.Decimal(6, 1)
+    pwm         Boolean   @default(false)
+
+    @@map("caseFan")
+}
+
+model SoundCard {
+    id           String    @id @default(cuid())
+    componentId  String    @unique
+    component    Component @relation(fields: [componentId], references: [id])
+    channels     Int       @db.SmallInt
+    digitalAudio Int?      @db.SmallInt
+    snr          Int?      @db.SmallInt
+    sampleRate   Int?      @db.SmallInt
+    chipset      String?   @db.VarChar(75)
+    interface    String    @db.VarChar(20)
+
+    @@map("soundCard")
+}
+
+model NetworkCard {
+    id          String    @id @default(cuid())
+    componentId String    @unique
+    component   Component @relation(fields: [componentId], references: [id])
+    interface   String    @db.VarChar(50)
+    protocol    String    @db.VarChar(100)
+
+    @@map("networkCard")
+}
