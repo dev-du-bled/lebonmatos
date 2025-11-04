@@ -23,7 +23,11 @@ model User {
   discussionsSeller Discussion[] @relation("discussionSeller")
   messages          Message[]
 
+  username        String?
+  displayUsername String?
+
   @@unique([email])
+  @@unique([username])
   @@map("user")
 }
 
