@@ -48,21 +48,23 @@ export function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      // Execute reCAPTCHA v3
-      if (!executeRecaptcha) {
-        form.setError("root", {
-          message: "reCAPTCHA n'est pas disponible. Veuillez réessayer.",
-        });
-        return;
-      }
-
-      const recaptchaToken = await executeRecaptcha("login");
-
-      if (!recaptchaToken) {
-        form.setError("root", {
-          message: "Erreur de vérification reCAPTCHA. Veuillez réessayer.",
-        });
-        return;
+      const isProd = process.env.NODE_ENV === "production";
+      let recaptchaToken: string | null = null;
+      if (isProd) {
+        // Executer le captcha en prod car sinon Eden ne peut pas utiliser le formulaire 💀 🥀
+        if (!executeRecaptcha) {
+          form.setError("root", {
+            message: "reCAPTCHA n'est pas disponible. Veuillez réessayer.",
+          });
+          return;
+        }
+        recaptchaToken = await executeRecaptcha("login");
+        if (!recaptchaToken) {
+          form.setError("root", {
+            message: "Erreur de vérification reCAPTCHA. Veuillez réessayer.",
+          });
+          return;
+        }
       }
 
       const result = await authClient.signIn.email({
@@ -70,7 +72,7 @@ export function LoginForm() {
         password: data.password,
         fetchOptions: {
           headers: {
-            "x-captcha-response": recaptchaToken,
+            "x-captcha-response": recaptchaToken ?? "",
           },
         },
       });
