@@ -82,6 +82,7 @@ model Post {
   title       String       @db.VarChar(50)
   description String?
   price       Int
+  Images      String[]     @db.VarChar(255)
   componentId String
   component   Component    @relation(fields: [componentId], references: [id])
   Favorites   Favorite[]

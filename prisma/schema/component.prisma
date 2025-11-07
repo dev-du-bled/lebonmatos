@@ -1,8 +1,24 @@
+enum ComponentType {
+    CPU
+    GPU
+    MOTHERBOARD
+    RAM
+    SSD
+    HDD
+    POWER_SUPPLY
+    CPU_COOLER
+    CASE
+    CASE_FAN
+    SOUND_CARD
+    NETWORK_CARD
+}
+
 model Component {
-    id             String       @id @default(cuid())
-    name           String       @db.VarChar(255)
+    id             String        @id @default(cuid())
+    name           String        @db.VarChar(255)
     estimatedPrice Int?
-    color          String?      @db.VarChar(50)
+    color          String?       @db.VarChar(50)
+    type           ComponentType
     Cpu            Cpu?
     Motherboard    Motherboard?
     Ram            Ram?
