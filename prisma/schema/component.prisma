@@ -10,14 +10,14 @@ enum ComponentType {
     CASE
     CASE_FAN
     SOUND_CARD
-    NETWORK_CARD
+    WIRELESS_NETWORK_CARD
 }
 
 model Component {
-    id             String        @id @default(cuid())
-    name           String        @db.VarChar(255)
+    id             String               @id @default(cuid())
+    name           String               @db.VarChar(255)
     estimatedPrice Int?
-    color          String?       @db.VarChar(50)
+    color          String?              @db.VarChar(50)
     type           ComponentType
     Cpu            Cpu?
     Motherboard    Motherboard?
@@ -30,7 +30,7 @@ model Component {
     Case           Case?
     CaseFan        CaseFan?
     SoundCard      SoundCard?
-    NetworkCard    NetworkCard?
+    WirelessNetworkCard WirelessNetworkCard?
     Gpu            Gpu?
 
     @@map("component")
@@ -179,12 +179,12 @@ model SoundCard {
     @@map("soundCard")
 }
 
-model NetworkCard {
+model WirelessNetworkCard {
     id          String    @id @default(cuid())
     componentId String    @unique
     component   Component @relation(fields: [componentId], references: [id])
     interface   String    @db.VarChar(50)
     protocol    String    @db.VarChar(100)
 
-    @@map("networkCard")
+    @@map("wirelessNetworkCard")
 }

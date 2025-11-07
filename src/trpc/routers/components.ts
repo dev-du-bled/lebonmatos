@@ -33,7 +33,7 @@ export const componentRouter = createTRPCRouter({
           Case: true,
           CaseFan: true,
           SoundCard: true,
-          NetworkCard: true,
+          WirelessNetworkCard: true,
         },
         // take: 10,
       });
@@ -74,8 +74,8 @@ export const componentRouter = createTRPCRouter({
           case ComponentType.SOUND_CARD:
             data = component.SoundCard;
             break;
-          case ComponentType.NETWORK_CARD:
-            data = component.NetworkCard;
+          case ComponentType.WIRELESS_NETWORK_CARD:
+            data = component.WirelessNetworkCard;
             break;
         }
 

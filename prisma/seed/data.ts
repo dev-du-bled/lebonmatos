@@ -338,8 +338,8 @@ async function addNetCard() {
           name: n.name,
           estimatedPrice: n.price,
           color: null,
-          type: "NETWORK_CARD",
-          NetworkCard: {
+          type: "WIRELESS_NETWORK_CARD",
+          WirelessNetworkCard: {
             create: {
               interface: n.interface,
               protocol: n.protocol,

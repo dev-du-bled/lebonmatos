@@ -23,7 +23,7 @@ import { Components, ReturnedComponent } from "@/utils/components";
 
 export default function CreatePostForm() {
   const postSchema = z.object({
-    component: z.custom<Components>((value) => value !== null, {
+    component: z.custom<Components>((value) => value !== undefined, {
       error: "Vous devez sélectionner un composant",
     }),
     description: z
@@ -34,10 +34,9 @@ export default function CreatePostForm() {
       .max(1500, {
         error: "La description doit contenir au plus 1500 caractères",
       }),
-    price: z
-      .number({ error: "Le prix doit être un nombre" })
-      .positive({ error: "Le prix doit être positif" })
-      .min(0, { error: "Le prix ne peux pas être inférieur à 0" }),
+    price: z.number().min(0, {
+      message: "Le prix doit être un nombre positif",
+    }),
   });
 
   type PostFormData = z.infer<typeof postSchema>;
@@ -45,14 +44,15 @@ export default function CreatePostForm() {
   const form = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
     defaultValues: {
-      component: null,
+      component: undefined,
       description: "",
       price: 0,
     },
   });
 
-  const [selectedComponent, setSelectedComponent] =
-    useState<ReturnedComponent | null>(null);
+  const [selectedComponent, setSelectedComponent] = useState<
+    ReturnedComponent | undefined
+  >(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -90,13 +90,31 @@ export default function CreatePostForm() {
 
               {form.formState.errors.root && (
                 <div className="text-destructive text-sm text-center">
-                  {form.formState.errors.root.message}
+                  {form.formState.errors.root.message && (
+                    <span>{form.formState.errors.root.message}</span>
+                  )}
                 </div>
               )}
 
-              <ComponentSelector
-                selectedComponent={selectedComponent}
-                setSelectedComponent={setSelectedComponent}
+              <FormField
+                control={form.control}
+                name="component"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Composant</FormLabel>
+                    <FormControl>
+                      <ComponentSelector
+                        selectedComponent={selectedComponent}
+                        setSelectedComponent={(component) => {
+                          setSelectedComponent(component);
+                          field.onChange(component);
+                        }}
+                        errored={!!form.formState.errors.component}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
 
               <FormField
@@ -131,6 +149,10 @@ export default function CreatePostForm() {
                         min={0}
                         disabled={isLoading}
                         {...field}
+                        onChange={(e) =>
+                          // make it a number  cause input type number returns string 🤡
+                          field.onChange(parseFloat(e.target.value) || 0)
+                        }
                       />
                     </FormControl>
                     <FormMessage />
