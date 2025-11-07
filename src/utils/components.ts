@@ -42,63 +42,6 @@ export function formatEnumType(type: ComponentType) {
   return type.charAt(0) + type.slice(1).replaceAll("_", " ").toLowerCase();
 }
 
-export function getComponentData(
-  type: ComponentType,
-  component: ReturnedComponent
-): ReturnedComponent {
-  let data: Components = null;
-
-  switch (type) {
-    case ComponentType.CPU:
-      data = component.data as Cpu;
-      break;
-    case ComponentType.GPU:
-      data = component.data as Gpu;
-      break;
-    case ComponentType.RAM:
-      data = component.data as Ram;
-      break;
-    case ComponentType.MOTHERBOARD:
-      data = component.data as Motherboard;
-      break;
-    case ComponentType.HDD:
-      data = component.data as Hdd;
-      break;
-    case ComponentType.SSD:
-      data = component.data as Ssd;
-      break;
-    case ComponentType.POWER_SUPPLY:
-      data = component.data as Psu;
-      break;
-    case ComponentType.CASE:
-      data = component.data as Case;
-      break;
-    case ComponentType.CASE_FAN:
-      data = component.data as CaseFan;
-      break;
-    case ComponentType.CPU_COOLER:
-      data = component.data as CpuCooler;
-      break;
-    case ComponentType.SOUND_CARD:
-      data = component.data as SoundCard;
-      break;
-    case ComponentType.NETWORK_CARD:
-      data = component.data as NetworkCard;
-      break;
-    default:
-      data = null;
-  }
-
-  return {
-    id: component.id,
-    type: type,
-    name: component.name,
-    price: component.price,
-    color: component.color,
-    data: data,
-  };
-}
-
 // loop over the entries of the data object and format them into a string to display on ui
 export function formatComponentData(type: ComponentType, data: Components) {
   const entries = Object.keys(data as Record<string, unknown>);

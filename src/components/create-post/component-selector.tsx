@@ -15,7 +15,6 @@ import {
   Components,
   formatComponentData,
   formatEnumType,
-  getComponentData,
   ReturnedComponent,
 } from "@/utils/components";
 import { ComponentType } from "@prisma/client";
@@ -131,12 +130,7 @@ export default function ComponentSelector({
                   selectedComponent?.id === component.id && "bg-accent"
                 }`}
                 onClick={() =>
-                  setSelectedComponent(
-                    getComponentData(
-                      component.type,
-                      component as ReturnedComponent
-                    )
-                  )
+                  setSelectedComponent(component as ReturnedComponent)
                 }
               >
                 <div className="flex flex-col">
