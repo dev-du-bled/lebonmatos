@@ -9,8 +9,6 @@ export async function Base64ToFile(
   return new File([blob], fileName, { type: "image/webp" });
 }
 
-// Convertir les images en base64
-// marche seulement dans le navigateur
 export async function FileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

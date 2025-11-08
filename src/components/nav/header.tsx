@@ -40,7 +40,7 @@ export default function Header({
       </div>
       <header
         className={cn(
-          "sticky top-0 z-50 hidden w-full max-w-400 m-auto items-center justify-between bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 box-border p-5 md:flex",
+          "sticky top-0 z-50 hidden w-full m-auto items-center justify-between bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 box-border p-5 md:flex",
           isScrolled && "border-b"
         )}
       >

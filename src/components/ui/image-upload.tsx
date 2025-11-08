@@ -9,12 +9,13 @@ import {
   CarouselApi,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "./carousel";
-import { FileToBase64 } from "@/utils/file";
 
 interface ImageUploadProps {
-  onChange?: (files: string[]) => void;
-  images: string[];
+  onChange?: (files: File[]) => void;
+  images: File[];
 }
 
 export default function ImageUpload({ onChange, images }: ImageUploadProps) {
@@ -38,8 +39,7 @@ export default function ImageUpload({ onChange, images }: ImageUploadProps) {
     const file = e.target.files?.[0];
 
     if (file) {
-      const base64 = await FileToBase64(file);
-      onChange?.([...images, base64]);
+      onChange?.([...images, file]);
     }
   };
 
@@ -52,14 +52,19 @@ export default function ImageUpload({ onChange, images }: ImageUploadProps) {
     } as ChangeEvent<HTMLInputElement>);
   };
 
-  const handleRemoveClick = (image: string) => {
+  const handleRemoveClick = (image: File) => {
     onChange?.(images.filter((i) => i !== image));
+    api?.scrollTo(images.indexOf(image) - 1);
   };
 
   return (
     <div className="w-full flex flex-col gap-2">
       <div
-        className="border border-accent border-dashed w-full h-full rounded-md cursor-pointer"
+        className={`border border-accent border-dashed w-full h-full rounded-md ${
+          images.length >= 6
+            ? "opacity-50 cursor-not-allowed"
+            : "cursor-pointer hover:bg-accent/10 transition-colors"
+        }`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => {
           e.preventDefault();
@@ -74,6 +79,7 @@ export default function ImageUpload({ onChange, images }: ImageUploadProps) {
       </div>
       <input
         ref={inputRef}
+        disabled={images.length >= 6}
         hidden
         type="file"
         accept="image/*"
@@ -81,32 +87,30 @@ export default function ImageUpload({ onChange, images }: ImageUploadProps) {
       />
 
       {images.length > 0 && (
-        <Carousel className="flex w-full h-full max-h-80" setApi={setApi}>
-          <CarouselContent>
-            {/* TODO: better image size maybe */}
+        <Carousel setApi={setApi} className="relative">
+          <Button
+            variant="destructive"
+            size="icon"
+            type="button"
+            className="absolute top-2 right-2 w-5 h-5 z-10 hover:opacity-80 transition-opacity"
+            onClick={() => handleRemoveClick(images[current])}
+          >
+            <X />
+          </Button>
+          <CarouselContent className="ml-0">
             {images.map((image, index) => (
-              <CarouselItem className="relative w-full" key={index}>
+              <CarouselItem key={index} className="relative w-full h-64">
                 <Image
-                  src={image}
-                  className="rounded-sm w-full h-auto object-contain"
-                  alt="Preview"
-                  width={1000}
-                  height={200}
+                  src={URL.createObjectURL(image)}
+                  alt={`Uploaded image ${index + 1}`}
+                  fill
+                  className="object-contain"
                 />
-                <Button
-                  variant="destructive"
-                  type="button"
-                  size="icon"
-                  onClick={() => handleRemoveClick(image)}
-                  className="absolute right-2 top-2 w-4 h-4"
-                >
-                  <X />
-                </Button>
               </CarouselItem>
             ))}
           </CarouselContent>
-          {/* <CarouselPrevious className="left-1" /> */}
-          {/* <CarouselNext className="right-1" /> */}
+          <CarouselPrevious type="button" className="left-1" />
+          <CarouselNext type="button" className="right-1" />
           <div className="absolute bottom-2 w-full flex justify-center gap-2">
             {images.map((_, index) => (
               <div

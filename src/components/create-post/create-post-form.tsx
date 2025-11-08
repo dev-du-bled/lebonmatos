@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { Button } from "../ui/button";
@@ -22,7 +22,7 @@ import ComponentSelector from "./component-selector";
 import { Components, ReturnedComponent } from "@/utils/components";
 import { trpc } from "@/trpc/client";
 import ImageUpload from "../ui/image-upload";
-import { Label } from "../ui/label";
+import { FileToBase64 } from "@/utils/file";
 
 export default function CreatePostForm() {
   const postSchema = z.object({
@@ -41,8 +41,14 @@ export default function CreatePostForm() {
       message: "Le prix doit être supérieur ou égal à 1€",
     }),
     images: z
-      .array(z.string())
-      .max(6, { error: "Vous ne pouvez pas télécharger plus de 6 images." })
+      .array(z.file())
+      .max(6)
+      .refine(
+        (files) => {
+          return files.every((file) => file.type.startsWith("image/"));
+        },
+        { error: "All files must be an image" }
+      )
       .optional(),
   });
 
@@ -54,35 +60,42 @@ export default function CreatePostForm() {
       component: undefined,
       description: "",
       price: 0,
+      images: [],
     },
   });
 
   const [selectedComponent, setSelectedComponent] = useState<
     ReturnedComponent | undefined
   >(undefined);
-  const mutation = trpc.user.createPost.useMutation();
+  const mutation = trpc.posts.createPost.useMutation();
   const router = useRouter();
 
   const onSubmit = async (formData: PostFormData) => {
-    mutation.mutate({
-      componentId: formData.component.id,
-      title: formData.component.name,
-      description: formData.description,
-      price: formData.price,
-      images: formData.images || [],
-    });
+    const images = await Promise.all(
+      formData.images?.map(async (file) => {
+        return FileToBase64(file);
+      }) || []
+    );
 
-    if (mutation.data) {
-      router.push(`/posts/${mutation.data.postId}`);
-    } else if (mutation.error) {
-      form.setError("root", {
-        message: mutation.error.message,
-      });
-    } else {
-      form.setError("root", {
-        message: "La création de l'annonce à échoué. Veuillez réessayer.",
-      });
-    }
+    mutation.mutate(
+      {
+        componentId: formData.component.id,
+        title: formData.component.name,
+        description: formData.description,
+        price: formData.price,
+        images: images,
+      },
+      {
+        onSuccess: (data) => {
+          router.push(`/posts/${data.postId}`);
+        },
+        onError: (error) => {
+          form.setError("root", {
+            message: error.message || "Une erreur est survenue",
+          });
+        },
+      }
+    );
   };
 
   return (
@@ -97,9 +110,7 @@ export default function CreatePostForm() {
 
               {form.formState.errors.root && (
                 <div className="text-destructive text-sm text-center">
-                  {form.formState.errors.root.message && (
-                    <span>{form.formState.errors.root.message}</span>
-                  )}
+                  <span>{form.formState.errors.root.message}</span>
                 </div>
               )}
 
