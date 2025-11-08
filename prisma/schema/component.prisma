@@ -14,24 +14,24 @@ enum ComponentType {
 }
 
 model Component {
-    id             String               @id @default(cuid())
-    name           String               @db.VarChar(255)
-    estimatedPrice Int?
-    color          String?              @db.VarChar(50)
-    type           ComponentType
-    Cpu            Cpu?
-    Motherboard    Motherboard?
-    Ram            Ram?
-    Ssd            Ssd?
-    Post           Post[]
-    Hdd            Hdd?
-    Psu            Psu?
-    CpuCooler      CpuCooler?
-    Case           Case?
-    CaseFan        CaseFan?
-    SoundCard      SoundCard?
+    id                  String               @id @default(cuid())
+    name                String               @db.VarChar(255)
+    estimatedPrice      Int?
+    color               String?              @db.VarChar(50)
+    type                ComponentType
+    Cpu                 Cpu?
+    Motherboard         Motherboard?
+    Ram                 Ram?
+    Ssd                 Ssd?
+    Post                Post[]
+    Hdd                 Hdd?
+    Psu                 Psu?
+    CpuCooler           CpuCooler?
+    Case                Case?
+    CaseFan             CaseFan?
+    SoundCard           SoundCard?
     WirelessNetworkCard WirelessNetworkCard?
-    Gpu            Gpu?
+    Gpu                 Gpu?
 
     @@map("component")
 }

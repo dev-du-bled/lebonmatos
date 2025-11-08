@@ -87,8 +87,9 @@ export default function ComponentSelector({
               }}
               value={type}
             >
+              {/* TODO: fix responsive of the select trigger on small phones screen */}
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sélectionner un composant" />
+                <SelectValue placeholder="Composant" />
               </SelectTrigger>
               <SelectContent>
                 {componentTypes.map((type) => (
@@ -126,7 +127,7 @@ export default function ComponentSelector({
 
         {selectedComponent ? (
           <div className="relative">
-            <div className="mt-4 p-4 border border-secondary rounded-md overflow-auto">
+            <div className="mt-4 p-4 border border-secondary rounded-md overflow-auto wrap-break-word">
               <Button
                 variant="ghost"
                 size="icon"
@@ -136,7 +137,7 @@ export default function ComponentSelector({
                 <X />
               </Button>
               <span className="text-sm text-muted-foreground">
-                {selectedComponent.type}
+                {getEnumDisplay(selectedComponent.type)}
               </span>
               <h2 className="font-semibold mb-2">{selectedComponent.name}</h2>
               {formatComponentData(
@@ -151,7 +152,7 @@ export default function ComponentSelector({
           </div>
         ) : data && data.length > 0 ? (
           <>
-            <ScrollArea className="h-72 mt-2 w-full rounded-md border p-2">
+            <ScrollArea className="h-72 mt-2 w-full rounded-md border px-2">
               {data.map((component) => (
                 <div
                   key={component.id}

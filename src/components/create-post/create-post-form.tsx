@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { Button } from "../ui/button";
@@ -20,6 +20,9 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import ComponentSelector from "./component-selector";
 import { Components, ReturnedComponent } from "@/utils/components";
+import { trpc } from "@/trpc/client";
+import ImageUpload from "../ui/image-upload";
+import { Label } from "../ui/label";
 
 export default function CreatePostForm() {
   const postSchema = z.object({
@@ -34,9 +37,13 @@ export default function CreatePostForm() {
       .max(1500, {
         error: "La description doit contenir au plus 1500 caractères",
       }),
-    price: z.number().min(0, {
-      message: "Le prix doit être un nombre positif",
+    price: z.number().min(1, {
+      message: "Le prix doit être supérieur ou égal à 1€",
     }),
+    images: z
+      .array(z.string())
+      .max(6, { error: "Vous ne pouvez pas télécharger plus de 6 images." })
+      .optional(),
   });
 
   type PostFormData = z.infer<typeof postSchema>;
@@ -53,29 +60,29 @@ export default function CreatePostForm() {
   const [selectedComponent, setSelectedComponent] = useState<
     ReturnedComponent | undefined
   >(undefined);
-  const [isLoading, setIsLoading] = useState(false);
+  const mutation = trpc.user.createPost.useMutation();
   const router = useRouter();
 
-  const onSubmit = async (data: PostFormData) => {
-    setIsLoading(true);
-    // try {
-    //   const result = await authClient.signIn.email({});
-    //   if (result.error) {
-    //     form.setError("root", {
-    //       message:
-    //         result.error.message ||
-    //         "La création de l'annonce à échoué. Veuillez réessayer.",
-    //     });
-    //   } else {
-    //     router.push(`/posts/${result.postId}`);
-    //   }
-    // } catch {
-    //   form.setError("root", {
-    //     message: "Une erreur inattendue s'est produite. Veuillez réessayer.",
-    //   });
-    // } finally {
-    //   setIsLoading(false);
-    // }
+  const onSubmit = async (formData: PostFormData) => {
+    mutation.mutate({
+      componentId: formData.component.id,
+      title: formData.component.name,
+      description: formData.description,
+      price: formData.price,
+      images: formData.images || [],
+    });
+
+    if (mutation.data) {
+      router.push(`/posts/${mutation.data.postId}`);
+    } else if (mutation.error) {
+      form.setError("root", {
+        message: mutation.error.message,
+      });
+    } else {
+      form.setError("root", {
+        message: "La création de l'annonce à échoué. Veuillez réessayer.",
+      });
+    }
   };
 
   return (
@@ -101,12 +108,19 @@ export default function CreatePostForm() {
                 name="component"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Composant</FormLabel>
+                    <FormLabel>
+                      Composant
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <ComponentSelector
                         selectedComponent={selectedComponent}
                         setSelectedComponent={(component) => {
                           setSelectedComponent(component);
+                          form.setValue(
+                            "price",
+                            component?.price || form.getValues("price")
+                          );
                           field.onChange(component);
                         }}
                         errored={!!form.formState.errors.component}
@@ -122,12 +136,15 @@ export default function CreatePostForm() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>
+                      Description
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Textarea
                         className="min-h-40 max-h-80"
                         placeholder="Description de mon super composant"
-                        disabled={isLoading}
+                        disabled={mutation.isPending}
                         {...field}
                       />
                     </FormControl>
@@ -141,16 +158,19 @@ export default function CreatePostForm() {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Prix</FormLabel>
+                    <FormLabel>
+                      Prix (€)
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step={0.01}
                         min={0}
-                        disabled={isLoading}
+                        disabled={mutation.isPending}
                         {...field}
                         onChange={(e) =>
-                          // make it a number  cause input type number returns string 🤡
+                          // make it a number cause input type number returns string 🤡
                           field.onChange(parseFloat(e.target.value) || 0)
                         }
                       />
@@ -160,11 +180,43 @@ export default function CreatePostForm() {
                 )}
               />
 
-              {/* TODO: file upload */}
+              <FormField
+                control={form.control}
+                name="images"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex gap-2">
+                      <FormLabel>Images</FormLabel>
+                      <span
+                        className={`text-xs ${
+                          form.formState.errors.images
+                            ? "text-destructive"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {field.value?.length || 0} / 6
+                      </span>
+                    </div>
+                    <FormControl>
+                      <ImageUpload
+                        images={field.value || []}
+                        onChange={(files) => {
+                          field.onChange(files);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <Field>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Création..." : "Créer"}
+                <Button
+                  type="submit"
+                  disabled={mutation.isPending}
+                  className="w-full"
+                >
+                  {mutation.isPending ? "Création..." : "Créer"}
                 </Button>
               </Field>
             </FieldGroup>

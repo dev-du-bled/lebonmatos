@@ -23,7 +23,7 @@ export type ReturnedComponent<T = unknown> = {
   data: T;
 };
 
-export type Components =
+export type Components = { name: string } & (
   | Cpu
   | Gpu
   | Ram
@@ -36,7 +36,7 @@ export type Components =
   | CpuCooler
   | SoundCard
   | WirelessNetworkCard
-  | null;
+);
 
 // loop over the entries of the data object and format them into a string to display on ui
 export function formatComponentData(type: ComponentType, data: Components) {
@@ -78,7 +78,7 @@ const displayCpu = (data: Cpu) => ({
   boostClock: `Fréquence Turbo: ${data.boostClock} GHz`,
   microarch: `Architecture: ${data.microarch}`,
   tdp: `TDP: ${data.tdp} W`,
-  graphics: `${data.graphics || "Pas de GPU intégré"}`,
+  graphics: `iGPU: ${data.graphics || "Pas de GPU intégré"}`,
 });
 
 const displayGpu = (data: Gpu) => ({
