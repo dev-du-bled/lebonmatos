@@ -47,7 +47,7 @@ export default function Header({
         <DynamicLogo width={175} className="shrink-0" />
         <div className="flex items-center gap-2 w-full justify-end">
           <Link href="/create-post">
-            <Button>Publier</Button>
+            <Button className="hover:cursor-pointer">Publier</Button>
           </Link>
           <button className="flex h-8 w-full max-w-[200px] items-center justify-between rounded-sm bg-secondary px-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">

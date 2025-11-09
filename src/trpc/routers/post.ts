@@ -7,20 +7,23 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         componentId: z.string(),
-        title: z.string().min(3).max(50),
+        title: z.string().min(3).max(100),
         description: z.string().min(20).max(1500),
         price: z.number().min(0),
         images: z
           .array(
-            z
-              .string()
-              .refine((val) => val.startsWith("data:image/"), {
-                message: "Images must be base64 data URLs",
-              })
-              .transform((val) => {
-                return val.split(",")[1];
-              })
-              .pipe(z.base64())
+            z.string().refine(
+              (val) => {
+                const base64 = val.split(",")[1];
+                return (
+                  val.startsWith("data:image/") &&
+                  z.base64().safeParse(base64).success
+                );
+              },
+              {
+                message: "Invalid image base64 encoding",
+              }
+            )
           )
           .max(6, { message: "You can upload up to 6 images" })
           .optional(),
