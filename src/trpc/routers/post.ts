@@ -1,12 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import z from "zod";
-import { createTRPCRouter, privateProcedure } from "../init";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
     .input(
       z.object({
-        componentId: z.string(),
+        componentId: z.cuid(),
         title: z.string().min(3).max(100),
         description: z.string().min(20).max(1500),
         price: z.number().min(0),
@@ -51,5 +51,81 @@ export const postRouter = createTRPCRouter({
           error instanceof Error ? error.message : "Unknown error"
         );
       }
+    }),
+
+  getPost: publicProcedure
+    .input(
+      z.object({
+        postId: z.cuid(),
+      })
+    )
+    .query(async ({ input }) => {
+      const post = await prisma.post.findUnique({
+        where: { id: input.postId },
+        include: {
+          user: true,
+          component: true,
+        },
+      });
+
+      const component = await prisma.component.findUnique({
+        where: { id: post?.componentId },
+        include: {
+          Cpu: post?.component.type === "CPU",
+          Gpu: post?.component.type === "GPU",
+          Ram: post?.component.type === "RAM",
+          Motherboard: post?.component.type === "MOTHERBOARD",
+          Hdd: post?.component.type === "HDD",
+          Ssd: post?.component.type === "SSD",
+          Psu: post?.component.type === "POWER_SUPPLY",
+          Case: post?.component.type === "CASE",
+          CaseFan: post?.component.type === "CASE_FAN",
+          CpuCooler: post?.component.type === "CPU_COOLER",
+          WirelessNetworkCard: post?.component.type === "WIRELESS_NETWORK_CARD",
+        },
+      });
+
+      if (!post || !component) {
+        throw new Error("Post not found");
+      }
+
+      return {
+        id: post.id,
+        title: post.title,
+        description: post.description,
+        price: post.price,
+        images: post.images,
+        component: {
+          type: post.component.type,
+          details:
+            post.component.type === "CPU"
+              ? component?.Cpu
+              : post.component.type === "GPU"
+              ? component?.Gpu
+              : post.component.type === "RAM"
+              ? component?.Ram
+              : post.component.type === "MOTHERBOARD"
+              ? component?.Motherboard
+              : post.component.type === "HDD"
+              ? component?.Hdd
+              : post.component.type === "SSD"
+              ? component?.Ssd
+              : post.component.type === "POWER_SUPPLY"
+              ? component?.Psu
+              : post.component.type === "CASE"
+              ? component?.Case
+              : post.component.type === "CASE_FAN"
+              ? component?.CaseFan
+              : post.component.type === "CPU_COOLER"
+              ? component?.CpuCooler
+              : post.component.type === "WIRELESS_NETWORK_CARD"
+              ? component?.WirelessNetworkCard
+              : undefined,
+        },
+        seller: {
+          id: post.user.id,
+          name: post.user.name,
+        },
+      };
     }),
 });

@@ -17,6 +17,7 @@ model User {
   updatedAt         DateTime     @default(now()) @updatedAt
   sessions          Session[]
   accounts          Account[]
+  posts             Post[]
   favorites         Favorite[]
   reports           Report[]
   discussionsBuyer  Discussion[] @relation("discussionBuyer")
@@ -88,6 +89,7 @@ model Post {
   Favorites   Favorite[]
   Report      Report[]
   Discussion  Discussion[]
+  user        User         @relation(fields: [userId], references: [id])
 
   @@map("post")
 }

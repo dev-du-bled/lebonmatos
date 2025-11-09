@@ -87,7 +87,7 @@ export default function CreatePostForm() {
       },
       {
         onSuccess: (data) => {
-          router.push(`/posts/${data.postId}`);
+          router.push(`/post/${data.postId}`);
         },
         onError: (error) => {
           form.setError("root", {
