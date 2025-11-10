@@ -30,11 +30,15 @@ export const auth = betterAuth({
         );
       },
     }),
-    captcha({
-      provider: "google-recaptcha",
-      secretKey: process.env.GOOGLE_RECAPTCHA_SECRET_KEY!,
-      minScore: 0.5, // Minimum score for reCAPTCHA v3 (0.0 to 1.0)
-    }),
+    ...(process.env.NODE_ENV === "production" // ReCaptcha en prod seulement
+      ? [
+          captcha({
+            provider: "google-recaptcha",
+            secretKey: process.env.GOOGLE_RECAPTCHA_SECRET_KEY!,
+            minScore: 0.5,
+          }),
+        ]
+      : []),
   ],
   database: prismaAdapter(prisma, {
     provider: "postgresql",

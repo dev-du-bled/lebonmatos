@@ -7,6 +7,11 @@ interface ReCaptchaProviderProps {
 }
 
 export function ReCaptchaProvider({ children }: ReCaptchaProviderProps) {
+  // On retourne pas le provider du captcha en prod
+  if (process.env.NODE_ENV !== "production") {
+    return <>{children}</>;
+  }
+
   return (
     <GoogleReCaptchaProvider
       reCaptchaKey={process.env.NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY!}
