@@ -36,8 +36,8 @@ export default async function PostPage({
                   className="relative aspect-square w-full max-h-96"
                 >
                   <Image
-                    src={image}
-                    alt={`Image ${index + 1}`}
+                    src={image.image}
+                    alt={image.alt || `Image ${index + 1}`}
                     fill
                     className="object-cover rounded-lg"
                   />

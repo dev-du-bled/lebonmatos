@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import z from "zod";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
+import { ComponentType } from "@prisma/client";
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
@@ -74,23 +75,25 @@ export const postRouter = createTRPCRouter({
         include: {
           user: true,
           component: true,
+          images: true,
         },
       });
 
       const component = await prisma.component.findUnique({
         where: { id: post?.componentId },
         include: {
-          Cpu: post?.component.type === "CPU",
-          Gpu: post?.component.type === "GPU",
-          Ram: post?.component.type === "RAM",
-          Motherboard: post?.component.type === "MOTHERBOARD",
-          Hdd: post?.component.type === "HDD",
-          Ssd: post?.component.type === "SSD",
-          Psu: post?.component.type === "POWER_SUPPLY",
-          Case: post?.component.type === "CASE",
-          CaseFan: post?.component.type === "CASE_FAN",
-          CpuCooler: post?.component.type === "CPU_COOLER",
-          WirelessNetworkCard: post?.component.type === "WIRELESS_NETWORK_CARD",
+          Cpu: post?.component.type === ComponentType.CPU,
+          Gpu: post?.component.type === ComponentType.GPU,
+          Ram: post?.component.type === ComponentType.RAM,
+          Motherboard: post?.component.type === ComponentType.MOTHERBOARD,
+          Hdd: post?.component.type === ComponentType.HDD,
+          Ssd: post?.component.type === ComponentType.SSD,
+          Psu: post?.component.type === ComponentType.POWER_SUPPLY,
+          Case: post?.component.type === ComponentType.CASE,
+          CaseFan: post?.component.type === ComponentType.CASE_FAN,
+          CpuCooler: post?.component.type === ComponentType.CPU_COOLER,
+          WirelessNetworkCard:
+            post?.component.type === ComponentType.WIRELESS_NETWORK_CARD,
         },
       });
 
@@ -107,27 +110,27 @@ export const postRouter = createTRPCRouter({
         component: {
           type: post.component.type,
           details:
-            post.component.type === "CPU"
+            post.component.type === ComponentType.CPU
               ? component?.Cpu
-              : post.component.type === "GPU"
+              : post.component.type === ComponentType.GPU
               ? component?.Gpu
-              : post.component.type === "RAM"
+              : post.component.type === ComponentType.RAM
               ? component?.Ram
-              : post.component.type === "MOTHERBOARD"
+              : post.component.type === ComponentType.MOTHERBOARD
               ? component?.Motherboard
-              : post.component.type === "HDD"
+              : post.component.type === ComponentType.HDD
               ? component?.Hdd
-              : post.component.type === "SSD"
+              : post.component.type === ComponentType.SSD
               ? component?.Ssd
-              : post.component.type === "POWER_SUPPLY"
+              : post.component.type === ComponentType.POWER_SUPPLY
               ? component?.Psu
-              : post.component.type === "CASE"
+              : post.component.type === ComponentType.CASE
               ? component?.Case
-              : post.component.type === "CASE_FAN"
+              : post.component.type === ComponentType.CASE_FAN
               ? component?.CaseFan
-              : post.component.type === "CPU_COOLER"
+              : post.component.type === ComponentType.CPU_COOLER
               ? component?.CpuCooler
-              : post.component.type === "WIRELESS_NETWORK_CARD"
+              : post.component.type === ComponentType.WIRELESS_NETWORK_CARD
               ? component?.WirelessNetworkCard
               : undefined,
         },

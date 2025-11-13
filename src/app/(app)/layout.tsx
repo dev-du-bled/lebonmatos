@@ -12,7 +12,7 @@ export default async function AppLayout({
   });
 
   return (
-    <main className="bg-muted min-h-screen">
+    <main className="bg-muted">
       <Header initialSession={session} />
       {children}
     </main>
