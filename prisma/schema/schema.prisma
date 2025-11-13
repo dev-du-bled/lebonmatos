@@ -26,6 +26,8 @@ model User {
 
   username        String?
   displayUsername String?
+  ratingsReceived Rating[] @relation("ratee")
+  ratingsGiven    Rating[] @relation("rater")
 
   @@unique([email])
   @@unique([username])
@@ -168,4 +170,18 @@ model Message {
   viewed       Boolean    @default(false)
 
   @@map("message")
+}
+
+model Rating {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation("ratee", fields: [userId], references: [id], onDelete: Cascade)
+  raterId String
+  rater   User   @relation("rater", fields: [raterId], references: [id], onDelete: Cascade)
+
+  rating    Int      @db.SmallInt
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@map("rating")
 }

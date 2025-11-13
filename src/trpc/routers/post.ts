@@ -97,6 +97,15 @@ export const postRouter = createTRPCRouter({
         },
       });
 
+      const rating = await prisma.rating.aggregate({
+        where: {
+          userId: post?.userId,
+        },
+        _avg: {
+          rating: true,
+        },
+      });
+
       if (!post || !component) {
         throw new Error("Post not found");
       }
@@ -137,6 +146,7 @@ export const postRouter = createTRPCRouter({
         seller: {
           id: post.user.id,
           name: post.user.name,
+          rating: rating._avg.rating ?? 0,
         },
       };
     }),

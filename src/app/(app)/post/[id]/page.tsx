@@ -11,6 +11,7 @@ import { trpc } from "@/trpc/server";
 import { Components, formatComponentData } from "@/utils/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
+import { Star } from "lucide-react";
 
 export default async function PostPage({
   params,
@@ -67,6 +68,12 @@ export default async function PostPage({
               </Avatar>
               <p>{post.seller.name}</p>
               {/* rating */}
+              <div className="ml-auto flex items-center gap-1">
+                <span className="text-sm font-medium">
+                  {post.seller.rating.toFixed(1)}
+                </span>
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              </div>
             </div>
           </div>
           <Card className="gap-0">
