@@ -12,9 +12,9 @@ export default async function AppLayout({
   });
 
   return (
-    <div>
+    <main className="bg-muted">
       <Header initialSession={session} />
       {children}
-    </div>
+    </main>
   );
 }

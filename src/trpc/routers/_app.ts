@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { publicProcedure, createTRPCRouter } from "../init";
 import { userRouter } from "./user";
+import { componentRouter } from "./components";
+import { postRouter } from "./post";
 export const appRouter = createTRPCRouter({
   hello: publicProcedure
     .input(
@@ -14,6 +16,8 @@ export const appRouter = createTRPCRouter({
       };
     }),
   user: userRouter,
+  components: componentRouter,
+  posts: postRouter,
 });
 // export type definition of API
 export type AppRouter = typeof appRouter;

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ComponentType } from "@prisma/client";
 import cpu from "../../data/cpu.json";
 import mb from "../../data/motherboard.json";
 import ram from "../../data/memory.json";
@@ -14,22 +14,21 @@ import netCard from "../../data/wireless-network-card.json";
 const prisma = new PrismaClient();
 
 async function main() {
-  await Promise.all([
-    addCpu(),
-    addMb(),
-    addRam(),
-    addDisk(),
-    addGpu(),
-    addPsu(),
-    addCpuCooler(),
-    addSoundCard(),
-    addCase(),
-    addNetCard(),
-    addCaseFan(),
-  ]);
+  await addCpu();
+  await addMb();
+  await addRam();
+  await addDisk();
+  await addGpu();
+  await addPsu();
+  await addCpuCooler();
+  await addSoundCard();
+  await addCase();
+  await addNetCard();
+  await addCaseFan();
 }
 
 async function addCpu() {
+  console.log("Adding CPUs");
   await Promise.all(
     cpu.map((c) =>
       prisma.component.create({
@@ -37,6 +36,7 @@ async function addCpu() {
           name: c.name,
           estimatedPrice: c.price,
           color: null,
+          type: ComponentType.CPU,
           Cpu: {
             create: {
               coreCount: c.core_count,
@@ -54,6 +54,7 @@ async function addCpu() {
 }
 
 async function addMb() {
+  console.log("Adding Motherboards");
   await Promise.all(
     mb.map((m) =>
       prisma.component.create({
@@ -61,6 +62,7 @@ async function addMb() {
           name: m.name,
           estimatedPrice: m.price,
           color: m.color,
+          type: ComponentType.MOTHERBOARD,
           Motherboard: {
             create: {
               socket: m.socket,
@@ -76,6 +78,7 @@ async function addMb() {
 }
 
 async function addRam() {
+  console.log("Adding RAM");
   await Promise.all(
     ram.map((r) =>
       prisma.component.create({
@@ -83,6 +86,7 @@ async function addRam() {
           name: r.name,
           estimatedPrice: r.price,
           color: null,
+          type: ComponentType.RAM,
           Ram: {
             create: {
               type: r.speed[0] ? `DDR${r.speed[0]}` : null,
@@ -99,6 +103,7 @@ async function addRam() {
 }
 
 async function addDisk() {
+  console.log("Adding Disks");
   await Promise.all(
     disk.map((d) => {
       const data = {
@@ -118,6 +123,7 @@ async function addDisk() {
             name: d.name,
             estimatedPrice: d.price ?? null,
             color: d.color,
+            type: ComponentType.SSD,
             Ssd: {
               create: data,
             },
@@ -129,6 +135,7 @@ async function addDisk() {
             name: d.name,
             estimatedPrice: d.price ?? null,
             color: d.color,
+            type: ComponentType.HDD,
             Hdd: {
               create: data,
             },
@@ -140,6 +147,7 @@ async function addDisk() {
 }
 
 async function addGpu() {
+  console.log("Adding GPUs");
   await Promise.all(
     gpu.map((g) =>
       prisma.component.create({
@@ -147,6 +155,7 @@ async function addGpu() {
           name: g.name,
           estimatedPrice: g.price,
           color: g.color,
+          type: ComponentType.GPU,
           Gpu: {
             create: {
               chipset: g.chipset,
@@ -163,6 +172,7 @@ async function addGpu() {
 }
 
 async function addPsu() {
+  console.log("Adding PSUs");
   await Promise.all(
     psu.map((p) =>
       prisma.component.create({
@@ -170,6 +180,7 @@ async function addPsu() {
           name: p.name,
           estimatedPrice: p.price,
           color: p.color ?? null,
+          type: ComponentType.POWER_SUPPLY,
           Psu: {
             create: {
               type: p.type,
@@ -185,6 +196,7 @@ async function addPsu() {
 }
 
 async function addCpuCooler() {
+  console.log("Adding CPU Coolers");
   await Promise.all(
     cpucooler.map((c) => {
       const isRpmArray = Array.isArray(c.rpm);
@@ -206,6 +218,7 @@ async function addCpuCooler() {
           name: c.name,
           estimatedPrice: c.price,
           color: c.color ?? null,
+          type: ComponentType.CPU_COOLER,
           CpuCooler: {
             create: {
               ...data,
@@ -219,6 +232,7 @@ async function addCpuCooler() {
 }
 
 async function addSoundCard() {
+  console.log("Adding Sound Cards");
   await Promise.all(
     soundCard.map((s) =>
       prisma.component.create({
@@ -226,6 +240,7 @@ async function addSoundCard() {
           name: s.name,
           estimatedPrice: s.price,
           color: null,
+          type: ComponentType.SOUND_CARD,
           SoundCard: {
             create: {
               channels: s.channels,
@@ -243,6 +258,7 @@ async function addSoundCard() {
 }
 
 async function addCaseFan() {
+  console.log("Adding Case Fans");
   await Promise.all(
     caseFan.map((c) => {
       const isRpmArray = Array.isArray(c.rpm);
@@ -275,6 +291,7 @@ async function addCaseFan() {
           name: c.name,
           estimatedPrice: c.price,
           color: c.color,
+          type: ComponentType.CASE_FAN,
           CaseFan: {
             create: {
               size: c.size,
@@ -289,6 +306,7 @@ async function addCaseFan() {
 }
 
 async function addCase() {
+  console.log("Adding Cases");
   await Promise.all(
     cases.map((c) =>
       prisma.component.create({
@@ -296,6 +314,7 @@ async function addCase() {
           name: c.name,
           estimatedPrice: c.price,
           color: c.color,
+          type: ComponentType.CASE,
           Case: {
             create: {
               type: c.type,
@@ -311,6 +330,7 @@ async function addCase() {
 }
 
 async function addNetCard() {
+  console.log("Adding Network Cards");
   await Promise.all(
     netCard.map((n) =>
       prisma.component.create({
@@ -318,7 +338,8 @@ async function addNetCard() {
           name: n.name,
           estimatedPrice: n.price,
           color: null,
-          NetworkCard: {
+          type: ComponentType.WIRELESS_NETWORK_CARD,
+          WirelessNetworkCard: {
             create: {
               interface: n.interface,
               protocol: n.protocol,

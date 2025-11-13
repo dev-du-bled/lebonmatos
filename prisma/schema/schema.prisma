@@ -87,6 +87,7 @@ model Post {
   Favorites   Favorite[]
   Report      Report[]
   Discussion  Discussion[]
+  images      Images[]
 
   @@map("post")
 }
@@ -99,6 +100,16 @@ model Favorite {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("favorite")
+}
+
+model Images {
+  id     String  @id @default(cuid())
+  image  String
+  alt    String?
+  postId String
+  post   Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("images")
 }
 
 enum REPORT_TYPE {
