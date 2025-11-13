@@ -47,7 +47,9 @@ export default function Header({
           className
         )}
       >
-        <DynamicLogo width={175} className="shrink-0" />
+        <Link href={"/"}>
+          <DynamicLogo width={175} className="shrink-0" />
+        </Link>
         <div className="flex items-center gap-2 w-full justify-end">
           <Link href="/create-post">
             <Button className="hover:cursor-pointer">Publier</Button>
