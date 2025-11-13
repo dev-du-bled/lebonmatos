@@ -2,9 +2,6 @@
   "name": "projet",
   "version": "0.1.0",
   "private": true,
-  "prisma" : {
-    "schema": "prisma/schema/schema.prisma"
-  },
   "scripts": {
     "dev:docker": "docker compose -f docker-compose.dev.yml up -d",
     "dev": "next dev --turbopack",
