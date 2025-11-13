@@ -83,7 +83,12 @@ export default function CreatePostForm() {
         title: formData.component.name,
         description: formData.description,
         price: formData.price,
-        images: images,
+        images: images.map((data, index) => ({
+          data,
+          alt:
+            formData.images?.[index]?.name ||
+            `${formData.component?.name} image ${index + 1}`,
+        })),
       },
       {
         onSuccess: (data) => {

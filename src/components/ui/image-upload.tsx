@@ -14,8 +14,8 @@ import {
 } from "./carousel";
 
 interface ImageUploadProps {
-  onChange?: (files: File[]) => void;
   images: File[];
+  onChange?: (files: File[]) => void;
 }
 
 export default function ImageUpload({ onChange, images }: ImageUploadProps) {
@@ -102,7 +102,7 @@ export default function ImageUpload({ onChange, images }: ImageUploadProps) {
               <CarouselItem key={index} className="relative w-full h-64">
                 <Image
                   src={URL.createObjectURL(image)}
-                  alt={`Uploaded image ${index + 1}`}
+                  alt={image.name || `Uploaded image ${index + 1}`}
                   fill
                   className="object-contain"
                 />

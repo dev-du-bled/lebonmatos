@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ComponentType } from "@prisma/client";
 import cpu from "../../data/cpu.json";
 import mb from "../../data/motherboard.json";
 import ram from "../../data/memory.json";
@@ -36,7 +36,7 @@ async function addCpu() {
           name: c.name,
           estimatedPrice: c.price,
           color: null,
-          type: "CPU",
+          type: ComponentType.CPU,
           Cpu: {
             create: {
               coreCount: c.core_count,
@@ -62,7 +62,7 @@ async function addMb() {
           name: m.name,
           estimatedPrice: m.price,
           color: m.color,
-          type: "MOTHERBOARD",
+          type: ComponentType.MOTHERBOARD,
           Motherboard: {
             create: {
               socket: m.socket,
@@ -86,7 +86,7 @@ async function addRam() {
           name: r.name,
           estimatedPrice: r.price,
           color: null,
-          type: "RAM",
+          type: ComponentType.RAM,
           Ram: {
             create: {
               type: r.speed[0] ? `DDR${r.speed[0]}` : null,
@@ -123,7 +123,7 @@ async function addDisk() {
             name: d.name,
             estimatedPrice: d.price ?? null,
             color: d.color,
-            type: "SSD",
+            type: ComponentType.SSD,
             Ssd: {
               create: data,
             },
@@ -135,7 +135,7 @@ async function addDisk() {
             name: d.name,
             estimatedPrice: d.price ?? null,
             color: d.color,
-            type: "HDD",
+            type: ComponentType.HDD,
             Hdd: {
               create: data,
             },
@@ -155,7 +155,7 @@ async function addGpu() {
           name: g.name,
           estimatedPrice: g.price,
           color: g.color,
-          type: "GPU",
+          type: ComponentType.GPU,
           Gpu: {
             create: {
               chipset: g.chipset,
@@ -180,7 +180,7 @@ async function addPsu() {
           name: p.name,
           estimatedPrice: p.price,
           color: p.color ?? null,
-          type: "POWER_SUPPLY",
+          type: ComponentType.POWER_SUPPLY,
           Psu: {
             create: {
               type: p.type,
@@ -218,7 +218,7 @@ async function addCpuCooler() {
           name: c.name,
           estimatedPrice: c.price,
           color: c.color ?? null,
-          type: "CPU_COOLER",
+          type: ComponentType.CPU_COOLER,
           CpuCooler: {
             create: {
               ...data,
@@ -240,7 +240,7 @@ async function addSoundCard() {
           name: s.name,
           estimatedPrice: s.price,
           color: null,
-          type: "SOUND_CARD",
+          type: ComponentType.SOUND_CARD,
           SoundCard: {
             create: {
               channels: s.channels,
@@ -291,7 +291,7 @@ async function addCaseFan() {
           name: c.name,
           estimatedPrice: c.price,
           color: c.color,
-          type: "CASE_FAN",
+          type: ComponentType.CASE_FAN,
           CaseFan: {
             create: {
               size: c.size,
@@ -314,7 +314,7 @@ async function addCase() {
           name: c.name,
           estimatedPrice: c.price,
           color: c.color,
-          type: "CASE",
+          type: ComponentType.CASE,
           Case: {
             create: {
               type: c.type,
@@ -338,7 +338,7 @@ async function addNetCard() {
           name: n.name,
           estimatedPrice: n.price,
           color: null,
-          type: "WIRELESS_NETWORK_CARD",
+          type: ComponentType.WIRELESS_NETWORK_CARD,
           WirelessNetworkCard: {
             create: {
               interface: n.interface,

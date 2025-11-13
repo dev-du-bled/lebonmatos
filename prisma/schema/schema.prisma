@@ -83,13 +83,13 @@ model Post {
   title       String       @db.VarChar(50)
   description String?
   price       Int
-  images      String[]
   componentId String
   component   Component    @relation(fields: [componentId], references: [id])
   Favorites   Favorite[]
   Report      Report[]
   Discussion  Discussion[]
   user        User         @relation(fields: [userId], references: [id])
+  images      Images[]
 
   @@map("post")
 }
@@ -102,6 +102,16 @@ model Favorite {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("favorite")
+}
+
+model Images {
+  id     String  @id @default(cuid())
+  image  String
+  alt    String?
+  postId String
+  post   Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("images")
 }
 
 enum REPORT_TYPE {
