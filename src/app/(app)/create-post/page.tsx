@@ -11,7 +11,7 @@ export default async function CreatePostPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center p-4">
-      <div className="w-full max-w-md md:max-w-lg lg:max-w-2xl">
+      <div className="w-full max-w-md md:max-w-lg lg:max-w-2xl transition-all">
         <CreatePostForm />
       </div>
     </div>
