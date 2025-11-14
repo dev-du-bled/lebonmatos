@@ -10,7 +10,13 @@ import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
 
-export default function Header({ initialSession }: { initialSession?: unknown }) {
+export default function Header({
+  initialSession,
+  className,
+}: {
+  initialSession?: unknown;
+  className?: string;
+}) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [modifierKey, setModifierKey] = useState<string | null>(null);
 
@@ -26,13 +32,14 @@ export default function Header({ initialSession }: { initialSession?: unknown })
   }, []);
   return (
     <>
-      <div className="md:hidden">
+      <div className={cn("md:hidden", className)}>
         <MobileHeader initialSession={initialSession} />
       </div>
       <header
         className={cn(
           "sticky top-0 z-50 hidden w-full m-auto items-center justify-between bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 box-border p-5 md:flex",
           isScrolled && "border-b",
+          className
         )}
       >
         <Link href={"/"}>
