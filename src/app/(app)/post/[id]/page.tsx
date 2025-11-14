@@ -73,13 +73,15 @@ export default async function PostPage({
               </Avatar>
               <p>{post.seller.name}</p>
               {/* rating */}
-              <div className="ml-auto flex items-center gap-1">
-                <span className="text-sm font-medium">
-                  {post.seller.rating.avg.toFixed(1)} (
-                  {post.seller.rating.count})
-                </span>
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              </div>
+              {post.seller.rating.count > 0 && (
+                <div className="ml-auto flex items-center gap-1">
+                  <span className="text-sm font-medium">
+                    {post.seller.rating.avg.toFixed(1)} (
+                    {post.seller.rating.count})
+                  </span>
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                </div>
+              )}
             </div>
           </div>
           <Card className="gap-0">
