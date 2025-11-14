@@ -12,8 +12,10 @@ import Link from "next/link";
 
 export default function Header({
   initialSession,
+  className,
 }: {
   initialSession?: unknown;
+  className?: string;
 }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [modifierKey, setModifierKey] = useState<string | null>(null);
@@ -35,13 +37,14 @@ export default function Header({
   }, []);
   return (
     <>
-      <div className="md:hidden">
+      <div className={cn("md:hidden", className)}>
         <MobileHeader initialSession={initialSession} />
       </div>
       <header
         className={cn(
           "sticky top-0 z-50 hidden w-full m-auto items-center justify-between bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 box-border p-5 md:flex",
-          isScrolled && "border-b"
+          isScrolled && "border-b",
+          className
         )}
       >
         <DynamicLogo width={175} className="shrink-0" />
