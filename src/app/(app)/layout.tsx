@@ -1,6 +1,7 @@
 import Header from "@/components/nav/header";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import "../globals.css";
 
 export default async function AppLayout({
   children,
@@ -12,8 +13,8 @@ export default async function AppLayout({
   });
 
   return (
-    <main className="bg-muted min-h-svh">
-      <Header initialSession={session} />
+    <main className="min-h-svh">
+      <Header className={"wide-lock"} initialSession={session} />
       {children}
     </main>
   );
