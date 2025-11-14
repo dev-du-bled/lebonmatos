@@ -164,11 +164,17 @@ export default function ComponentSelector({
                 >
                   <div className="flex flex-col">
                     <h1>{component.name}</h1>
-                    {component.price && (
-                      <span className="text-sm text-muted-foreground">
-                        {component.price} €
-                      </span>
-                    )}
+                    {formatComponentData(
+                      component.type,
+                      component.data as Components
+                    ).map((uiString, index) => (
+                      <div
+                        key={index}
+                        className="text-sm text-muted-foreground"
+                      >
+                        {uiString}
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}

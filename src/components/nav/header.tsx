@@ -21,12 +21,7 @@ export default function Header({
   const [modifierKey, setModifierKey] = useState<string | null>(null);
 
   useEffect(() => {
-    setModifierKey(
-      typeof window !== "undefined" &&
-        /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
-        ? "⌘"
-        : "Ctrl"
-    );
+    setModifierKey(typeof window !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) ? "⌘" : "Ctrl");
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };
@@ -47,7 +42,9 @@ export default function Header({
           className
         )}
       >
-        <DynamicLogo width={175} className="shrink-0" />
+        <Link href={"/"}>
+          <DynamicLogo width={175} className="shrink-0" />
+        </Link>
         <div className="flex items-center gap-2 w-full justify-end">
           <Link href="/create-post">
             <Button className="hover:cursor-pointer">Publier</Button>
