@@ -10,21 +10,12 @@ import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
 
-export default function Header({
-  initialSession,
-}: {
-  initialSession?: unknown;
-}) {
+export default function Header({ initialSession }: { initialSession?: unknown }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [modifierKey, setModifierKey] = useState<string | null>(null);
 
   useEffect(() => {
-    setModifierKey(
-      typeof window !== "undefined" &&
-        /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
-        ? "⌘"
-        : "Ctrl"
-    );
+    setModifierKey(typeof window !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) ? "⌘" : "Ctrl");
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };
@@ -41,10 +32,12 @@ export default function Header({
       <header
         className={cn(
           "sticky top-0 z-50 hidden w-full m-auto items-center justify-between bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 box-border p-5 md:flex",
-          isScrolled && "border-b"
+          isScrolled && "border-b",
         )}
       >
-        <DynamicLogo width={175} className="shrink-0" />
+        <Link href={"/"}>
+          <DynamicLogo width={175} className="shrink-0" />
+        </Link>
         <div className="flex items-center gap-2 w-full justify-end">
           <Link href="/create-post">
             <Button className="hover:cursor-pointer">Publier</Button>
