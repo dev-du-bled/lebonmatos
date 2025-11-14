@@ -60,7 +60,7 @@ export default function ImageUpload({ onChange, images }: ImageUploadProps) {
   return (
     <div className="w-full flex flex-col gap-2">
       <div
-        className={`border border-accent border-dashed w-full h-full rounded-md ${
+        className={`border border-input border-dashed w-full h-full rounded-md ${
           images.length >= 6
             ? "opacity-50 cursor-not-allowed"
             : "cursor-pointer hover:bg-accent/10 transition-colors"

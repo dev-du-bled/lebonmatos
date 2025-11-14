@@ -156,4 +156,33 @@ export const postRouter = createTRPCRouter({
         },
       };
     }),
+
+  getSimilarPosts: publicProcedure
+    .input(
+      z.object({
+        type: z.enum(ComponentType),
+      })
+    )
+    .query(async ({ input }) => {
+      const posts = await prisma.post.findMany({
+        where: {
+          component: {
+            type: input.type,
+          },
+        },
+        include: {
+          images: true,
+        },
+      });
+
+      const shufflePosts = posts.sort(() => Math.random() - 0.5);
+      const randomPosts = shufflePosts.slice(0, 20);
+
+      return randomPosts.map((post) => ({
+        id: post.id,
+        title: post.title,
+        price: post.price,
+        images: post.images,
+      }));
+    }),
 });
