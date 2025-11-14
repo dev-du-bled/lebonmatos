@@ -52,6 +52,9 @@ export function UserMenu({ initialSession }: { initialSession?: unknown }) {
           <DropdownMenuLabel>
             Bienvenue, <span className="font-bold">{session.user.name}</span>
           </DropdownMenuLabel>
+          <DropdownMenuItem asChild>
+            <Link href="/profile">Mon profil</Link>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => authClient.signOut()}>
             Se déconnecter
