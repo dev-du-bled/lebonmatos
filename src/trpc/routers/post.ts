@@ -104,6 +104,9 @@ export const postRouter = createTRPCRouter({
         _avg: {
           rating: true,
         },
+        _count: {
+          rating: true,
+        },
       });
 
       if (!post || !component) {
@@ -146,7 +149,10 @@ export const postRouter = createTRPCRouter({
         seller: {
           id: post.user.id,
           name: post.user.name,
-          rating: rating._avg.rating ?? 0,
+          rating: {
+            avg: rating._avg.rating || 0,
+            count: rating._count.rating || 0,
+          },
         },
       };
     }),

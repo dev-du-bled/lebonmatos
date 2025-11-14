@@ -70,7 +70,8 @@ export default async function PostPage({
               {/* rating */}
               <div className="ml-auto flex items-center gap-1">
                 <span className="text-sm font-medium">
-                  {post.seller.rating.toFixed(1)}
+                  {post.seller.rating.avg.toFixed(1)} (
+                  {post.seller.rating.count})
                 </span>
                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               </div>
