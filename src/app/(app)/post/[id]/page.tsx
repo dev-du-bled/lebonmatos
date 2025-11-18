@@ -11,8 +11,8 @@ import { trpc } from "@/trpc/server";
 import { Components, formatComponentData } from "@/utils/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
-import { ChevronRight, Star } from "lucide-react";
-import Link from "next/link";
+import { Star } from "lucide-react";
+import PostCard from "@/components/post-card";
 
 export default async function PostPage({
   params,
@@ -26,6 +26,7 @@ export default async function PostPage({
   const post = await trpc.posts.getPost({ postId: id });
 
   const similarPost = await trpc.posts.getSimilarPosts({
+    id: post.id,
     type: post.component.type,
   });
 
@@ -42,7 +43,7 @@ export default async function PostPage({
                   className="relative aspect-square w-full max-h-96"
                 >
                   <Image
-                    src={image.image}
+                    src={image.image || "/placeholder.jpg"}
                     alt={image.alt || `Image ${index + 1}`}
                     fill
                     className="object-cover rounded-lg"
@@ -101,35 +102,14 @@ export default async function PostPage({
           </Card>
         </div>
         <div className="flex flex-col gap-8 flex-1">
-          <Card className="gap-0">
+          <Card className="gap-2">
             <CardHeader>
               <CardTitle>Plus comme &quot;{post.title}&quot;</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-200 overflow-auto">
                 {similarPost.map((post) => (
-                  <Link
-                    key={post.id}
-                    href={`/post/${post.id}`}
-                    className="border rounded-lg overflow-hidden group relative"
-                  >
-                    <Image
-                      src={post.images[0]?.image || "/placeholder.jpg"}
-                      alt={post.images[0]?.alt || post.title}
-                      width={400}
-                      height={400}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-4">
-                      <h2 className="text-lg font-semibold">{post.title}</h2>
-                      <p className="text-sm text-muted-foreground">
-                        {post.price} €
-                      </p>
-                    </div>
-                    <div className="absolute bottom-5 right-0 translate-x-full rounded-sm -skew-x-12 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 bg-primary w-fit h-fit  p-1 transition-all duration-300 shrink-0 mr-5">
-                      <ChevronRight className="text-primary-foreground" />
-                    </div>
-                  </Link>
+                  <PostCard key={post.id} {...post} />
                 ))}
               </div>
             </CardContent>

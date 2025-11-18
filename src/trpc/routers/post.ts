@@ -160,6 +160,7 @@ export const postRouter = createTRPCRouter({
   getSimilarPosts: publicProcedure
     .input(
       z.object({
+        id: z.cuid(),
         type: z.enum(ComponentType),
       })
     )
@@ -168,6 +169,9 @@ export const postRouter = createTRPCRouter({
         where: {
           component: {
             type: input.type,
+          },
+          NOT: {
+            id: input.id,
           },
         },
         include: {
