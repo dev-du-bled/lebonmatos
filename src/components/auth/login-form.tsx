@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,6 +35,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const from = useSearchParams().get("from") || "/";
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const form = useForm<LoginFormData>({
@@ -84,7 +85,7 @@ export function LoginForm() {
             "La connexion a échoué. Veuillez réessayer.",
         });
       } else {
-        router.push("/");
+        router.push(decodeURIComponent(from));
         router.refresh();
       }
     } catch {

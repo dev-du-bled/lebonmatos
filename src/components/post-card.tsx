@@ -18,7 +18,7 @@ export default function PostCard({ id, title, price, images }: PostCardProps) {
     <Link
       key={id}
       href={`/post/${id}`}
-      className="border rounded-lg overflow-hidden group relative"
+      className="border rounded-lg overflow-hidden group relative shadow-sm"
     >
       <Image
         src={images[0]?.image || "/placeholder.jpg"}

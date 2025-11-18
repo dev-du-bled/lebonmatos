@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import PostCard from "@/components/post-card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function PostPage({
   params,
@@ -56,7 +58,19 @@ export default async function PostPage({
           </Carousel>
         </div>
         <div className="flex flex-col gap-2 flex-1">
-          <h1 className="text-3xl font-bold">{post.title}</h1>
+          <div className="flex justify-between flex-col md:flex-row">
+            <h1 className="text-3xl font-bold">{post.title}</h1>
+            {user && (
+              <div className="flex gap-2 mt-2 md:mt-0">
+                <Link href="#">
+                  <Button variant={"outline"}>Faire une offre</Button>
+                </Link>
+                <Link href="#">
+                  <Button>Acheter</Button>
+                </Link>
+              </div>
+            )}
+          </div>
           <p className="text-lg">{post.price} €</p>
           <p className="text-sm max-h-120 lg:max-h-76 pr-2 overflow-auto">
             {post.description}
@@ -67,21 +81,32 @@ export default async function PostPage({
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex flex-col gap-8 flex-1">
           <div className="flex flex-col">
-            <div className="flex items-center gap-4">
-              <Avatar className="inline-flex h-12 w-12 select-none items-center justify-center overflow-hidden rounded-full align-middle">
-                <AvatarImage src="" />
-                <AvatarFallback>{post.seller.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <p>{post.seller.name}</p>
-              {/* rating */}
-              {post.seller.rating.count > 0 && (
-                <div className="ml-auto flex items-center gap-1">
-                  <span className="text-sm font-medium">
-                    {post.seller.rating.avg.toFixed(1)} (
-                    {post.seller.rating.count})
-                  </span>
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            <div className="flex items-center">
+              <div className="flex items-center gap-4 flex-1">
+                <Avatar className="inline-flex h-12 shadow-sm  w-12 select-none items-center justify-center overflow-hidden rounded-full align-middle">
+                  <AvatarImage src="" />
+                  <AvatarFallback className="bg-card">
+                    {post.seller.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p>{post.seller.name}</p>
+                  {/* rating */}
+                  {post.seller.rating.count > 0 && (
+                    <div className="ml-auto flex items-center gap-1">
+                      <span className="text-xs font-medium">
+                        {post.seller.rating.avg.toFixed(1)} (
+                        {post.seller.rating.count})
+                      </span>
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    </div>
+                  )}
                 </div>
+              </div>
+              {user && (
+                <Link href={"#"}>
+                  <Button>Contacter</Button>
+                </Link>
               )}
             </div>
           </div>
@@ -106,12 +131,10 @@ export default async function PostPage({
             <CardHeader>
               <CardTitle>Plus comme &quot;{post.title}&quot;</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-200 overflow-auto">
-                {similarPost.map((post) => (
-                  <PostCard key={post.id} {...post} />
-                ))}
-              </div>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-200 overflow-auto">
+              {similarPost.map((post) => (
+                <PostCard key={post.id} {...post} />
+              ))}
             </CardContent>
           </Card>
         </div>
