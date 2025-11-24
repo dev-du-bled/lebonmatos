@@ -59,7 +59,10 @@ async function buildProfilePayload(userId: string) {
   });
 
   if (!user) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Utilisateur introuvable" });
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Utilisateur introuvable",
+    });
   }
 
   const aggregates = await prisma.rating.aggregate({
@@ -136,17 +139,9 @@ export const userRouter = createTRPCRouter({
             data: {
               name: profileData.name,
               username: profileData.username,
-              displayUsername: profileData.displayUsername,
-              bio: profileData.bio,
-              location: profileData.location,
-              website: profileData.website,
               phoneNumber: profileData.phoneNumber,
               profileImageId,
-              image: avatar
-                ? avatar.data
-                : removeAvatar
-                ? null
-                : undefined,
+              image: avatar ? avatar.data : removeAvatar ? null : undefined,
             },
           });
         });
