@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { getUser } from "@/app/utils/getUser";
 import {
@@ -7,6 +6,7 @@ import {
   CardDescription,
   CardTitle,
 } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
@@ -81,8 +81,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 export default async function ProfilePage() {
   const user = await getUser();
 
-  const displayName =
-    user?.displayUsername ?? user?.username ?? user?.name ?? "Mon profil";
+  const displayName = user?.username ?? user?.name ?? "Mon profil";
   const initials = displayName
     .split(/\s+/)
     .map((segment) => segment[0])
@@ -97,21 +96,18 @@ export default async function ProfilePage() {
     <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
         <div className="flex flex-col items-center gap-4 md:flex-row md:items-center">
-          <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-full border bg-secondary text-3xl font-semibold text-muted-foreground">
+          <Avatar className="size-24 border-4 border-background text-3xl font-semibold shadow-lg">
             {user?.image ? (
-              <Image
+              <AvatarImage
                 src={user.image}
                 alt={`Avatar de ${displayName}`}
-                fill
                 className="object-cover"
-                sizes="96px"
-                unoptimized
-                priority
               />
-            ) : (
-              <span>{initials}</span>
-            )}
-          </div>
+            ) : null}
+            <AvatarFallback className="bg-secondary text-muted-foreground">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold sm:text-3xl">
               {displayName}
