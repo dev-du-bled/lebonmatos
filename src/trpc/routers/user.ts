@@ -10,11 +10,9 @@ const profileSelect = {
   email: true,
   username: true,
   displayUsername: true,
-  bio: true,
-  location: true,
-  website: true,
   phoneNumber: true,
   createdAt: true,
+  image: true,
   profileImage: {
     select: {
       id: true,
@@ -36,11 +34,9 @@ function mapProfileResult(
     email: user.email,
     username: user.username,
     displayUsername: user.displayUsername,
-    bio: user.bio,
-    location: user.location,
-    website: user.website,
     phoneNumber: user.phoneNumber,
     createdAt: user.createdAt.toISOString(),
+    image: user.image,
     profileImage: user.profileImage
       ? {
           id: user.profileImage.id,
