@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,16 +20,7 @@ import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 
-const loginSchema = z.object({
-  email: z.email({
-    message: "Veuillez entrer une adresse email valide.",
-  }),
-  password: z.string().min(6, {
-    message: "Le mot de passe doit contenir au moins 6 caractères.",
-  }),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { loginSchema, type LoginFormData } from "@/lib/schema/auth";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
