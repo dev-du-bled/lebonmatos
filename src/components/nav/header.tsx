@@ -9,13 +9,23 @@ import { UserMenu } from "./user-menu";
 import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 
-export default function Header({ initialSession }: { initialSession?: unknown }) {
+interface MobileHeaderProps {
+  initialSession?: typeof authClient.$Infer.Session | null;
+}
+
+export default function Header({ initialSession }: MobileHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [modifierKey, setModifierKey] = useState<string | null>(null);
 
   useEffect(() => {
-    setModifierKey(typeof window !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) ? "⌘" : "Ctrl");
+    setModifierKey(
+      typeof window !== "undefined" &&
+        /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
+        ? "⌘"
+        : "Ctrl"
+    );
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };
@@ -32,7 +42,7 @@ export default function Header({ initialSession }: { initialSession?: unknown })
       <header
         className={cn(
           "sticky top-0 z-50 hidden w-full m-auto items-center justify-between bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 box-border p-5 md:flex",
-          isScrolled && "border-b",
+          isScrolled && "border-b"
         )}
       >
         <Link href={"/"}>

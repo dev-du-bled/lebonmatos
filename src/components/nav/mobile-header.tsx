@@ -5,17 +5,28 @@ import { cn } from "@/lib/utils";
 import { DynamicLogo } from "../dynamic-logo";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import Link from "next/link";
 import { UserMenu } from "./user-menu";
+import { authClient } from "@/lib/auth-client";
 
-export function MobileHeader({ initialSession }: { initialSession?: unknown }) {
+interface MobileHeaderProps {
+  initialSession?: typeof authClient.$Infer.Session | null;
+}
+
+export function MobileHeader({ initialSession }: MobileHeaderProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 box-border p-4 border-b md:hidden",
+        "sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 box-border p-4 border-b md:hidden"
       )}
     >
       <div className="flex items-center justify-between">

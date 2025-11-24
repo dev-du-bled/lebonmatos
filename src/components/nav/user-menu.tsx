@@ -12,24 +12,18 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
-import { auth } from "@/lib/auth";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
-export function UserMenu({ initialSession }: { initialSession?: unknown }) {
+interface UserMenuProps {
+  initialSession?: typeof authClient.$Infer.Session | null;
+}
+
+export function UserMenu({ initialSession }: UserMenuProps) {
   const { data, isPending } = authClient.useSession();
-  const router = useRouter();
   const actualPath = usePathname();
 
-  const session = (isPending ? initialSession : data) as
-    | Awaited<ReturnType<typeof auth.api.getSession>>
-    | null
-    | undefined;
-
-  const logout = async () => {
-    await authClient.signOut();
-    router.refresh();
-  };
+  const session = isPending ? initialSession : data;
 
   if (!session?.user?.name)
     return (
@@ -68,7 +62,9 @@ export function UserMenu({ initialSession }: { initialSession?: unknown }) {
             Bienvenue, <span className="font-bold">{session.user.name}</span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logout}>Se déconnecter</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => authClient.signOut()}>
+            Se déconnecter
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
