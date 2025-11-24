@@ -13,6 +13,9 @@ model User {
   email             String
   emailVerified     Boolean      @default(false)
   image             String?
+  phoneNumber       String?
+  profileImageId    String?      @unique
+  profileImage      Images?      @relation("UserProfileImage", fields: [profileImageId], references: [id], onDelete: SetNull)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @default(now()) @updatedAt
   sessions          Session[]
@@ -110,8 +113,9 @@ model Images {
   id     String  @id @default(cuid())
   image  String
   alt    String?
-  postId String
-  post   Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profileOwner User?   @relation("UserProfileImage")
 
   @@map("images")
 }
