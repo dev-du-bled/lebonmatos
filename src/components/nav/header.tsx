@@ -21,12 +21,7 @@ export default function Header({
   const [modifierKey, setModifierKey] = useState<string | null>(null);
 
   useEffect(() => {
-    setModifierKey(
-      typeof window !== "undefined" &&
-        /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
-        ? "⌘"
-        : "Ctrl"
-    );
+    setModifierKey(typeof window !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) ? "⌘" : "Ctrl");
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };

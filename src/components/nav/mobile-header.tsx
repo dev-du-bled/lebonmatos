@@ -5,13 +5,7 @@ import { cn } from "@/lib/utils";
 import { DynamicLogo } from "../dynamic-logo";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import { UserMenu } from "./user-menu";
 
