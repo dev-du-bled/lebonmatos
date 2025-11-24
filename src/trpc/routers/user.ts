@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@/lib/prisma";
-import { profileUpdateSchema } from "@/lib/validators/profile";
+import { profileUpdateSchema } from "@/lib/schema/user";
 import { createTRPCRouter, privateProcedure } from "../init";
 
 const profileSelect = {
@@ -148,7 +148,7 @@ export const userRouter = createTRPCRouter({
       } catch (error) {
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === "P2002"
+          error.code === "P2002" // Returned by Prisma when a unique constraint is violated
         ) {
           throw new TRPCError({
             code: "CONFLICT",

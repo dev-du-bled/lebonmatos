@@ -38,7 +38,7 @@ import {
   profileFormSchema,
   type ProfileFormValues,
   type ProfileUpdateInput,
-} from "@/lib/validators/profile";
+} from "@/lib/schema/user";
 import { FileToBase64 } from "@/utils/file";
 import { trpc } from "@/trpc/client";
 import type { AppRouter } from "@/trpc/routers/_app";

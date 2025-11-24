@@ -23,39 +23,11 @@ import { Components, ReturnedComponent } from "@/utils/components";
 import { trpc } from "@/trpc/client";
 import ImageUpload from "../ui/image-upload";
 import { FileToBase64 } from "@/utils/file";
+import { postFormSchema, type PostFormData } from "@/lib/schema/post";
 
 export default function CreatePostForm() {
-  const postSchema = z.object({
-    component: z.custom<Components>((value) => value !== undefined, {
-      error: "Vous devez sélectionner un composant",
-    }),
-    description: z
-      .string()
-      .min(20, {
-        error: "La description doit contenir au moins 20 cartactères",
-      })
-      .max(1500, {
-        error: "La description doit contenir au plus 1500 caractères",
-      }),
-    price: z.number().min(1, {
-      message: "Le prix doit être supérieur ou égal à 1€",
-    }),
-    images: z
-      .array(z.file())
-      .max(6)
-      .refine(
-        (files) => {
-          return files.every((file) => file.type.startsWith("image/"));
-        },
-        { error: "All files must be an image" }
-      )
-      .optional(),
-  });
-
-  type PostFormData = z.infer<typeof postSchema>;
-
   const form = useForm<PostFormData>({
-    resolver: zodResolver(postSchema),
+    resolver: zodResolver(postFormSchema),
     defaultValues: {
       component: undefined,
       description: "",

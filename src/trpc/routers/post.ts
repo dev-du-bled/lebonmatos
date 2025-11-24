@@ -1,37 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import z from "zod";
+import { postCreateSchema } from "@/lib/schema/post";
 import { createTRPCRouter, privateProcedure } from "../init";
 
 export const postRouter = createTRPCRouter({
-  createPost: privateProcedure
-    .input(
-      z.object({
-        componentId: z.string(),
-        title: z.string().min(3).max(100),
-        description: z.string().min(20).max(1500),
-        price: z.number().min(0),
-        images: z
-          .array(
-            z.object({
-              data: z.string().refine(
-                (val) => {
-                  const base64 = val.split(",")[1];
-                  return (
-                    val.startsWith("data:image/") &&
-                    z.base64().safeParse(base64).success
-                  );
-                },
-                {
-                  message: "Invalid image base64 encoding",
-                }
-              ),
-              alt: z.string({ error: "Image alt must be a string" }),
-            })
-          )
-          .max(6, { message: "You can upload up to 6 images" })
-          .optional(),
-      })
-    )
+  createPost: privateProcedure.input(postCreateSchema)
     .mutation(async ({ ctx, input }) => {
       try {
         const post = await prisma.post.create({

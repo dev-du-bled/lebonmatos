@@ -1,8 +1,36 @@
 import { z } from "zod";
+import { USERNAME_REGEX, PHONE_REGEX, nullableString, base64ImageSchema } from "./shared";
+import { profileImageSchema } from "./images";
 
-const usernameRegex = /^[a-zA-Z0-9_.]+$/;
-const phoneRegex = /^\+?[0-9\s().-]{7,20}$/;
+/**
+ * Schémas Zod pour le modèle User et les formulaires de profil
+ */
 
+/**
+ * Schéma de base pour le modèle User (correspondant à Prisma)
+ */
+export const userBaseSchema = z.object({
+  id: z.string(),
+  name: z.string().min(2).max(80),
+  email: z.string().email(),
+  emailVerified: z.boolean().default(false),
+  image: z.string().nullable().optional(),
+  phoneNumber: z.string().nullable().optional(),
+  username: z
+    .string()
+    .min(5)
+    .max(32)
+    .regex(USERNAME_REGEX)
+    .nullable()
+    .optional(),
+  displayUsername: z.string().max(50).nullable().optional(),
+  createdAt: z.date().or(z.string()),
+  updatedAt: z.date().or(z.string()),
+});
+
+/**
+ * Schéma pour le formulaire de profil (formulaire d'édition)
+ */
 export const profileFormSchema = z.object({
   name: z
     .string()
@@ -18,7 +46,7 @@ export const profileFormSchema = z.object({
     .max(32, {
       message: "Le nom d'utilisateur ne doit pas dépasser 32 caractères",
     })
-    .regex(usernameRegex, {
+    .regex(USERNAME_REGEX, {
       message:
         "Le nom d'utilisateur ne peut contenir que des lettres, chiffres, underscores ou points",
     }),
@@ -32,31 +60,13 @@ export const profileFormSchema = z.object({
     .or(z.literal(""))
     .refine((value) => {
       if (!value) return true;
-      return phoneRegex.test(value);
+      return PHONE_REGEX.test(value);
     }, "Numéro de téléphone invalide"),
 });
 
-const base64ImageSchema = z.string().refine(
-  (val) => {
-    if (!val.startsWith("data:image/")) return false;
-    const base64 = val.split(",")[1];
-    return !!base64 && z.base64().safeParse(base64).success;
-  },
-  { message: "Image invalide" }
-);
-
-const nullableString = (max: number, message: string) =>
-  z.preprocess((value) => {
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-      return trimmed.length === 0 ? null : trimmed;
-    }
-    if (value === undefined || value === null) {
-      return null;
-    }
-    return value;
-  }, z.string().max(max, { message }).nullable());
-
+/**
+ * Schéma pour la mise à jour du profil (avec avatar)
+ */
 export const profileUpdateSchema = z
   .object({
     name: z
@@ -73,7 +83,7 @@ export const profileUpdateSchema = z
       .max(32, {
         message: "Le nom d'utilisateur ne doit pas dépasser 32 caractères",
       })
-      .regex(usernameRegex, {
+      .regex(USERNAME_REGEX, {
         message:
           "Le nom d'utilisateur ne peut contenir que des lettres, chiffres, underscores ou points",
       }),
@@ -82,7 +92,7 @@ export const profileUpdateSchema = z
       "Le numéro de téléphone ne doit pas dépasser 30 caractères"
     ).refine((value) => {
       if (!value) return true;
-      return phoneRegex.test(value);
+      return PHONE_REGEX.test(value);
     }, "Numéro de téléphone invalide"),
     avatar: z
       .object({
@@ -105,9 +115,26 @@ export const profileUpdateSchema = z
     }
   });
 
+/**
+ * Schéma pour le profil utilisateur complet (avec relations)
+ */
+export const userProfileSchema = userBaseSchema.extend({
+  profileImage: profileImageSchema.nullable().optional(),
+  rating: z.object({
+    average: z.number().nullable(),
+    count: z.number(),
+  }),
+});
+
+// Types
+export type User = z.infer<typeof userBaseSchema>;
+export type UserProfile = z.infer<typeof userProfileSchema>;
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
 
+/**
+ * Normalise les valeurs du formulaire de profil pour la mise à jour
+ */
 export function normalizeProfileInput(
   values: ProfileFormValues,
   options?: {
@@ -125,3 +152,4 @@ export function normalizeProfileInput(
     removeAvatar: options?.removeAvatar ?? false,
   });
 }
+
