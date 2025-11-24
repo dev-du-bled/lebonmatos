@@ -13,8 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import PostCard from "@/components/post-card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { BuyButtons, ContactButton } from "@/components/post-buttons";
 
 export default async function PostPage({
   params,
@@ -60,16 +59,7 @@ export default async function PostPage({
         <div className="flex flex-col gap-2 flex-1">
           <div className="flex justify-between flex-col md:flex-row">
             <h1 className="text-3xl font-bold">{post.title}</h1>
-            {user && (
-              <div className="flex gap-2 mt-2 md:mt-0">
-                <Link href="#">
-                  <Button variant={"outline"}>Faire une offre</Button>
-                </Link>
-                <Link href="#">
-                  <Button>Acheter</Button>
-                </Link>
-              </div>
-            )}
+            <BuyButtons initialUser={user} />
           </div>
           <p className="text-lg">{post.price} €</p>
           <p className="text-sm max-h-120 lg:max-h-76 pr-2 overflow-auto">
@@ -103,11 +93,7 @@ export default async function PostPage({
                   )}
                 </div>
               </div>
-              {user && (
-                <Link href={"#"}>
-                  <Button>Contacter</Button>
-                </Link>
-              )}
+              <ContactButton initialUser={user} />
             </div>
           </div>
           <Card className="gap-0">
