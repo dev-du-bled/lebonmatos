@@ -1,13 +1,10 @@
 import Header from "@/components/nav/header";
+import Footer from "@/components/nav/footer";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import "../globals.css";
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -16,6 +13,7 @@ export default async function AppLayout({
     <main className="min-h-svh">
       <Header className={"wide-lock"} initialSession={session} />
       {children}
+      <Footer className={"wide-lock"} />
     </main>
   );
 }
