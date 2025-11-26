@@ -1,12 +1,12 @@
 {
-    "workbench.editor.customLabels.patterns": {
-        "**/page.tsx": "${dirname}/"
-    },
-    "files.exclude": {
-        "**/.git": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true,
-        ".next": true
-    },
-    "prisma.pinToPrisma6": true
+  "workbench.editor.customLabels.patterns": {
+    "**/page.tsx": "${dirname}/"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    ".next": true
+  },
+  "prisma.pinToPrisma6": true
 }
