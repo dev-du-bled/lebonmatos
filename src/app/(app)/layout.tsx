@@ -1,4 +1,5 @@
 import Header from "@/components/nav/header";
+import Footer from "@/components/nav/footer";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import "../globals.css";
