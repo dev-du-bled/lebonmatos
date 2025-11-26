@@ -17,7 +17,7 @@ export async function GET(
     return NextResponse.redirect(new URL("/placeholder.webp", req.url));
   }
 
-  const buffer = Buffer.from(image.image.split(",")[1], "base64");
+  const buffer = Buffer.from(image.data.split(",")[1], "base64");
 
   return new Response(buffer, {
     headers: {

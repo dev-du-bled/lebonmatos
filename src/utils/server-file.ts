@@ -3,7 +3,7 @@
 import sharp from "sharp";
 
 /**
- *  convert a base64 image to webp and return the base64 string
+ * convert a base64 image to webp and return the base64 string
  * @param base64 string to convert
  * @returns the converted base64 string in webp
  */

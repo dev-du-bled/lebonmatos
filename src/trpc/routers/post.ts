@@ -28,7 +28,7 @@ export const postRouter = createTRPCRouter({
             images: {
               create: input.images?.map((img) => ({
                 ownerId: ctx.session.user.id,
-                image: img.data,
+                data: img.data,
                 alt: img.alt,
               })),
             },
@@ -58,7 +58,12 @@ export const postRouter = createTRPCRouter({
         include: {
           user: true,
           component: true,
-          images: true,
+          images: {
+            select: {
+              id: true,
+              alt: true,
+            },
+          },
         },
       });
 

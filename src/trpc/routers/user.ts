@@ -16,7 +16,7 @@ const profileSelect = {
   profileImage: {
     select: {
       id: true,
-      image: true,
+      data: true,
       alt: true,
     },
   },
@@ -40,7 +40,7 @@ function mapProfileResult(
     profileImage: user.profileImage
       ? {
           id: user.profileImage.id,
-          image: user.profileImage.image,
+          data: user.profileImage.data,
           alt: user.profileImage.alt ?? null,
         }
       : null,
@@ -117,7 +117,7 @@ export const userRouter = createTRPCRouter({
               await tx.images.update({
                 where: { id: profileImageId },
                 data: {
-                  image: avatar.data,
+                  data: avatar.data,
                   alt: avatar.alt,
                 },
               });
@@ -125,7 +125,7 @@ export const userRouter = createTRPCRouter({
               const created = await tx.images.create({
                 data: {
                   ownerId: userId,
-                  image: avatar.data,
+                  data: avatar.data,
                   alt: avatar.alt,
                 },
               });

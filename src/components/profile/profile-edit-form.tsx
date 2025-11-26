@@ -79,10 +79,10 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
   const [avatarCleared, setAvatarCleared] = useState(false);
   const [isAvatarDragActive, setIsAvatarDragActive] = useState(false);
   const previewUrlRef = useRef<string | null>(
-    initialData.profileImage?.image ?? null
+    initialData.profileImage?.data ?? null
   );
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    initialData.profileImage?.image ?? null
+    initialData.profileImage?.data ?? null
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -200,7 +200,7 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    updatePreview(profile.profileImage?.image ?? null);
+    updatePreview(profile.profileImage?.data ?? null);
     form.reset({
       name: profile.name,
       username: profile.username ?? "",

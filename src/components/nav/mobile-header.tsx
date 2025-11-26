@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { DynamicLogo } from "../dynamic-logo";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
