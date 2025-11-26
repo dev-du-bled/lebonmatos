@@ -14,21 +14,21 @@ import { redirect } from "next/navigation";
 export async function getUser(): Promise<typeof auth.$Infer.Session.user>;
 
 export async function getUser(
-  redirectToLogin: true
+    redirectToLogin: true
 ): Promise<typeof auth.$Infer.Session.user>;
 
 export async function getUser(
-  redirectToLogin: false
+    redirectToLogin: false
 ): Promise<typeof auth.$Infer.Session.user | null>;
 
 export async function getUser(redirectToLogin: boolean = true) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
 
-  if (!session?.user && redirectToLogin) {
-    return redirect("/login");
-  }
+    if (!session?.user && redirectToLogin) {
+        return redirect("/login");
+    }
 
-  return session?.user || null;
+    return session?.user || null;
 }

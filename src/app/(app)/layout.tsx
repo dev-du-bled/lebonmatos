@@ -4,18 +4,18 @@ import { headers } from "next/headers";
 import "../globals.css";
 
 export default async function AppLayout({
-  children,
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
 
-  return (
-    <main className="min-h-svh">
-      <Header className={"wide-lock"} initialSession={session} />
-      {children}
-    </main>
-  );
+    return (
+        <main className="min-h-svh">
+            <Header className={"wide-lock"} initialSession={session} />
+            {children}
+        </main>
+    );
 }
