@@ -13,13 +13,17 @@ export async function GET(
     where: { id },
   });
 
-  if (!image || (image.isPrivate && user && image.ownerId !== user.id)) {
-    return NextResponse.redirect(new URL("/placeholder.webp", req.url));
+  if (!image) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
+
+  if (image.isPrivate && user && image.ownerId !== user.id) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const buffer = Buffer.from(image.data.split(",")[1], "base64");
 
-  return new Response(buffer, {
+  return new NextResponse(buffer, {
     headers: {
       "Content-Type": "image/webp",
     },

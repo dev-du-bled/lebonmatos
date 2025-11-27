@@ -119,7 +119,7 @@ model Images {
   owner        User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   isPrivate    Boolean @default(false)
   post         Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
-  profileOwner User?   @relation("UserProfileImage")
+  profileImage User?   @relation("UserProfileImage")
 
   @@map("images")
 }

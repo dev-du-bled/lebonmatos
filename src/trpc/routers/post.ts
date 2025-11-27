@@ -113,27 +113,26 @@ export const postRouter = createTRPCRouter({
             post.component.type === ComponentType.CPU
               ? component?.Cpu
               : post.component.type === ComponentType.GPU
-                ? component?.Gpu
-                : post.component.type === ComponentType.RAM
-                  ? component?.Ram
-                  : post.component.type === ComponentType.MOTHERBOARD
-                    ? component?.Motherboard
-                    : post.component.type === ComponentType.HDD
-                      ? component?.Hdd
-                      : post.component.type === ComponentType.SSD
-                        ? component?.Ssd
-                        : post.component.type === ComponentType.POWER_SUPPLY
-                          ? component?.Psu
-                          : post.component.type === ComponentType.CASE
-                            ? component?.Case
-                            : post.component.type === ComponentType.CASE_FAN
-                              ? component?.CaseFan
-                              : post.component.type === ComponentType.CPU_COOLER
-                                ? component?.CpuCooler
-                                : post.component.type ===
-                                    ComponentType.WIRELESS_NETWORK_CARD
-                                  ? component?.WirelessNetworkCard
-                                  : undefined,
+              ? component?.Gpu
+              : post.component.type === ComponentType.RAM
+              ? component?.Ram
+              : post.component.type === ComponentType.MOTHERBOARD
+              ? component?.Motherboard
+              : post.component.type === ComponentType.HDD
+              ? component?.Hdd
+              : post.component.type === ComponentType.SSD
+              ? component?.Ssd
+              : post.component.type === ComponentType.POWER_SUPPLY
+              ? component?.Psu
+              : post.component.type === ComponentType.CASE
+              ? component?.Case
+              : post.component.type === ComponentType.CASE_FAN
+              ? component?.CaseFan
+              : post.component.type === ComponentType.CPU_COOLER
+              ? component?.CpuCooler
+              : post.component.type === ComponentType.WIRELESS_NETWORK_CARD
+              ? component?.WirelessNetworkCard
+              : undefined,
         },
         seller: {
           id: post.user.id,
