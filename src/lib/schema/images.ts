@@ -11,6 +11,7 @@ export const imagesSchema = z.object({
     id: z.string(),
     image: z.string(),
     alt: z.string().nullable().optional(),
+    ownerId: z.string(),
     postId: z.string().nullable().optional(),
 });
 

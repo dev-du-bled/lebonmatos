@@ -39,10 +39,10 @@ function mapProfileResult(
         image: user.image,
         profileImage: user.profileImage
             ? {
-                  id: user.profileImage.id,
-                  image: user.profileImage.image,
-                  alt: user.profileImage.alt ?? null,
-              }
+                id: user.profileImage.id,
+                image: user.profileImage.image,
+                alt: user.profileImage.alt ?? null,
+            }
             : null,
         rating,
     };
@@ -106,7 +106,7 @@ export const userRouter = createTRPCRouter({
                     let profileImageId = existing.profileImageId;
 
                     if (removeAvatar && profileImageId) {
-                        await tx.images.delete({
+                        await tx.image.delete({
                             where: { id: profileImageId },
                         });
                         profileImageId = null;
@@ -114,7 +114,7 @@ export const userRouter = createTRPCRouter({
 
                     if (avatar) {
                         if (profileImageId) {
-                            await tx.images.update({
+                            await tx.image.update({
                                 where: { id: profileImageId },
                                 data: {
                                     image: avatar.data,
@@ -122,10 +122,11 @@ export const userRouter = createTRPCRouter({
                                 },
                             });
                         } else {
-                            const created = await tx.images.create({
+                            const created = await tx.image.create({
                                 data: {
                                     image: avatar.data,
                                     alt: avatar.alt,
+                                    ownerId: userId,
                                 },
                             });
                             profileImageId = created.id;
@@ -142,8 +143,8 @@ export const userRouter = createTRPCRouter({
                             image: avatar
                                 ? avatar.data
                                 : removeAvatar
-                                  ? null
-                                  : undefined,
+                                    ? null
+                                    : undefined,
                         },
                     });
                 });

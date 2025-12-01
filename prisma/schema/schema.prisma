@@ -12,10 +12,9 @@ model User {
   name              String
   email             String
   emailVerified     Boolean      @default(false)
-  image             String?
   phoneNumber       String?
   profileImageId    String?      @unique
-  profileImage      Images?      @relation("UserProfileImage", fields: [profileImageId], references: [id], onDelete: SetNull)
+  profileImage      Image?      @relation("UserProfileImage", fields: [profileImageId], references: [id], onDelete: SetNull)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @default(now()) @updatedAt
   sessions          Session[]
@@ -31,6 +30,7 @@ model User {
   displayUsername String?
   ratingsReceived Rating[] @relation("ratee")
   ratingsGiven    Rating[] @relation("rater")
+  uploadedImage  Image[] @relation("UserImage")
 
   @@unique([email])
   @@unique([username])
@@ -94,7 +94,7 @@ model Post {
   Report      Report[]
   Discussion  Discussion[]
   user        User         @relation(fields: [userId], references: [id])
-  images      Images[]
+  images      Image[]
 
   @@map("post")
 }
@@ -109,12 +109,17 @@ model Favorite {
   @@map("favorite")
 }
 
-model Images {
-  id     String  @id @default(cuid())
-  image  String
-  alt    String?
-  postId String?
-  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+model Image {
+  id      String  @id @default(cuid())
+  image   String
+  alt     String?
+  
+  ownerId String
+  owner   User    @relation("UserImage", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  postId  String?
+  post    Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
   profileOwner User?   @relation("UserProfileImage")
 
   @@map("images")
