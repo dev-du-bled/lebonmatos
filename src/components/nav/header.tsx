@@ -47,7 +47,7 @@ export default function Header({
                     className
                 )}
             >
-                <div className="w-full m-auto items-center justify-between md:flex wide-lock">
+                <div className="w-full items-center justify-between md:flex wide-lock">
                     <Link href={"/"}>
                         <DynamicLogo width={175} className="shrink-0" />
                     </Link>
