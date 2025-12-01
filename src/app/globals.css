@@ -228,6 +228,7 @@
     }
 }
 
+/* Classe utilisée pour centrer et limiter la largeur du contenu. Permet d'avoir une largeur maximale harmonisée à travers l'application. */
 .wide-lock {
     max-width: 1450px;
     margin: 0 auto;
