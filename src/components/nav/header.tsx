@@ -47,25 +47,27 @@ export default function Header({
                     className
                 )}
             >
-                <Link href={"/"}>
-                    <DynamicLogo width={175} className="shrink-0" />
-                </Link>
-                <div className="flex items-center gap-2 w-full justify-end">
-                    <Link href="/create-post">
-                        <Button className="hover:cursor-pointer">
-                            Publier
-                        </Button>
+                <div className="w-full m-auto items-center justify-between md:flex wide-lock">
+                    <Link href={"/"}>
+                        <DynamicLogo width={175} className="shrink-0" />
                     </Link>
-                    <button className="flex h-8 w-full max-w-[200px] items-center justify-between rounded-sm bg-secondary px-2 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                            <SearchIcon className="size-4 shrink-0 opacity-50" />
-                            <span>Rechercher</span>
-                        </div>
-                        {modifierKey && (
-                            <Kbd className="border">{modifierKey}+K</Kbd>
-                        )}
-                    </button>
-                    <UserMenu initialSession={initialSession} />
+                    <div className="flex items-center gap-2 w-full justify-end">
+                        <Link href="/create-post">
+                            <Button className="hover:cursor-pointer">
+                                Publier
+                            </Button>
+                        </Link>
+                        <button className="flex h-8 w-full max-w-[200px] items-center justify-between rounded-sm bg-secondary px-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                                <SearchIcon className="size-4 shrink-0 opacity-50" />
+                                <span>Rechercher</span>
+                            </div>
+                            {modifierKey && (
+                                <Kbd className="border">{modifierKey}+K</Kbd>
+                            )}
+                        </button>
+                        <UserMenu initialSession={initialSession} />
+                    </div>
                 </div>
             </header>
         </>

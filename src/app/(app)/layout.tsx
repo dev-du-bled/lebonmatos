@@ -11,9 +11,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
     return (
         <main className="min-h-svh">
-            <Header className={"wide-lock"} initialSession={session} />
+            <Header initialSession={session} />
             {children}
-            <Footer className={"wide-lock"} />
+            <Footer />
         </main>
     );
 }
