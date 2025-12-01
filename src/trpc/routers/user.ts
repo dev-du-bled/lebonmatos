@@ -88,7 +88,7 @@ export const userRouter = createTRPCRouter({
             const existing = await prisma.user.findUnique({
                 where: { id: userId },
                 select: {
-                    profileImageId: true,
+                    image: true,
                 },
             });
 
@@ -103,19 +103,19 @@ export const userRouter = createTRPCRouter({
 
             try {
                 await prisma.$transaction(async (tx) => {
-                    let profileImageId = existing.profileImageId;
+                    let image = existing.image;
 
-                    if (removeAvatar && profileImageId) {
+                    if (removeAvatar && image) {
                         await tx.image.delete({
-                            where: { id: profileImageId },
+                            where: { id: image },
                         });
-                        profileImageId = null;
+                        image = null;
                     }
 
                     if (avatar) {
-                        if (profileImageId) {
+                        if (image) {
                             await tx.image.update({
-                                where: { id: profileImageId },
+                                where: { id: image },
                                 data: {
                                     image: avatar.data,
                                     alt: avatar.alt,
@@ -129,7 +129,7 @@ export const userRouter = createTRPCRouter({
                                     ownerId: userId,
                                 },
                             });
-                            profileImageId = created.id;
+                            image = created.id;
                         }
                     }
 
@@ -139,7 +139,6 @@ export const userRouter = createTRPCRouter({
                             name: profileData.name,
                             username: profileData.username,
                             phoneNumber: profileData.phoneNumber,
-                            profileImageId,
                             image: avatar
                                 ? avatar.data
                                 : removeAvatar
