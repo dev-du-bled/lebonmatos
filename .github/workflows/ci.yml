@@ -25,4 +25,5 @@ jobs:
               run: bun lint
 
             - name: Format code
-              run: bunx prettier --write .
+              run: bunx prettier --check .
+              continue-on-error: false
