@@ -12,6 +12,7 @@ model User {
   name              String
   email             String
   emailVerified     Boolean      @default(false)
+  image             String?
   phoneNumber       String?
   profileImageId    String?      @unique
   profileImage      Image?      @relation("UserProfileImage", fields: [profileImageId], references: [id], onDelete: SetNull)
