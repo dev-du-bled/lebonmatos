@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <main className="min-h-svh">
             <Header className={"wide-lock"} initialSession={session} />
             {children}
-            <Footer className={"wide-lock"} />
+            <Footer/>
         </main>
     );
 }
