@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { getUser } from "@/app/utils/getUser";
 import {
     Card,
     CardContent,
@@ -20,7 +19,7 @@ import {
     User,
 } from "lucide-react";
 import { PublicProfileDialog } from "@/components/profile/public-profile-dialog";
-import { prisma } from "@/lib/prisma";
+import { trpc } from "@/trpc/server";
 
 type QuickAction = {
     title: string;
@@ -81,56 +80,19 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export default async function ProfilePage() {
-    const sessionUser = await getUser(true);
-
-    const user = await prisma.user.findUnique({
-        where: { id: sessionUser.id },
-        include: {
-            profileImage: true,
-            ratingsReceived: true,
-        },
-    });
-
-    if (!user) return null;
-
-    const ratings = user.ratingsReceived;
-    const ratingCount = ratings.length;
-    const ratingValue =
-        ratingCount > 0
-            ? ratings.reduce((acc, r) => acc + r.rating, 0) / ratingCount
-            : 0;
-
-    const userProfile = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        username: user.username,
-        displayUsername: user.displayUsername,
-        phoneNumber: user.phoneNumber,
-        createdAt: user.createdAt.toISOString(),
-        bio: user.bio,
-        image: user.image,
-        profileImage: user.profileImage
-            ? {
-                  id: user.profileImage.id,
-                  image: user.profileImage.image,
-                  alt: user.profileImage.alt ?? null,
-              }
-            : null,
-        rating: {
-            average: ratingValue,
-            count: ratingCount,
-        },
-    };
+    const user = await trpc.user.getProfile();
 
     const displayName = user.username ?? user.name ?? "Mon profil";
     const initials = displayName
         .split(/\s+/)
-        .map((segment) => segment[0])
+        .map((segment: string) => segment[0])
         .filter(Boolean)
         .slice(0, 2)
         .join("")
         .toUpperCase();
+
+    const ratingValue = user.rating.average ?? 0;
+    const ratingCount = user.rating.count;
 
     return (
         <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
@@ -183,7 +145,7 @@ export default async function ProfilePage() {
                     </div>
                 </div>
 
-                <PublicProfileDialog user={userProfile} />
+                <PublicProfileDialog user={user} />
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

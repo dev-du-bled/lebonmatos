@@ -37,13 +37,17 @@ const buttonVariants = cva(
     }
 );
 
+/**
+ * @note When using `asChild` with `loading`, the loading state may not work
+ * correctly as the Slot component wraps children in additional spans.
+ */
 const Button = React.forwardRef<
     HTMLButtonElement,
     React.ComponentProps<"button"> &
-        VariantProps<typeof buttonVariants> & {
-            asChild?: boolean;
-            loading?: boolean;
-        }
+    VariantProps<typeof buttonVariants> & {
+        asChild?: boolean;
+        loading?: boolean;
+    }
 >(
     (
         {

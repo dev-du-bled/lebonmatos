@@ -52,7 +52,9 @@ const usernameField = z
 const bioFormField = z
     .string()
     .trim()
-    .max(500, { message: "La bio ne doit pas dépasser 500 caractères" });
+    .max(500, { message: "La bio ne doit pas dépasser 500 caractères" })
+    .optional()
+    .or(z.literal(""));
 
 const phoneNumberFormField = z
     .string()
@@ -60,6 +62,8 @@ const phoneNumberFormField = z
     .max(30, {
         message: "Le numéro de téléphone ne doit pas dépasser 30 caractères",
     })
+    .optional()
+    .or(z.literal(""))
     .refine((value) => {
         if (!value) return true;
         return PHONE_REGEX.test(value);
@@ -84,7 +88,8 @@ export const profileFormSchema = z.object({
 });
 
 // Mise à jour (Serveur) - transforme "" en null
-const emptyToNull = (val: string) => (val.trim() === "" ? null : val.trim());
+const emptyToNull = (val: string | undefined) =>
+    !val || val.trim() === "" ? null : val.trim();
 
 export const publicProfileUpdateSchema = z
     .object({
@@ -186,18 +191,12 @@ export function normalizePublicProfileInput(
         ...values,
         avatar: options?.avatar
             ? {
-                  data: options.avatar.data,
-                  alt: options.avatar.alt || undefined,
-              }
+                data: options.avatar.data,
+                alt: options.avatar.alt || undefined,
+            }
             : undefined,
         removeAvatar: options?.removeAvatar ?? false,
     };
-}
-
-export function normalizePersonalInfoInput(
-    values: PersonalInfoFormValues
-): PersonalInfoUpdateInput {
-    return values;
 }
 
 export function normalizeProfileInput(
@@ -211,9 +210,9 @@ export function normalizeProfileInput(
         ...values,
         avatar: options?.avatar
             ? {
-                  data: options.avatar.data,
-                  alt: options.avatar.alt || undefined,
-              }
+                data: options.avatar.data,
+                alt: options.avatar.alt || undefined,
+            }
             : undefined,
         removeAvatar: options?.removeAvatar ?? false,
     };

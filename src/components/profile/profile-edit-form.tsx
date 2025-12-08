@@ -1,6 +1,6 @@
 "use client";
 
-import { xzuseState } from "react";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TRPCClientError } from "@trpc/client";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    normalizePersonalInfoInput,
     personalInfoFormSchema,
     type PersonalInfoFormValues,
 } from "@/lib/schema/user";
@@ -72,9 +71,7 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
         setSubmitSuccess(false);
 
         try {
-            const payload = normalizePersonalInfoInput(values);
-
-            const updated = await mutation.mutateAsync(payload);
+            const updated = await mutation.mutateAsync(values);
 
             setSnapshot(updated);
             utils.user.getProfile.setData(undefined, updated);

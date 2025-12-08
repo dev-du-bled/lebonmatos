@@ -45,10 +45,10 @@ function mapProfileResult(
         image: user.image,
         profileImage: user.profileImage
             ? {
-                  id: user.profileImage.id,
-                  image: user.profileImage.image,
-                  alt: user.profileImage.alt ?? null,
-              }
+                id: user.profileImage.id,
+                image: user.profileImage.image,
+                alt: user.profileImage.alt ?? null,
+            }
             : null,
         rating,
     };
@@ -89,11 +89,10 @@ export const userRouter = createTRPCRouter({
     updateProfile: privateProcedure
         .input(profileUpdateSchema)
         .mutation(async ({ ctx, input }) => {
-            // ... (Legacy logic retained for safety, or we could deprecate)
             const userId = ctx.session!.user.id;
             const existing = await prisma.user.findUnique({
                 where: { id: userId },
-                select: { image: true },
+                select: { profileImageId: true },
             });
             if (!existing) {
                 throw new TRPCError({
@@ -104,7 +103,7 @@ export const userRouter = createTRPCRouter({
             const { avatar, removeAvatar, ...profileData } = input;
             try {
                 await prisma.$transaction(async (tx) => {
-                    let image = existing.image;
+                    let image = existing.profileImageId;
                     if (removeAvatar && image) {
                         await tx.image.delete({ where: { id: image } });
                         image = null;
@@ -133,11 +132,7 @@ export const userRouter = createTRPCRouter({
                             username: profileData.username,
                             bio: profileData.bio,
                             phoneNumber: profileData.phoneNumber,
-                            image: avatar
-                                ? avatar.data
-                                : removeAvatar
-                                  ? null
-                                  : undefined,
+                            profileImageId: image,
                         },
                     });
                 });
@@ -161,7 +156,7 @@ export const userRouter = createTRPCRouter({
             const userId = ctx.session!.user.id;
             const existing = await prisma.user.findUnique({
                 where: { id: userId },
-                select: { image: true },
+                select: { profileImageId: true },
             });
             if (!existing) {
                 throw new TRPCError({
@@ -174,8 +169,7 @@ export const userRouter = createTRPCRouter({
 
             try {
                 await prisma.$transaction(async (tx) => {
-                    // Avatar handling
-                    let image = existing.image;
+                    let image = existing.profileImageId;
                     if (removeAvatar && image) {
                         await tx.image.delete({ where: { id: image } });
                         image = null;
@@ -198,17 +192,12 @@ export const userRouter = createTRPCRouter({
                         }
                     }
 
-                    // Update User
                     await tx.user.update({
                         where: { id: userId },
                         data: {
                             username,
                             bio,
-                            image: avatar
-                                ? avatar.data
-                                : removeAvatar
-                                  ? null
-                                  : undefined,
+                            profileImageId: image,
                         },
                     });
                 });
