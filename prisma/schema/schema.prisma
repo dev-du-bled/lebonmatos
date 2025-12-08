@@ -29,6 +29,7 @@ model User {
 
   username        String?
   displayUsername String?
+  bio             String?
   ratingsReceived Rating[] @relation("ratee")
   ratingsGiven    Rating[] @relation("rater")
   uploadedImage  Image[] @relation("UserImage")
