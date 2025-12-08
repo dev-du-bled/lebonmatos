@@ -40,32 +40,51 @@ const buttonVariants = cva(
 const Button = React.forwardRef<
     HTMLButtonElement,
     React.ComponentProps<"button"> &
-    VariantProps<typeof buttonVariants> & {
-        asChild?: boolean;
-        loading?: boolean;
-    }
->(({ className, variant, size, asChild = false, loading = false, children, disabled, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
+        VariantProps<typeof buttonVariants> & {
+            asChild?: boolean;
+            loading?: boolean;
+        }
+>(
+    (
+        {
+            className,
+            variant,
+            size,
+            asChild = false,
+            loading = false,
+            children,
+            disabled,
+            ...props
+        },
+        ref
+    ) => {
+        const Comp = asChild ? Slot : "button";
 
-    return (
-        <Comp
-            data-slot="button"
-            className={cn(buttonVariants({ variant, size, className }))}
-            ref={ref}
-            disabled={disabled || loading}
-            {...props}
-        >
-            <span className={cn("inline-flex items-center gap-2", loading && "opacity-0")}>
-                {children}
-            </span>
-            {loading && (
-                <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <Loader2 className="size-4 animate-spin" />
+        return (
+            <Comp
+                data-slot="button"
+                className={cn(buttonVariants({ variant, size, className }))}
+                ref={ref}
+                disabled={disabled || loading}
+                {...props}
+            >
+                <span
+                    className={cn(
+                        "inline-flex items-center gap-2",
+                        loading && "opacity-0"
+                    )}
+                >
+                    {children}
                 </span>
-            )}
-        </Comp>
-    );
-});
+                {loading && (
+                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <Loader2 className="size-4 animate-spin" />
+                    </span>
+                )}
+            </Comp>
+        );
+    }
+);
 Button.displayName = "Button";
 
 export { Button, buttonVariants };

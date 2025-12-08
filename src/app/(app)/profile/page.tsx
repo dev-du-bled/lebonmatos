@@ -81,7 +81,6 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export default async function ProfilePage() {
-
     const sessionUser = await getUser(true);
 
     const user = await prisma.user.findUnique({
@@ -113,10 +112,10 @@ export default async function ProfilePage() {
         image: user.image,
         profileImage: user.profileImage
             ? {
-                id: user.profileImage.id,
-                image: user.profileImage.image,
-                alt: user.profileImage.alt ?? null,
-            }
+                  id: user.profileImage.id,
+                  image: user.profileImage.image,
+                  alt: user.profileImage.alt ?? null,
+              }
             : null,
         rating: {
             average: ratingValue,
@@ -140,7 +139,11 @@ export default async function ProfilePage() {
                     <Avatar className="size-24 border-4 border-background text-3xl font-semibold shadow-lg">
                         {user.profileImage?.image || user.image ? (
                             <AvatarImage
-                                src={user.profileImage?.image ?? user.image ?? undefined}
+                                src={
+                                    user.profileImage?.image ??
+                                    user.image ??
+                                    undefined
+                                }
                                 alt={`Avatar de ${displayName}`}
                                 className="object-cover"
                             />

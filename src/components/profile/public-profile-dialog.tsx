@@ -72,7 +72,10 @@ function getInitials(source?: string | null) {
     );
 }
 
-export function PublicProfileDialog({ user, trigger }: PublicProfileDialogProps) {
+export function PublicProfileDialog({
+    user,
+    trigger,
+}: PublicProfileDialogProps) {
     const [open, setOpen] = useState(false);
     const utils = trpc.useUtils();
     const mutation = trpc.user.updatePublicProfile.useMutation();
@@ -82,7 +85,9 @@ export function PublicProfileDialog({ user, trigger }: PublicProfileDialogProps)
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarCleared, setAvatarCleared] = useState(false);
     const [isAvatarDragActive, setIsAvatarDragActive] = useState(false);
-    const previewUrlRef = useRef<string | null>(user.profileImage?.image ?? user.image ?? null);
+    const previewUrlRef = useRef<string | null>(
+        user.profileImage?.image ?? user.image ?? null
+    );
     const [avatarPreview, setAvatarPreview] = useState<string | null>(
         user.profileImage?.image ?? user.image ?? null
     );
@@ -111,7 +116,8 @@ export function PublicProfileDialog({ user, trigger }: PublicProfileDialogProps)
             setAvatarError(null);
             setSubmitError(null);
             setAvatarPreview(user.profileImage?.image ?? user.image ?? null);
-            previewUrlRef.current = user.profileImage?.image ?? user.image ?? null;
+            previewUrlRef.current =
+                user.profileImage?.image ?? user.image ?? null;
         }
     }, [open, user, form]);
 
@@ -284,19 +290,24 @@ export function PublicProfileDialog({ user, trigger }: PublicProfileDialogProps)
                 <DialogHeader>
                     <DialogTitle>Modifier le profil public</DialogTitle>
                     <DialogDescription>
-                        Ces informations seront visibles par tous les utilisateurs de la plateforme.
+                        Ces informations seront visibles par tous les
+                        utilisateurs de la plateforme.
                     </DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 pt-4">
+                    <form
+                        onSubmit={form.handleSubmit(handleSubmit)}
+                        className="space-y-6 pt-4"
+                    >
                         <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
                             {/* Avatar Section */}
                             <div className="flex flex-col items-center gap-4">
                                 <div
                                     className={cn(
                                         "group relative flex size-32 cursor-pointer items-center justify-center rounded-full border-4 border-background shadow-xl ring-1 ring-border transition-all hover:scale-105",
-                                        isAvatarDragActive && "ring-primary ring-2"
+                                        isAvatarDragActive &&
+                                            "ring-primary ring-2"
                                     )}
                                     onClick={handleAvatarClick}
                                     onDragEnter={handleAvatarDragOver}
@@ -308,7 +319,9 @@ export function PublicProfileDialog({ user, trigger }: PublicProfileDialogProps)
                                         {avatarPreview ? (
                                             <AvatarImage
                                                 src={avatarPreview}
-                                                alt={watchedUsername || user.name}
+                                                alt={
+                                                    watchedUsername || user.name
+                                                }
                                                 className="object-cover"
                                             />
                                         ) : (
@@ -329,7 +342,9 @@ export function PublicProfileDialog({ user, trigger }: PublicProfileDialogProps)
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    {(avatarPreview || user.profileImage || avatarFile) && (
+                                    {(avatarPreview ||
+                                        user.profileImage ||
+                                        avatarFile) && (
                                         <Button
                                             type="button"
                                             onClick={(e) => {
@@ -359,9 +374,14 @@ export function PublicProfileDialog({ user, trigger }: PublicProfileDialogProps)
                                     name="username"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Nom d&apos;utilisateur</FormLabel>
+                                            <FormLabel>
+                                                Nom d&apos;utilisateur
+                                            </FormLabel>
                                             <FormControl>
-                                                <Input placeholder="@utilisateur" {...field} />
+                                                <Input
+                                                    placeholder="@utilisateur"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -383,7 +403,8 @@ export function PublicProfileDialog({ user, trigger }: PublicProfileDialogProps)
                                                 />
                                             </FormControl>
                                             <FormDescription>
-                                                Dites-en un peu plus sur vous. (Max 500 caractères)
+                                                Dites-en un peu plus sur vous.
+                                                (Max 500 caractères)
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>
@@ -404,7 +425,11 @@ export function PublicProfileDialog({ user, trigger }: PublicProfileDialogProps)
                                     Annuler
                                 </Button>
                             </DialogClose>
-                            <Button type="submit" disabled={!canSubmit} loading={mutation.isPending}>
+                            <Button
+                                type="submit"
+                                disabled={!canSubmit}
+                                loading={mutation.isPending}
+                            >
                                 Enregistrer
                             </Button>
                         </DialogFooter>

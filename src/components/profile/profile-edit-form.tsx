@@ -1,9 +1,6 @@
 "use client";
 
-import {
-    useEffect,
-    useState,
-} from "react";
+import { xzuseState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TRPCClientError } from "@trpc/client";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -110,16 +107,16 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
                     Informations personnelles
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base">
-                    Gérez vos informations privées et vos coordonnées de contact.
+                    Gérez vos informations privées et vos coordonnées de
+                    contact.
                 </p>
             </div>
             <Card className="shadow-lg">
                 <CardHeader>
-                    <CardTitle className="text-2xl">
-                        Coordonnées
-                    </CardTitle>
+                    <CardTitle className="text-2xl">Coordonnées</CardTitle>
                     <CardDescription>
-                        Ces informations sont utilisées pour vos transactions et la livraison.
+                        Ces informations sont utilisées pour vos transactions et
+                        la livraison.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

@@ -136,8 +136,8 @@ export const userRouter = createTRPCRouter({
                             image: avatar
                                 ? avatar.data
                                 : removeAvatar
-                                ? null
-                                : undefined,
+                                  ? null
+                                  : undefined,
                         },
                     });
                 });
@@ -207,8 +207,8 @@ export const userRouter = createTRPCRouter({
                             image: avatar
                                 ? avatar.data
                                 : removeAvatar
-                                ? null
-                                : undefined,
+                                  ? null
+                                  : undefined,
                         },
                     });
                 });

@@ -93,7 +93,11 @@ export const publicProfileUpdateSchema = z
         avatar: z
             .object({
                 data: base64ImageSchema,
-                alt: z.string().max(120).optional().transform((v) => v?.trim() || null),
+                alt: z
+                    .string()
+                    .max(120)
+                    .optional()
+                    .transform((v) => v?.trim() || null),
             })
             .optional(),
         removeAvatar: z.boolean().optional(),
@@ -123,7 +127,11 @@ export const profileUpdateSchema = z
         avatar: z
             .object({
                 data: base64ImageSchema,
-                alt: z.string().max(120).optional().transform((v) => v?.trim() || null),
+                alt: z
+                    .string()
+                    .max(120)
+                    .optional()
+                    .transform((v) => v?.trim() || null),
             })
             .optional(),
         removeAvatar: z.boolean().optional(),
@@ -154,11 +162,17 @@ export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export type PublicProfileFormValues = z.infer<typeof publicProfileFormSchema>;
 export type PersonalInfoFormValues = z.infer<typeof personalInfoFormSchema>;
 export type ProfileUpdateInput = z.input<typeof profileUpdateSchema>;
-export type PublicProfileUpdateInput = z.input<typeof publicProfileUpdateSchema>;
+export type PublicProfileUpdateInput = z.input<
+    typeof publicProfileUpdateSchema
+>;
 export type PersonalInfoUpdateInput = z.input<typeof personalInfoUpdateSchema>;
 export type ProfileUpdateOutput = z.output<typeof profileUpdateSchema>;
-export type PublicProfileUpdateOutput = z.output<typeof publicProfileUpdateSchema>;
-export type PersonalInfoUpdateOutput = z.output<typeof personalInfoUpdateSchema>;
+export type PublicProfileUpdateOutput = z.output<
+    typeof publicProfileUpdateSchema
+>;
+export type PersonalInfoUpdateOutput = z.output<
+    typeof personalInfoUpdateSchema
+>;
 
 // Normalisation
 export function normalizePublicProfileInput(
@@ -171,7 +185,10 @@ export function normalizePublicProfileInput(
     return {
         ...values,
         avatar: options?.avatar
-            ? { data: options.avatar.data, alt: options.avatar.alt || undefined }
+            ? {
+                  data: options.avatar.data,
+                  alt: options.avatar.alt || undefined,
+              }
             : undefined,
         removeAvatar: options?.removeAvatar ?? false,
     };
@@ -193,7 +210,10 @@ export function normalizeProfileInput(
     return {
         ...values,
         avatar: options?.avatar
-            ? { data: options.avatar.data, alt: options.avatar.alt || undefined }
+            ? {
+                  data: options.avatar.data,
+                  alt: options.avatar.alt || undefined,
+              }
             : undefined,
         removeAvatar: options?.removeAvatar ?? false,
     };
