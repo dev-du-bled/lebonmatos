@@ -9,14 +9,14 @@ export default function Footer({ className }: { className?: string }) {
     return (
         <footer
             className={cn(
-                "w-full bg-[#19191A] supports-backdrop-filter:bg-[#19191A] backdrop-blur text-muted-foreground",
+                "w-full bg-[#19191A] backdrop-blur text-muted-foreground",
                 className
             )}
         >
             <div className="mx-auto wide-lock px-5 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                     {/* Left: logo + copyright */}
-                    <div className="flex flex-col gap-4 justify-center">
+                    <div className="flex flex-col gap-4 justify-center w-full">
                         <Link
                             href="/"
                             aria-label="Accueil"
@@ -24,8 +24,8 @@ export default function Footer({ className }: { className?: string }) {
                         >
                             <Image
                                 src={Logo}
-                                width={132}
-                                height={55}
+                                width={142}
+                                height={65}
                                 alt="LeBonMatos"
                                 className="block"
                             />
@@ -39,7 +39,7 @@ export default function Footer({ className }: { className?: string }) {
                     {/* Middle: services */}
                     <nav
                         aria-label="Nos services"
-                        className="flex flex-col justify-center"
+                        className="flex flex-col justify-center w-full"
                     >
                         <h3 className="text-white font-semibold mb-3">
                             Nos Services
@@ -75,14 +75,14 @@ export default function Footer({ className }: { className?: string }) {
                     {/* Right: info links */}
                     <nav
                         aria-label="Informations"
-                        className="flex flex-col items-start md:items-end justify-center"
+                        className="flex flex-col justify-center w-full"
                     >
-                        <h3 className="sr-only">Informations</h3>
-                        <ul className="space-y-2 text-white font-semibold">
+                        <h3 className="text-white font-semibold mb-3">Informations</h3>
+                        <ul className="space-y-2">
                             <li>
                                 <Link
                                     href="/a-propos"
-                                    className="hover:underline"
+                                    className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     A propos
                                 </Link>
@@ -90,7 +90,7 @@ export default function Footer({ className }: { className?: string }) {
                             <li>
                                 <Link
                                     href="/contact"
-                                    className="hover:underline"
+                                    className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     Contact
                                 </Link>
@@ -98,7 +98,7 @@ export default function Footer({ className }: { className?: string }) {
                             <li>
                                 <Link
                                     href="/politique_confidentialite"
-                                    className="hover:underline"
+                                    className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     Politique de Confidentialité
                                 </Link>
