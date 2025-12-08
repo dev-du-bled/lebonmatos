@@ -57,7 +57,7 @@ export default function Header({
                                 Publier
                             </Button>
                         </Link>
-                        <button className="flex h-8 w-full max-w-[200px] items-center justify-between rounded-sm bg-secondary px-2 text-sm text-muted-foreground">
+                        <button className="flex h-9 w-full max-w-[200px] items-center justify-between rounded-md bg-secondary px-3 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                                 <SearchIcon className="size-4 shrink-0 opacity-50" />
                                 <span>Rechercher</span>
