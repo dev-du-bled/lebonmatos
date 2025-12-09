@@ -55,11 +55,29 @@ function extractNumber(value: string | number | undefined): number | null {
 export default function ComparatorPage() {
     const [selected, setSelected] = useState<ComponentItem[]>([]);
 
-    function handleSelect(item: ComponentItem) {
-        setSelected((prev) => {
-            if (prev.find((p) => p.id === item.id)) return prev; // avoid duplicates
-            return [...prev, item];
-        });
+    // Calculer le type autorisé basé sur le premier composant
+    const allowedType = useMemo(() => {
+        if (selected.length === 0) return undefined;
+        return selected[0].type;
+    }, [selected]);
+
+    async function handleSelect(item: ComponentItem) {
+        // Fetch full details for this component
+        try {
+            const res = await fetch(`/api/components/${item.id}`);
+            if (!res.ok) {
+                console.error("Failed to fetch component details");
+                return;
+            }
+            const fullComponent = await res.json();
+
+            setSelected((prev) => {
+                if (prev.find((p) => p.id === fullComponent.id)) return prev;
+                return [...prev, fullComponent];
+            });
+        } catch (error) {
+            console.error("Error fetching component details:", error);
+        }
     }
 
     function handleRemove(id: string) {
@@ -67,19 +85,31 @@ export default function ComparatorPage() {
     }
 
     const components: Component[] = useMemo(() => {
-        return selected.map((c) => ({
-            id: c.id,
-            title: c.name,
-            price: c.estimatedPrice ?? undefined,
-            imageSrc: undefined,
-            componentType: c.type?.toLowerCase() ?? undefined,
-            specs: {
-                color: c.color ?? undefined,
-                estimatedPrice: c.estimatedPrice ?? undefined,
-                type: c.type ?? undefined,
-            },
-            trends: {},
-        }));
+        return selected.map((c) => {
+            const excludedKeys = ["id", "name", "type", "estimatedPrice"];
+            const specs: Record<string, string | number | undefined> = {};
+
+            Object.keys(c).forEach((key) => {
+                if (!excludedKeys.includes(key) && c[key] !== null && c[key] !== undefined) {
+                    const value = c[key];
+                    if (typeof value === "string" || typeof value === "number") {
+                        specs[key] = value;
+                    } else {
+                        specs[key] = String(value);
+                    }
+                }
+            });
+
+            return {
+                id: c.id,
+                title: c.name,
+                price: c.estimatedPrice ?? undefined,
+                imageSrc: undefined,
+                componentType: c.type?.toLowerCase() ?? undefined,
+                specs,
+                trends: {},
+            };
+        });
     }, [selected]);
 
     const allKeysSet = useMemo(() => {
@@ -202,7 +232,7 @@ export default function ComparatorPage() {
                             </div>
 
                             <div className="mt-6 flex items-center justify-between">
-                                <div className="text-lg font-bold">À partir de {ex.price ?? "-"} €</div>
+                                <div className="text-lg font-bold">À partir de {ex.specs?.estimatedPrice ?? "-"} €</div>
                                 <a
                                     href="#"
                                     className="bg-yellow-300 hover:bg-yellow-400 text-black px-4 py-2 rounded-md font-medium"
@@ -216,6 +246,7 @@ export default function ComparatorPage() {
 
                 <ComponentChooseDrawer
                     onSelect={handleSelect}
+                    allowedType={allowedType}
                     trigger={
                         <button
                             className="w-full h-full flex flex-col items-center justify-center border-2 border-neutral-300 rounded-md py-16 hover:bg-neutral-50"

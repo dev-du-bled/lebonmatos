@@ -15,26 +15,36 @@ if (process.env.NODE_ENV !== "production") {
     globalThis.prisma = prisma;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
-        // Return a compact representation that matches the ComponentItem used on the client
+        const url = new URL(req.url);
+        const q = url.searchParams.get("q")?.trim() || null;
+        const typeFilter = url.searchParams.get("type") || null;
+
+        const where: Record<string, unknown> = {};
+
+        if (typeFilter && typeFilter !== "ALL") {
+            where.type = typeFilter;
+        }
+
+        if (q) {
+            where.OR = [
+                { name: { contains: q, mode: "insensitive" } },
+                { color: { contains: q, mode: "insensitive" } },
+            ];
+        }
+
+        // Requête simple sans les détails
         const components = await prisma.component.findMany({
-            select: {
-                id: true,
-                name: true,
-                estimatedPrice: true,
-                color: true,
-                type: true,
-            },
+            where: Object.keys(where).length ? where : undefined,
             orderBy: { name: "asc" },
         });
 
-        // Normalize estimatedPrice to be a number | null (Prisma returns number | null already)
-        const payload = components.map((c) => ({
+        const payload = components.map((c: any) => ({
             id: c.id,
             name: c.name,
-            estimatedPrice: c.estimatedPrice ?? null,
-            color: c.color ?? null,
+            estimatedPrice: c.estimatedPrice,
+            color: c.color,
             type: c.type,
         }));
 
