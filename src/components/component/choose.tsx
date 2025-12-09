@@ -299,7 +299,7 @@ export default function ComponentChooseDrawer({
                                                 <button
                                                     type="button"
                                                     onClick={() => handleSelect(c)}
-                                                    className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                                                    className="bg-yellow-300 hover:bg-yellow-400 text-black px-2 py-1 rounded-md font-medium"
                                                 >
                                                     Sélectionner
                                                 </button>
