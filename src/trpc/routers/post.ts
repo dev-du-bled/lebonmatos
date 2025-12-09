@@ -14,14 +14,7 @@ export const postRouter = createTRPCRouter({
                         description: input.description,
                         price: input.price,
                         componentId: input.componentId,
-                        images: {
-                            create:
-                                input.images?.map((img) => ({
-                                    image: img.data,
-                                    alt: img.alt,
-                                    ownerId: ctx.session!.user.id,
-                                })) || [],
-                        },
+                        images: input.images || [],
                     },
                 });
 

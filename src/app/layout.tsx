@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TRPCProvider } from "@/trpc/client";
 import Script from "next/script";
+import { extractRouterConfig } from "uploadthing/server";
+import { lbmFileRouter } from "./api/uploadthing/core";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -42,6 +45,9 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-svh`}
             >
+                <NextSSRPlugin
+                    routerConfig={extractRouterConfig(lbmFileRouter)}
+                />
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
