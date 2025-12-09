@@ -122,6 +122,25 @@ export default function ComparatorPage() {
 
     const allKeys = Array.from(allKeysSet);
 
+    // Attributs où "plus petit = mieux" selon le type de composant
+    const lowerIsBetterByType: Record<string, Set<string>> = {
+        gpu: new Set(["length", "tdp"]),
+        cpu: new Set(["tdp"]),
+        ram: new Set(["caslatency", "cas_latency"]),
+        cpu_cooler: new Set(["noiseidle", "noisemax", "noise_idle", "noise_max", "size"]),
+        case_fan: new Set(["noiseidle", "noisemax", "noise_idle", "noise_max"]),
+        case: new Set(["volume"]),
+        psu: new Set([]),
+        motherboard: new Set([]),
+        ssd: new Set([]),
+        hdd: new Set([]),
+        sound_card: new Set([]),
+        wireless_network_card: new Set([]),
+    };
+
+    // Attributs globaux où "plus petit = mieux"
+    const globalLowerIsBetter = new Set(["tdp", "noise", "latency", "weight"]);
+
     const computedTrendsMap: Record<string, Record<string, Trend>> = {};
     components.forEach((ex) => {
         computedTrendsMap[ex.id] = {};
@@ -142,14 +161,19 @@ export default function ComparatorPage() {
         const sum = numericPairs.reduce((acc, p) => acc + p.value, 0);
         const avg = sum / numericPairs.length;
 
+        // Vérifier si cet attribut doit être inversé
+        const componentType = components[0]?.componentType?.toLowerCase() || "";
+        const typeSpecific = lowerIsBetterByType[componentType] || new Set();
+        const isInverted = globalLowerIsBetter.has(key.toLowerCase()) || typeSpecific.has(key.toLowerCase());
+
         components.forEach((ex) => {
             const val = extractNumber(ex.specs?.[key]);
             if (val === null) {
                 computedTrendsMap[ex.id][key] = "none";
             } else if (val > avg) {
-                computedTrendsMap[ex.id][key] = "up";
+                computedTrendsMap[ex.id][key] = isInverted ? "down" : "up";
             } else if (val < avg) {
-                computedTrendsMap[ex.id][key] = "down";
+                computedTrendsMap[ex.id][key] = isInverted ? "up" : "down";
             } else {
                 computedTrendsMap[ex.id][key] = "none";
             }
