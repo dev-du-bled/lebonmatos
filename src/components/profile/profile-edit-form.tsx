@@ -6,7 +6,7 @@ import { TRPCClientError } from "@trpc/client";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useForm } from "react-hook-form";
 import { ZodError } from "zod";
-import { Undo2 } from "lucide-react";
+import { Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,15 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import {
     Form,
     FormControl,
@@ -27,10 +36,13 @@ import {
 import { Input } from "@/components/ui/input";
 import {
     personalInfoFormSchema,
+    changePasswordSchema,
     type PersonalInfoFormValues,
+    type ChangePasswordValues,
 } from "@/lib/schema/user";
 import { trpc } from "@/trpc/client";
 import type { AppRouter } from "@/trpc/routers/_app";
+import { authClient } from "@/lib/auth-client";
 
 type UserProfile = inferRouterOutputs<AppRouter>["user"]["getProfile"];
 
@@ -45,25 +57,36 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
 
+    // Password Dialog State
+    const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [passwordSuccess, setPasswordSuccess] = useState(false);
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+
     const form = useForm<PersonalInfoFormValues>({
         resolver: zodResolver(personalInfoFormSchema),
         defaultValues: {
             name: initialData.name,
+            email: initialData.email,
             phoneNumber: initialData.phoneNumber ?? "",
+        },
+    });
+
+    const passwordForm = useForm<ChangePasswordValues>({
+        resolver: zodResolver(changePasswordSchema),
+        defaultValues: {
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
         },
     });
 
     const resetForm = (profile: UserProfile) => {
         form.reset({
             name: profile.name,
+            email: profile.email,
             phoneNumber: profile.phoneNumber ?? "",
         });
-    };
-
-    const handleReset = () => {
-        setSubmitError(null);
-        setSubmitSuccess(false);
-        resetForm(snapshot);
     };
 
     const handleSubmit = async (values: PersonalInfoFormValues) => {
@@ -91,6 +114,35 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
             }
 
             setSubmitError("Une erreur inattendue est survenue.");
+        }
+    };
+
+    const onPasswordSubmit = async (values: ChangePasswordValues) => {
+        setPasswordError(null);
+        setPasswordSuccess(false);
+        setIsChangingPassword(true);
+        try {
+            const { error } = await authClient.changePassword({
+                newPassword: values.newPassword,
+                currentPassword: values.currentPassword,
+                revokeOtherSessions: true,
+            });
+            if (error) {
+                setPasswordError(
+                    error.message || "Erreur lors du changement de mot de passe"
+                );
+                return;
+            }
+            setPasswordSuccess(true);
+            passwordForm.reset();
+            setTimeout(() => {
+                setIsPasswordDialogOpen(false);
+                setPasswordSuccess(false);
+            }, 2000);
+        } catch (e) {
+            setPasswordError("Une erreur inattendue est survenue");
+        } finally {
+            setIsChangingPassword(false);
         }
     };
 
@@ -143,6 +195,22 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
                                 />
                                 <FormField
                                     control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Email</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="exemple@email.com"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
                                     name="phoneNumber"
                                     render={({ field }) => (
                                         <FormItem>
@@ -170,18 +238,123 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
                                 </div>
                             )}
 
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleReset}
-                                    disabled={
-                                        mutation.isPending || !isFormDirty
-                                    }
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <Dialog
+                                    open={isPasswordDialogOpen}
+                                    onOpenChange={setIsPasswordDialogOpen}
                                 >
-                                    <Undo2 className="size-4" />
-                                    Réinitialiser
-                                </Button>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline" type="button">
+                                            <Lock className="mr-2 size-4" />
+                                            Changer le mot de passe
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>
+                                                Changer le mot de passe
+                                            </DialogTitle>
+                                            <DialogDescription>
+                                                Entrez votre mot de passe actuel
+                                                et le nouveau mot de passe.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <Form {...passwordForm}>
+                                            <form
+                                                onSubmit={passwordForm.handleSubmit(
+                                                    onPasswordSubmit
+                                                )}
+                                                className="space-y-4"
+                                            >
+                                                <FormField
+                                                    control={
+                                                        passwordForm.control
+                                                    }
+                                                    name="currentPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>
+                                                                Mot de passe
+                                                                actuel
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="password"
+                                                                    {...field}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={
+                                                        passwordForm.control
+                                                    }
+                                                    name="newPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>
+                                                                Nouveau mot de
+                                                                passe
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="password"
+                                                                    {...field}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={
+                                                        passwordForm.control
+                                                    }
+                                                    name="confirmPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>
+                                                                Confirmer le mot
+                                                                de passe
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="password"
+                                                                    {...field}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                {passwordError && (
+                                                    <div className="text-sm text-destructive">
+                                                        {passwordError}
+                                                    </div>
+                                                )}
+                                                {passwordSuccess && (
+                                                    <div className="text-sm text-emerald-600">
+                                                        Mot de passe modifié
+                                                        avec succès.
+                                                    </div>
+                                                )}
+                                                <DialogFooter>
+                                                    <Button
+                                                        type="submit"
+                                                        loading={
+                                                            isChangingPassword
+                                                        }
+                                                    >
+                                                        Mettre à jour
+                                                    </Button>
+                                                </DialogFooter>
+                                            </form>
+                                        </Form>
+                                    </DialogContent>
+                                </Dialog>
+
                                 <Button
                                     type="submit"
                                     disabled={!canSubmit}
