@@ -8,6 +8,7 @@ import {
     type ChangeEvent,
     type DragEvent,
 } from "react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TRPCClientError } from "@trpc/client";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -77,6 +78,7 @@ export function PublicProfileDialog({
     trigger,
 }: PublicProfileDialogProps) {
     const [open, setOpen] = useState(false);
+    const router = useRouter();
     const utils = trpc.useUtils();
     const mutation = trpc.user.updatePublicProfile.useMutation();
 
@@ -252,6 +254,7 @@ export function PublicProfileDialog({
             const updated = await mutation.mutateAsync(payload);
 
             utils.user.getProfile.setData(undefined, updated);
+            router.refresh();
             setOpen(false);
         } catch (error) {
             if (error instanceof TRPCClientError) {
