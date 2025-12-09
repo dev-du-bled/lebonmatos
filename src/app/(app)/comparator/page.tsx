@@ -183,90 +183,108 @@ export default function ComparatorPage() {
     return (
         <div className="min-h-screen p-8 sm:p-12 font-sans">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                {components.map((ex) => (
-                    <article
-                        key={ex.id}
-                        className="bg-background border border-neutral-200 rounded-md shadow-sm overflow-hidden"
-                    >
-                        <div className="relative h-44 bg-neutral-100">
-                            {ex.imageSrc ? (
-                                <Image src={ex.imageSrc} alt={ex.title} fill style={{ objectFit: "cover" }} />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-neutral-400">
-                                    Image
+                {components.map((ex) => {
+                    const priceValue = ex.price ?? ex.specs?.estimatedPrice;
+                    let priceDisplay: string;
+                    if (priceValue === undefined || priceValue === null || priceValue === "-") {
+                        priceDisplay = "-";
+                    } else if (typeof priceValue === "number") {
+                        priceDisplay = new Intl.NumberFormat("fr-FR", {
+                            style: "currency",
+                            currency: "EUR",
+                            maximumFractionDigits: 0,
+                        }).format(priceValue);
+                    } else {
+                        const s = String(priceValue).trim();
+                        // if it already contains a euro sign, keep as-is, otherwise append "€"
+                        priceDisplay = s.includes("€") ? s : `${s} €`;
+                    }
+
+                    return (
+                        <article
+                            key={ex.id}
+                            className="bg-background border border-neutral-200 rounded-md shadow-sm overflow-hidden"
+                        >
+                            <div className="relative h-44 bg-neutral-100">
+                                {ex.imageSrc ? (
+                                    <Image src={ex.imageSrc} alt={ex.title} fill style={{ objectFit: "cover" }} />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-neutral-400">
+                                        Image
+                                    </div>
+                                )}
+                                <div className="absolute right-3 top-3 flex gap-2">
+                                    <button
+                                        type="button"
+                                        title="Comparer"
+                                        className="hover:cursor-pointer hover:bg-neutral-200 hover:text-neutral-900 p-2 rounded border"
+                                    >
+                                        <ArrowLeftRight />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        title="Supprimer"
+                                        onClick={() => handleRemove(ex.id)}
+                                        className="hover:cursor-pointer hover:bg-red-700 p-2 rounded border"
+                                    >
+                                        <Trash />
+                                    </button>
                                 </div>
-                            )}
-                            <div className="absolute right-3 top-3 flex gap-2">
-                                <button
-                                    type="button"
-                                    title="Comparer"
-                                    className="hover:cursor-pointer hover:bg-neutral-200 hover:text-neutral-900 p-2 rounded border"
-                                >
-                                    <ArrowLeftRight />
-                                </button>
-                                <button
-                                    type="button"
-                                    title="Supprimer"
-                                    onClick={() => handleRemove(ex.id)}
-                                    className="hover:cursor-pointer hover:bg-red-700 p-2 rounded border"
-                                >
-                                    <Trash />
-                                </button>
+                                <h2 className="absolute left-4 bottom-3 text-white text-xl font-bold drop-shadow-md">
+                                    {ex.title}
+                                </h2>
                             </div>
-                            <h2 className="absolute left-4 bottom-3 text-white text-xl font-bold drop-shadow-md">
-                                {ex.title}
-                            </h2>
-                        </div>
 
-                        <div className="p-6">
-                            <hr className="border-neutral-200 my-4" />
+                            <div className="p-6">
+                                <hr className="border-neutral-200 my-4" />
 
-                            <div className="flex flex-col items-center">
-                                {allKeys.map((key) => {
-                                    const value = ex.specs?.[key];
-                                    const trend = ex.trends?.[key] ?? computedTrendsMap[ex.id]?.[key] ?? "none";
-                                    const lowerKey = key.toLowerCase();
-                                    if (
-                                        [
-                                            "architecture",
-                                            "microarchitecture",
-                                            "gpu",
-                                            "graphics",
-                                            "brand",
-                                            "model",
-                                        ].includes(lowerKey)
-                                    ) {
+                                <div className="flex flex-col items-center">
+                                    {allKeys.map((key) => {
+                                        const value = ex.specs?.[key];
+                                        const trend = ex.trends?.[key] ?? computedTrendsMap[ex.id]?.[key] ?? "none";
+                                        const lowerKey = key.toLowerCase();
+                                        if (
+                                            [
+                                                "architecture",
+                                                "microarchitecture",
+                                                "gpu",
+                                                "graphics",
+                                                "brand",
+                                                "model",
+                                            ].includes(lowerKey)
+                                        ) {
+                                            return (
+                                                <div className="text-center my-3" key={key}>
+                                                    <div className="font-semibold">{humanizeKey(key)}</div>
+                                                    <div className="mt-1 text-sm text-neutral-500">{value ?? "-"}</div>
+                                                </div>
+                                            );
+                                        }
+
                                         return (
-                                            <div className="text-center my-3" key={key}>
-                                                <div className="font-semibold">{humanizeKey(key)}</div>
-                                                <div className="mt-1 text-sm text-neutral-500">{value ?? "-"}</div>
-                                            </div>
+                                            <StatRow
+                                                key={key}
+                                                label={humanizeKey(key)}
+                                                value={String(value ?? "-")}
+                                                trend={trend}
+                                            />
                                         );
-                                    }
+                                    })}
+                                </div>
 
-                                    return (
-                                        <StatRow
-                                            key={key}
-                                            label={humanizeKey(key)}
-                                            value={String(value ?? "-")}
-                                            trend={trend}
-                                        />
-                                    );
-                                })}
+                                <div className="mt-6 flex items-center justify-between">
+                                    <div className="text-lg font-bold">À partir de {priceDisplay}</div>
+                                    <a
+                                        href="#"
+                                        className="bg-yellow-300 hover:bg-yellow-400 text-black px-4 py-2 rounded-md font-medium"
+                                    >
+                                        Rechercher
+                                    </a>
+                                </div>
                             </div>
-
-                            <div className="mt-6 flex items-center justify-between">
-                                <div className="text-lg font-bold">À partir de {ex.specs?.estimatedPrice ?? "-"} €</div>
-                                <a
-                                    href="#"
-                                    className="bg-yellow-300 hover:bg-yellow-400 text-black px-4 py-2 rounded-md font-medium"
-                                >
-                                    Rechercher
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-                ))}
+                        </article>
+                    );
+                })}
 
                 <ComponentChooseDrawer
                     onSelect={handleSelect}

@@ -138,11 +138,7 @@ export default function ComponentChooseDrawer({
             if (allowedType && c.type !== allowedType) return false;
             if (typeFilter !== "ALL" && c.type !== typeFilter) return false;
             if (!q) return true;
-            return (
-                c.name.toLowerCase().includes(q) ||
-                (c.color ?? "").toLowerCase().includes(q) ||
-                (c.estimatedPrice ?? "").toString().toLowerCase().includes(q)
-            );
+            return c.name.toLowerCase().includes(q) || (c.estimatedPrice ?? "").toString().toLowerCase().includes(q);
         });
     }, [components, query, typeFilter, allowedType]);
 
@@ -216,17 +212,6 @@ export default function ComponentChooseDrawer({
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
-                            onClick={() => {
-                                setQuery("");
-                                setTypeFilter(allowedType ? allowedType : "ALL");
-                                setPageSize(10);
-                            }}
-                            className="text-sm text-gray-600 hover:text-gray-800"
-                        >
-                            Réinitialiser
-                        </button>
-                        <button
-                            type="button"
                             onClick={() => setOpen(false)}
                             aria-label="Close"
                             className="p-2 rounded hover:bg-gray-100"
@@ -243,7 +228,7 @@ export default function ComponentChooseDrawer({
                             <input
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                placeholder="Rechercher par nom, couleur, prix estimé..."
+                                placeholder="Rechercher par nom, prix estimé..."
                                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </label>
@@ -286,9 +271,7 @@ export default function ComponentChooseDrawer({
                                         >
                                             <div>
                                                 <div className="font-medium">{c.name}</div>
-                                                <div className="text-sm text-gray-500">
-                                                    {c.type} {c.color ? `· ${c.color}` : ""}
-                                                </div>
+                                                <div className="text-sm text-gray-500">{c.type}</div>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 {typeof c.estimatedPrice === "number" ? (
