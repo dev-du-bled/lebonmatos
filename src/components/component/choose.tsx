@@ -234,18 +234,19 @@ export default function ComponentChooseDrawer({
                         </label>
 
                         <div className="flex gap-2">
-                            <select
-                                value={typeFilter}
-                                onChange={(e) => setTypeFilter(e.target.value)}
-                                className="px-3 py-2 border rounded-md bg-white"
-                                disabled={!!allowedType}
-                            >
-                                {TYPES.map((t) => (
-                                    <option key={t} value={t}>
-                                        {t}
-                                    </option>
-                                ))}
-                            </select>
+                            {!allowedType && (
+                                <select
+                                    value={typeFilter}
+                                    onChange={(e) => setTypeFilter(e.target.value)}
+                                    className="px-3 py-2 border rounded-md bg-white"
+                                >
+                                    {TYPES.map((t) => (
+                                        <option key={t} value={t}>
+                                            {t}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
 
                             <div className="ml-auto text-sm text-gray-600 flex items-center gap-2">
                                 <span>{filtered.length}</span>
