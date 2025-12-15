@@ -13,7 +13,8 @@ import { TRPCClientError } from "@trpc/client";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useForm } from "react-hook-form";
 import { ZodError } from "zod";
-import { Upload, X, Pencil } from "lucide-react";
+import { Upload, X, Pencil, Loader2 } from "lucide-react";
+import { useUploadThing } from "@/utils/uploadthing";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -43,7 +44,6 @@ import {
     normalizePublicProfileInput,
     type PublicProfileFormValues,
 } from "@/lib/schema/user";
-import { FileToBase64 } from "@/utils/file";
 import { trpc } from "@/trpc/client";
 import type { AppRouter } from "@/trpc/routers/_app";
 import { cn } from "@/lib/utils";
@@ -55,7 +55,7 @@ type PublicProfileDialogProps = {
     trigger?: React.ReactNode;
 };
 
-const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 Mo
+const MAX_AVATAR_BYTES = 4 * 1024 * 1024; // 4 MB (matching uploadthing config)
 
 function getInitials(source?: string | null) {
     if (!source) return "?";
@@ -80,16 +80,25 @@ export function PublicProfileDialog({
     const utils = trpc.useUtils();
     const mutation = trpc.user.updatePublicProfile.useMutation();
 
+    // UploadThing hook
+    const { startUpload, isUploading } = useUploadThing("profilePicUploader", {
+        onClientUploadComplete: (res) => {
+            console.log("Upload completed:", res);
+        },
+        onUploadError: (error) => {
+            console.error("Upload error:", error);
+            setAvatarError(error.message);
+        },
+    });
+
     // Avatar state
     const [avatarError, setAvatarError] = useState<string | null>(null);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarCleared, setAvatarCleared] = useState(false);
     const [isAvatarDragActive, setIsAvatarDragActive] = useState(false);
-    const previewUrlRef = useRef<string | null>(
-        user.profileImage?.image ?? user.image ?? null
-    );
+    const previewUrlRef = useRef<string | null>(user.image ?? null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(
-        user.profileImage?.image ?? user.image ?? null
+        user.image ?? null
     );
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -104,7 +113,7 @@ export function PublicProfileDialog({
         },
     });
 
-    // Update form default values when user prop changes (e.g. after mutation)
+    // Update form default values when user prop changes
     useEffect(() => {
         if (open) {
             form.reset({
@@ -115,9 +124,8 @@ export function PublicProfileDialog({
             setAvatarCleared(false);
             setAvatarError(null);
             setSubmitError(null);
-            setAvatarPreview(user.profileImage?.image ?? user.image ?? null);
-            previewUrlRef.current =
-                user.profileImage?.image ?? user.image ?? null;
+            setAvatarPreview(user.image ?? null);
+            previewUrlRef.current = user.image ?? null;
         }
     }, [open, user, form]);
 
@@ -133,7 +141,6 @@ export function PublicProfileDialog({
     }, []);
 
     const watchedUsername = form.watch("username");
-    // const watchedName = form.watch("name"); // Name is no longer in this form
 
     const currentInitials = useMemo(
         () => getInitials(watchedUsername || user.name),
@@ -164,7 +171,7 @@ export function PublicProfileDialog({
             return false;
         }
         if (file.size > MAX_AVATAR_BYTES) {
-            setAvatarError("L'image doit peser moins de 5 Mo.");
+            setAvatarError("L'image doit peser moins de 4 Mo.");
             return false;
         }
 
@@ -211,7 +218,7 @@ export function PublicProfileDialog({
     };
 
     const handleAvatarRemove = () => {
-        if (!avatarPreview && !user.profileImage && !avatarFile) {
+        if (!avatarPreview && !user.image && !avatarFile) {
             return;
         }
         setAvatarFile(null);
@@ -226,21 +233,19 @@ export function PublicProfileDialog({
         setSubmitError(null);
 
         try {
-            let avatarPayload: { data: string; alt?: string | null } | null =
-                null;
+            let avatarUrl: string | null = null;
 
+            // Upload avatar if there's a new file
             if (avatarFile) {
-                const dataUrl = await FileToBase64(avatarFile);
-                // Use username or existing name for alt text
-                const altText = values.username.trim() || user.name.trim();
-                avatarPayload = {
-                    data: dataUrl,
-                    alt: altText,
-                };
+                const uploadResult = await startUpload([avatarFile]);
+                if (!uploadResult || uploadResult.length === 0) {
+                    throw new Error("Échec du téléchargement de l'image");
+                }
+                avatarUrl = uploadResult[0].serverData.source;
             }
 
             const payload = normalizePublicProfileInput(values, {
-                avatar: avatarPayload,
+                avatar: avatarUrl,
                 removeAvatar: avatarCleared && !avatarFile,
             });
 
@@ -268,13 +273,19 @@ export function PublicProfileDialog({
                 return;
             }
 
-            setSubmitError("Une erreur inattendue est survenue.");
+            setSubmitError(
+                error instanceof Error
+                    ? error.message
+                    : "Une erreur inattendue est survenue."
+            );
         }
     };
 
     const isAvatarDirty = Boolean(avatarFile) || avatarCleared;
     const isFormDirty = form.formState.isDirty;
-    const canSubmit = (isFormDirty || isAvatarDirty) && !mutation.isPending;
+    const canSubmit =
+        (isFormDirty || isAvatarDirty) && !mutation.isPending && !isUploading;
+    const isSubmitting = mutation.isPending || isUploading;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -307,13 +318,35 @@ export function PublicProfileDialog({
                                     className={cn(
                                         "group relative flex size-32 cursor-pointer items-center justify-center rounded-full border-4 border-background shadow-xl ring-1 ring-border transition-all hover:scale-105",
                                         isAvatarDragActive &&
-                                            "ring-primary ring-2"
+                                            "ring-primary ring-2",
+                                        isUploading &&
+                                            "opacity-50 cursor-not-allowed"
                                     )}
-                                    onClick={handleAvatarClick}
-                                    onDragEnter={handleAvatarDragOver}
-                                    onDragOver={handleAvatarDragOver}
-                                    onDragLeave={handleAvatarDragLeave}
-                                    onDrop={handleAvatarDrop}
+                                    onClick={
+                                        !isUploading
+                                            ? handleAvatarClick
+                                            : undefined
+                                    }
+                                    onDragEnter={
+                                        !isUploading
+                                            ? handleAvatarDragOver
+                                            : undefined
+                                    }
+                                    onDragOver={
+                                        !isUploading
+                                            ? handleAvatarDragOver
+                                            : undefined
+                                    }
+                                    onDragLeave={
+                                        !isUploading
+                                            ? handleAvatarDragLeave
+                                            : undefined
+                                    }
+                                    onDrop={
+                                        !isUploading
+                                            ? handleAvatarDrop
+                                            : undefined
+                                    }
                                 >
                                     <Avatar className="size-full">
                                         {avatarPreview ? (
@@ -330,20 +363,27 @@ export function PublicProfileDialog({
                                             </AvatarFallback>
                                         )}
                                     </Avatar>
-                                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                                        <Upload className="size-6 text-white" />
-                                    </div>
+                                    {isUploading ? (
+                                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60">
+                                            <Loader2 className="size-8 text-white animate-spin" />
+                                        </div>
+                                    ) : (
+                                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                                            <Upload className="size-6 text-white" />
+                                        </div>
+                                    )}
                                     <input
                                         ref={fileInputRef}
                                         type="file"
                                         accept="image/*"
                                         className="hidden"
                                         onChange={handleAvatarChange}
+                                        disabled={isUploading}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     {(avatarPreview ||
-                                        user.profileImage ||
+                                        user.image ||
                                         avatarFile) && (
                                         <Button
                                             type="button"
@@ -354,6 +394,7 @@ export function PublicProfileDialog({
                                             variant="ghost"
                                             size="sm"
                                             className="h-8 text-xs text-muted-foreground hover:text-destructive"
+                                            disabled={isUploading}
                                         >
                                             <X className="mr-2 size-3" />
                                             Supprimer la photo
@@ -421,14 +462,18 @@ export function PublicProfileDialog({
 
                         <DialogFooter className="gap-2 sm:gap-2">
                             <DialogClose asChild>
-                                <Button type="button" variant="outline">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={isSubmitting}
+                                >
                                     Annuler
                                 </Button>
                             </DialogClose>
                             <Button
                                 type="submit"
                                 disabled={!canSubmit}
-                                loading={mutation.isPending}
+                                loading={isSubmitting}
                             >
                                 Enregistrer
                             </Button>

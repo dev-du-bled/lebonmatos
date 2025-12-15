@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { PublicProfileDialog } from "@/components/profile/public-profile-dialog";
 import { trpc } from "@/trpc/server";
+import { getUser } from "@/utils/getUser";
 
 type QuickAction = {
     title: string;
@@ -80,6 +81,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export default async function ProfilePage() {
+    await getUser();
     const user = await trpc.user.getProfile();
 
     const displayName = user.username ?? user.name ?? "Mon profil";
@@ -99,17 +101,13 @@ export default async function ProfilePage() {
             <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
                 <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
                     <Avatar className="size-24 border-4 border-background text-3xl font-semibold shadow-lg">
-                        {user.profileImage?.image || user.image ? (
+                        {user.image && (
                             <AvatarImage
-                                src={
-                                    user.profileImage?.image ??
-                                    user.image ??
-                                    undefined
-                                }
+                                src={user.image}
                                 alt={`Avatar de ${displayName}`}
                                 className="object-cover"
                             />
-                        ) : null}
+                        )}
                         <AvatarFallback className="bg-secondary text-muted-foreground">
                             {initials}
                         </AvatarFallback>

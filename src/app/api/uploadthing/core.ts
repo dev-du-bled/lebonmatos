@@ -29,7 +29,7 @@ export const lbmFileRouter = {
 
             return { alt: file.name, source: file.ufsUrl };
         }),
-    pofilPicUploader: f({
+    profilePicUploader: f({
         image: {
             maxFileSize: "4MB",
             maxFileCount: 1,

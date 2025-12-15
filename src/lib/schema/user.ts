@@ -160,13 +160,13 @@ export type PersonalInfoUpdateOutput = z.output<
 export function normalizePublicProfileInput(
     values: PublicProfileFormValues,
     options?: {
-        avatar?: { data: string; alt?: string | null } | null;
+        avatar?: string | null;
         removeAvatar?: boolean;
     }
 ): PublicProfileUpdateInput {
     return {
         ...values,
-        avatar: options?.avatar ? options.avatar.data : undefined,
+        avatar: options?.avatar ? options.avatar : undefined,
         removeAvatar: options?.removeAvatar ?? false,
     };
 }
