@@ -20,12 +20,10 @@ export default function PostPreview({ post, fullHeight }: PostPreviewProps) {
                 fullHeight ? "" : "hover:bg-black/5 transition-colors"
             )}
         >
-            {/* [INFO] While the api handles missing images, having a frontend-side fallback could be necessary in some cases*/}
-            {/* Lyna, next time, explain what you mean by "in some cases", cuz i don't remember :c */}
             <Image
                 width={1920}
                 height={1080}
-                src={post.images.at(0)?.image}
+                src={post.images.at(0)?.image || "/images/fallback.webp"}
                 className={cn(
                     "w-full object-cover rounded-md shadow-2xl",
                     fullHeight

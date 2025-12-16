@@ -1,4 +1,4 @@
-import { Post, User } from "@prisma/client";
+import { Post, User, Image } from "@prisma/client";
 import {
     Carousel,
     CarouselContent,
@@ -10,7 +10,7 @@ import PostPreview from "./post-preview";
 
 interface PostCarouselProps {
     headerText: string;
-    posts: (Post & User)[];
+    posts: (Post & { user: User; images: Image[] })[];
     fullHeight?: boolean;
 }
 

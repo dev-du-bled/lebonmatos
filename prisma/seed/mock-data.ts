@@ -88,16 +88,21 @@ async function main() {
                 },
                 location: `${faker.location.city().replace(" ", "-")} ${faker.location.zipCode()}`,
                 images: {
-                    create: [
-                        {
-                            image:
-                                loadedImages.length > 0
-                                    ? faker.helpers.arrayElement(loadedImages)
-                                    : "",
-                            alt: `Image of ${component.name}`,
-                            ownerId: user.id,
-                        },
-                    ],
+                    create:
+                        Math.random() < 0.95
+                            ? [
+                                  {
+                                      image:
+                                          loadedImages.length > 0
+                                              ? faker.helpers.arrayElement(
+                                                    loadedImages
+                                                )
+                                              : "",
+                                      alt: `Image of ${component.name}`,
+                                      ownerId: user.id,
+                                  },
+                              ]
+                            : [],
                 },
             },
         });
