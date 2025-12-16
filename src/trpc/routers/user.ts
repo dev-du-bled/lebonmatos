@@ -39,10 +39,10 @@ function mapProfileResult(
         image: user.image,
         profileImage: user.profileImage
             ? {
-                id: user.profileImage.id,
-                image: user.profileImage.image,
-                alt: user.profileImage.alt ?? null,
-            }
+                  id: user.profileImage.id,
+                  image: user.profileImage.image,
+                  alt: user.profileImage.alt ?? null,
+              }
             : null,
         rating,
     };
@@ -142,8 +142,8 @@ export const userRouter = createTRPCRouter({
                             image: avatar
                                 ? avatar.data
                                 : removeAvatar
-                                    ? null
-                                    : undefined,
+                                  ? null
+                                  : undefined,
                         },
                     });
                 });

@@ -15,6 +15,7 @@ export const postBaseSchema = z.object({
     title: z.string().min(3).max(50),
     description: z.string().nullable().optional(),
     price: z.number().int().min(0),
+    location: z.string().nullable().optional(),
     componentId: z.string(),
     createdAt: z.date().or(z.string()).optional(),
 });
@@ -40,7 +41,14 @@ export const postCreateSchema = z.object({
     price: z.number().int().min(1, {
         message: "Le prix doit être supérieur ou égal à 1€",
     }),
-    images: z
+
+    location: z
+        .string()
+        .optional()
+        .refine((val) => !val || /.+ \d{5}/.test(val), {
+            message: "La localisation doit être au format 'Ville 12345'",
+        }),
+    imgaes: z
         .array(
             z.object({
                 data: base64ImageSchema,
@@ -69,6 +77,13 @@ export const postFormSchema = z.object({
     price: z.number().min(1, {
         message: "Le prix doit être supérieur ou égal à 1€",
     }),
+
+    location: z
+        .string()
+        .optional()
+        .refine((val) => !val || /.+ \d{5}/.test(val), {
+            message: "La localisation doit être au format 'Ville 12345'",
+        }),
     images: z
         .array(z.instanceof(File))
         .max(6)

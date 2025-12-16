@@ -38,6 +38,13 @@ export default function RootLayout({
                         src="//unpkg.com/react-scan/dist/auto.global.js"
                     />
                 )}
+
+                <Script
+                    async
+                    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7271888754365820"
+                    crossOrigin="anonymous"
+                    data-adbreak-test="on"
+                />
             </head>
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-svh`}

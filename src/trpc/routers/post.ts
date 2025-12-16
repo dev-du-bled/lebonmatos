@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { postCreateSchema } from "@/lib/schema/post";
-import { createTRPCRouter, privateProcedure } from "../init";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
+import z from "zod";
 
 export const postRouter = createTRPCRouter({
     createPost: privateProcedure
@@ -13,13 +14,13 @@ export const postRouter = createTRPCRouter({
                         title: input.title,
                         description: input.description,
                         price: input.price,
+                        location: input.location,
                         componentId: input.componentId,
                         images: {
                             create:
                                 input.images?.map((img) => ({
                                     image: img.data,
                                     alt: img.alt,
-                                    ownerId: ctx.session!.user.id,
                                 })) || [],
                         },
                     },
@@ -35,4 +36,21 @@ export const postRouter = createTRPCRouter({
                 );
             }
         }),
+
+    // getLatestPosts: publicProcedure
+    //     .input(
+    //         z.object({
+    //             max: z.number().default(10),
+    //         })
+    //     )
+    //     .query(async ({ input }) => {
+    //         return {
+    //             posts: await prisma.post.findMany({
+    //                 take: input.max,
+    //                 include: {
+    //                     user: true,
+    //                 },
+    //             }),
+    //         };
+    //     }),
 });

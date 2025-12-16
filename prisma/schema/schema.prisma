@@ -89,6 +89,7 @@ model Post {
   title       String       @db.VarChar(50)
   description String?
   price       Int
+  location    String?
   componentId String
   component   Component    @relation(fields: [componentId], references: [id])
   Favorites   Favorite[]
@@ -114,13 +115,13 @@ model Image {
   id      String  @id @default(cuid())
   image   String
   alt     String?
-  
+
   ownerId String
   owner   User    @relation("UserImage", fields: [ownerId], references: [id], onDelete: Cascade)
 
   postId  String?
   post    Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
+
   profileOwner User?   @relation("UserProfileImage")
 
   @@map("images")
