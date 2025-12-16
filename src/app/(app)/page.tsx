@@ -9,6 +9,69 @@ export default async function Home() {
             user: true,
             images: true,
         },
+        where: {
+            images: {
+                some: {
+                    image: {
+                        not: undefined,
+                    },
+                },
+            },
+        },
+    });
+
+    const cases = await prisma.post.findMany({
+        take: 10,
+        include: {
+            user: true,
+            images: true,
+            component: {
+                select: {
+                    type: true,
+                },
+            },
+        },
+        where: {
+            component: {
+                type: "CASE",
+            },
+        },
+    });
+
+    const cpus = await prisma.post.findMany({
+        take: 10,
+        include: {
+            user: true,
+            images: true,
+            component: {
+                select: {
+                    type: true,
+                },
+            },
+        },
+        where: {
+            component: {
+                type: "CPU",
+            },
+        },
+    });
+
+    const gpus = await prisma.post.findMany({
+        take: 10,
+        include: {
+            user: true,
+            images: true,
+            component: {
+                select: {
+                    type: true,
+                },
+            },
+        },
+        where: {
+            component: {
+                type: "GPU",
+            },
+        },
     });
 
     return (
@@ -19,9 +82,9 @@ export default async function Home() {
                 posts={posts}
             />
             <Advert />
-            <PostCarousel headerText="Boitiers de PC" posts={posts} />
-            <PostCarousel headerText="Processeurs" posts={posts} />
-            <PostCarousel headerText="Cartes Graphiques" posts={posts} />
+            <PostCarousel headerText="Boitiers de PC" posts={cases} />
+            <PostCarousel headerText="Processeurs" posts={cpus} />
+            <PostCarousel headerText="Cartes Graphiques" posts={gpus} />
         </div>
     );
 }

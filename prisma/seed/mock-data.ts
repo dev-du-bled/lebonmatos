@@ -29,34 +29,31 @@ async function addUsers(count: number) {
     return users;
 }
 
-async function loadMockImages(): Promise<string[]> {
-    const imagesDir = path.join(process.cwd(), "data", "mock_images");
+async function mockComponentImage(ctype: string): Promise<string> {
+    const imagesDir = path.join(process.cwd(), "data", "mock_images", ctype);
     if (!fs.existsSync(imagesDir)) {
         console.warn(
-            `Warning: Image directory not found at ${imagesDir}. No mock images will be seeded.`
+            `Warning: Image directory for component ${ctype} not found at ${imagesDir}. No mock images will be for this component.`
         );
-        return [];
+        return "";
     }
 
     const files = fs
         .readdirSync(imagesDir)
         .filter((f) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f));
-    const images: string[] = [];
+    const choosenImage = files[Math.floor(Math.random() * files.length)];
 
-    for (const file of files) {
-        const filePath = path.join(imagesDir, file);
-        const buffer = fs.readFileSync(filePath);
-        const mimeType = `image/${file.split(".").pop()}`; // Simple mime type guess
-        const blob = new Blob([buffer], { type: mimeType });
-        try {
-            // @ts-expect-error idc
-            const base64 = await FileToBase64(blob);
-            images.push(base64);
-        } catch (error) {
-            console.error(`Error converting ${file} to base64:`, error);
-        }
+    const filePath = path.join(imagesDir, choosenImage);
+    const buffer = fs.readFileSync(filePath);
+    const mimeType = `image/${choosenImage.split(".").pop()}`; // Simple mime type guess
+    const blob = new Blob([buffer], { type: mimeType });
+    try {
+        // @ts-expect-error idc
+        return await FileToBase64(blob);
+    } catch (error) {
+        console.error(`Error converting ${choosenImage} to base64:`, error);
+        return "";
     }
-    return images;
 }
 
 async function main() {
@@ -65,16 +62,24 @@ async function main() {
     const users = await addUsers(5);
     console.log(`Added ${users.length} users`);
 
-    const loadedImages = await loadMockImages();
-    console.log(`Loaded ${loadedImages.length} mock images for posts.`);
-
-    for (const component of await prisma.component.findMany({
+    const cpus = await prisma.component.findMany({
+        where: { type: "CPU" },
         take: 20,
-    })) {
+    });
+    const gpus = await prisma.component.findMany({
+        where: { type: "GPU" },
+        take: 20,
+    });
+    const cases = await prisma.component.findMany({
+        where: { type: "CASE" },
+        take: 20,
+    });
+
+    for (const component of [...cpus, ...gpus, ...cases]) {
         const user = faker.helpers.arrayElement(users);
         const post = await prisma.post.create({
             data: {
-                title: `${component.type} ${component.name}`,
+                title: `${component.name}`,
                 description: faker.lorem.paragraph(),
                 price: faker.number.int({
                     min: (component.estimatedPrice || 100) - 100,
@@ -89,15 +94,12 @@ async function main() {
                 location: `${faker.location.city().replace(" ", "-")} ${faker.location.zipCode()}`,
                 images: {
                     create:
-                        Math.random() < 0.95
+                        Math.random() < 0.8
                             ? [
                                   {
-                                      image:
-                                          loadedImages.length > 0
-                                              ? faker.helpers.arrayElement(
-                                                    loadedImages
-                                                )
-                                              : "",
+                                      image: await mockComponentImage(
+                                          component.type
+                                      ),
                                       alt: `Image of ${component.name}`,
                                       ownerId: user.id,
                                   },
