@@ -249,9 +249,7 @@ export function PublicProfileDialog({
                 removeAvatar: avatarCleared && !avatarFile,
             });
 
-            const updated = await mutation.mutateAsync(payload);
-
-            utils.user.getProfile.setData(undefined, updated);
+            await utils.user.getProfile.invalidate();
             setOpen(false);
         } catch (error) {
             if (error instanceof TRPCClientError) {
