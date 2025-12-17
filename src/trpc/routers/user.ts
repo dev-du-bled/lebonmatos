@@ -6,6 +6,7 @@ import {
     publicProfileUpdateSchema,
     personalInfoUpdateSchema,
 } from "@/lib/schema/user";
+import { utapi } from "@/lib/utapi";
 import { createTRPCRouter, privateProcedure } from "../init";
 
 const profileSelect = {
@@ -65,6 +66,13 @@ async function buildProfilePayload(userId: string) {
     });
 }
 
+async function deleteUserImage(image: string) {
+    const imageKey = image.split("/").pop();
+    if (imageKey) {
+        await utapi.deleteFiles(imageKey);
+    }
+}
+
 export const userRouter = createTRPCRouter({
     meId: privateProcedure.query(({ ctx }) => {
         return ctx.session!.user.id;
@@ -92,8 +100,14 @@ export const userRouter = createTRPCRouter({
                 let newImage = existing.image;
 
                 if (removeAvatar) {
+                    if (existing.image) {
+                        await deleteUserImage(existing.image);
+                    }
                     newImage = null;
                 } else if (avatar) {
+                    if (existing.image) {
+                        await deleteUserImage(existing.image);
+                    }
                     newImage = avatar;
                 }
 
@@ -142,8 +156,14 @@ export const userRouter = createTRPCRouter({
                 let newImage = existing.image;
 
                 if (removeAvatar) {
+                    if (existing.image) {
+                        await deleteUserImage(existing.image);
+                    }
                     newImage = null;
                 } else if (avatar) {
+                    if (existing.image) {
+                        await deleteUserImage(existing.image);
+                    }
                     newImage = avatar;
                 }
 
