@@ -111,6 +111,28 @@ async function main() {
         console.log(`Created post with id: ${post.id}`);
     }
 
+    console.log("Adding ratings...");
+    for (const user of users) {
+        const ratingsCount = faker.number.int({ min: 0, max: 5 });
+        const potentialRaters = users.filter((u) => u.id !== user.id);
+        const raters = faker.helpers.arrayElements(
+            potentialRaters,
+            Math.min(ratingsCount, potentialRaters.length)
+        );
+
+        for (const rater of raters) {
+            await prisma.rating.create({
+                data: {
+                    userId: user.id,
+                    raterId: rater.id,
+                    rating: faker.number.int({ min: 1, max: 5 }),
+                    comment: faker.lorem.sentences(2),
+                },
+            });
+        }
+    }
+    console.log("Ratings added.");
+
     console.log("Seeding finished.");
 }
 
