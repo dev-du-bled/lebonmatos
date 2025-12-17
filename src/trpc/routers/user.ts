@@ -1,8 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { profileUpdateSchema } from "@/lib/schema/user";
-import { createTRPCRouter, privateProcedure } from "../init";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 
 const profileSelect = {
     id: true,
@@ -77,9 +78,27 @@ export const userRouter = createTRPCRouter({
     meId: privateProcedure.query(({ ctx }) => {
         return ctx.session!.user.id;
     }),
-    getProfile: privateProcedure.query(({ ctx }) =>
-        buildProfilePayload(ctx.session!.user.id)
-    ),
+    getProfile: publicProcedure
+        .input(
+            z
+                .object({
+                    userId: z.string().optional(),
+                })
+                .optional()
+        )
+        .query(({ ctx, input }) => {
+            const userId = input?.userId ?? ctx.session?.user.id;
+
+            if (!userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message:
+                        "Vous devez être connecté ou spécifier un ID utilisateur.",
+                });
+            }
+
+            return buildProfilePayload(userId);
+        }),
     updateProfile: privateProcedure
         .input(profileUpdateSchema)
         .mutation(async ({ ctx, input }) => {
