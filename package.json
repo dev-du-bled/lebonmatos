@@ -4,9 +4,9 @@
     "private": true,
     "scripts": {
         "dev:docker": "docker compose -f docker-compose.dev.yml up -d",
-        "dev": "next dev --turbopack",
-        "build": "next build --turbopack",
-        "start": "next start",
+        "dev": "bun run --bun next dev --turbopack",
+        "build": "bun run --bun next build --turbopack",
+        "start": "bun run --bun next start",
         "lint": "eslint .",
         "prisma:generate": "prisma generate --schema prisma/schema/",
         "prisma:data": "bun ./prisma/seed/data.ts",
