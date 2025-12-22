@@ -19,6 +19,10 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
     },
+    trustedOrigins: [
+        "http://localhost:3000",
+        process.env.NEXT_PUBLIC_APP_URL ?? "",
+    ],
     plugins: [
         username({
             minUsernameLength: 5,
