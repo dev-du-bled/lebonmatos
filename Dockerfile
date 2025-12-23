@@ -25,11 +25,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Generate Prisma client
-ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN bunx prisma generate --schema prisma/schema/
-
-ENV BETTER_AUTH_SECRET=build_secret
-ENV BETTER_AUTH_URL=http://localhost:3000
 
 RUN bun run build
 
