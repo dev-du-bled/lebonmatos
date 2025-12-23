@@ -191,9 +191,9 @@ export function normalizePublicProfileInput(
         ...values,
         avatar: options?.avatar
             ? {
-                data: options.avatar.data,
-                alt: options.avatar.alt || undefined,
-            }
+                  data: options.avatar.data,
+                  alt: options.avatar.alt || undefined,
+              }
             : undefined,
         removeAvatar: options?.removeAvatar ?? false,
     };
@@ -210,9 +210,9 @@ export function normalizeProfileInput(
         ...values,
         avatar: options?.avatar
             ? {
-                data: options.avatar.data,
-                alt: options.avatar.alt || undefined,
-            }
+                  data: options.avatar.data,
+                  alt: options.avatar.alt || undefined,
+              }
             : undefined,
         removeAvatar: options?.removeAvatar ?? false,
     };
