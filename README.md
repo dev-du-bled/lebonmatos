@@ -11,7 +11,7 @@ Pour démarrer le serveur de développement, exécuter les étapes suivantes :
 1. `bun install` installer les dépendances
 2. `bun dev:docker` démarrer le conteneur Docker de la base de données de dev
 3. `bun prisma:generate` générer les modèles Prisma
-4. `bunx prisma db push` appliquer les migrations à la base de données
+4. `bun prisma:push` appliquer les migrations à la base de données
 5. `bun dev` démarrer le serveur de développement
 
 ### Version de production avec Docker
