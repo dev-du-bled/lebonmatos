@@ -16,6 +16,6 @@ Pour démarrer le serveur de développement, exécuter les étapes suivantes :
 
 ### Version de production avec Docker
 
-1. `cp .env.example .env`
-2. Remplir les clées google recaptcha (et autres clées si besoin) dans le fichier `.env`
+1. `cp .env.example .env.docker`
+2. Remplir les clées google recaptcha (et autres clées si besoin) dans le fichier `.env.docker`
 3. `docker compose up -d`

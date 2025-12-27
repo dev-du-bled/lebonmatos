@@ -4,13 +4,13 @@ services:
         volumes:
             - lbm_data:/var/lib/postgresql/data
         env_file:
-            - .env
+            - .env.docker
     lbm_app:
         build: .
         ports:
             - 3000:3000
         env_file:
-            - .env
+            - .env.docker
 
 volumes:
     lbm_data:
