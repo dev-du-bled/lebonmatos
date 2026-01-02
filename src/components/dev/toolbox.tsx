@@ -76,7 +76,8 @@ export function DevToolbox() {
     //     return null;
     // }
 
-    const ThemeIcon = themeIcons[theme as keyof typeof themeIcons] || MonitorIcon;
+    const ThemeIcon =
+        themeIcons[theme as keyof typeof themeIcons] || MonitorIcon;
 
     return (
         <Dialog>
@@ -100,9 +101,7 @@ export function DevToolbox() {
                 <div className="space-y-6 py-4">
                     {/* Position du bouton */}
                     <div className="space-y-2">
-                        <Label htmlFor="position">
-                            Position de la toolbox
-                        </Label>
+                        <Label htmlFor="position">Position de la toolbox</Label>
                         <Select
                             value={position}
                             onValueChange={(value) =>
@@ -135,7 +134,9 @@ export function DevToolbox() {
                                 <SelectValue placeholder="Choisir un thème">
                                     <span className="flex items-center gap-2">
                                         <ThemeIcon className="size-4" />
-                                        {themeLabels[theme as keyof typeof themeLabels] || "Système"}
+                                        {themeLabels[
+                                            theme as keyof typeof themeLabels
+                                        ] || "Système"}
                                     </span>
                                 </SelectValue>
                             </SelectTrigger>

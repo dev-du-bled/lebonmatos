@@ -16,9 +16,7 @@ export default async function AppLayout({
     return (
         <main className="flex min-h-svh flex-col">
             <Header initialSession={session} />
-            <div className="flex-1">
-                {children}
-            </div>
+            <div className="flex-1">{children}</div>
             <Footer />
         </main>
     );

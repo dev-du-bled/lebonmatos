@@ -2,10 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { FileText, Plus, ArrowLeft } from "lucide-react";
 import { trpc } from "@/trpc/server";
-import {
-    Card,
-    CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -55,8 +52,8 @@ function EmptyState() {
             <div className="space-y-2">
                 <h2 className="text-xl font-semibold">Aucune annonce</h2>
                 <p className="max-w-sm text-muted-foreground">
-                    Vous n&apos;avez pas encore publié d&apos;annonce.
-                    Commencez à vendre vos composants dès maintenant !
+                    Vous n&apos;avez pas encore publié d&apos;annonce. Commencez
+                    à vendre vos composants dès maintenant !
                 </p>
             </div>
             <Link

@@ -5,11 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FileText, Pencil, Trash2 } from "lucide-react";
 import { trpc } from "@/trpc/client";
-import {
-    Card,
-    CardDescription,
-    CardTitle,
-} from "@/components/ui/card";
+import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
     Dialog,
@@ -99,13 +95,21 @@ export function ListingCard({ listing }: ListingCardProps) {
                     <div className="flex items-center justify-end gap-2">
                         <Link
                             href={`/create-post?edit=${listing.id}`}
-                            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                            className={cn(
+                                buttonVariants({
+                                    variant: "outline",
+                                    size: "sm",
+                                })
+                            )}
                         >
                             <Pencil className="size-3 mr-1" />
                             Modifier
                         </Link>
 
-                        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                        <Dialog
+                            open={isDeleteDialogOpen}
+                            onOpenChange={setIsDeleteDialogOpen}
+                        >
                             <DialogTrigger asChild>
                                 <Button variant="destructive" size="sm">
                                     <Trash2 className="size-3 mr-1" />
@@ -114,14 +118,20 @@ export function ListingCard({ listing }: ListingCardProps) {
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Supprimer l&apos;annonce ?</DialogTitle>
+                                    <DialogTitle>
+                                        Supprimer l&apos;annonce ?
+                                    </DialogTitle>
                                     <DialogDescription>
-                                        Cette action est irréversible. Cela supprimera définitivement votre annonce &quot;{listing.title}&quot;.
+                                        Cette action est irréversible. Cela
+                                        supprimera définitivement votre annonce
+                                        &quot;{listing.title}&quot;.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <DialogFooter>
                                     <DialogClose asChild>
-                                        <Button variant="outline">Annuler</Button>
+                                        <Button variant="outline">
+                                            Annuler
+                                        </Button>
                                     </DialogClose>
                                     <Button
                                         variant="destructive"

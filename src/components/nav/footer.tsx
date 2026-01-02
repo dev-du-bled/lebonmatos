@@ -77,7 +77,9 @@ export default function Footer({ className }: { className?: string }) {
                         aria-label="Informations"
                         className="flex flex-col justify-center w-full"
                     >
-                        <h3 className="text-white font-semibold mb-3">Informations</h3>
+                        <h3 className="text-white font-semibold mb-3">
+                            Informations
+                        </h3>
                         <ul className="space-y-2">
                             <li>
                                 <Link
