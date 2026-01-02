@@ -26,3 +26,4 @@ export const profileImageSchema = imagesSchema.pick({
 
 export type Images = z.infer<typeof imagesSchema>;
 export type ProfileImage = z.infer<typeof profileImageSchema>;
+

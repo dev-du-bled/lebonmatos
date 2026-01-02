@@ -2,14 +2,14 @@ import path from "node:path";
 import { loadEnvConfig } from "@next/env";
 import { defineConfig, env } from "prisma/config";
 
-loadEnvConfig(process.cwd());
+const nodeEnv = process.env.NODE_ENV || "development";
+loadEnvConfig(process.cwd(), nodeEnv !== "production");
 
 export default defineConfig({
-    schema: path.join("prisma", "schema"),
+    schema: path.join("prisma", "schema", "schema.prisma"),
     migrations: {
         path: path.join("prisma", "schema", "migrations"),
     },
-    engine: "classic",
     datasource: {
         url: env("DATABASE_URL"),
     },

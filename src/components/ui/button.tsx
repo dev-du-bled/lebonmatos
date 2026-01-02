@@ -44,10 +44,10 @@ const buttonVariants = cva(
 const Button = React.forwardRef<
     HTMLButtonElement,
     React.ComponentProps<"button"> &
-    VariantProps<typeof buttonVariants> & {
-        asChild?: boolean;
-        loading?: boolean;
-    }
+        VariantProps<typeof buttonVariants> & {
+            asChild?: boolean;
+            loading?: boolean;
+        }
 >(
     (
         {
