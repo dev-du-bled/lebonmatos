@@ -20,18 +20,6 @@ export const FORBIDDEN_USERNAMES = [
 ];
 
 /**
- * Schéma pour la validation d'image en base64
- */
-export const base64ImageSchema = z.string().refine(
-    (val) => {
-        if (!val.startsWith("data:image/")) return false;
-        const base64 = val.split(",")[1];
-        return !!base64 && z.base64().safeParse(base64).success;
-    },
-    { message: "Image invalide" }
-);
-
-/**
  * Helper pour créer un champ string nullable
  */
 export const nullableString = (max: number, message: string) =>

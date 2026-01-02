@@ -1,10 +1,5 @@
 import { z } from "zod";
-import {
-    USERNAME_REGEX,
-    PHONE_REGEX,
-    nullableString,
-    base64ImageSchema,
-} from "./shared";
+import { USERNAME_REGEX, PHONE_REGEX } from "./shared";
 import { profileImageSchema } from "./images";
 
 // Schéma de base User (Prisma)
@@ -95,16 +90,7 @@ export const publicProfileUpdateSchema = z
     .object({
         username: usernameField,
         bio: bioFormField.transform(emptyToNull),
-        avatar: z
-            .object({
-                data: base64ImageSchema,
-                alt: z
-                    .string()
-                    .max(120)
-                    .optional()
-                    .transform((v) => v?.trim() || null),
-            })
-            .optional(),
+        avatar: z.string().optional(),
         removeAvatar: z.boolean().optional(),
     })
     .superRefine((value, ctx) => {
@@ -129,16 +115,7 @@ export const profileUpdateSchema = z
         username: usernameField,
         bio: bioFormField.transform(emptyToNull),
         phoneNumber: phoneNumberFormField.transform(emptyToNull),
-        avatar: z
-            .object({
-                data: base64ImageSchema,
-                alt: z
-                    .string()
-                    .max(120)
-                    .optional()
-                    .transform((v) => v?.trim() || null),
-            })
-            .optional(),
+        avatar: z.string().optional(),
         removeAvatar: z.boolean().optional(),
     })
     .superRefine((value, ctx) => {
@@ -183,18 +160,13 @@ export type PersonalInfoUpdateOutput = z.output<
 export function normalizePublicProfileInput(
     values: PublicProfileFormValues,
     options?: {
-        avatar?: { data: string; alt?: string | null } | null;
+        avatar?: string | null;
         removeAvatar?: boolean;
     }
 ): PublicProfileUpdateInput {
     return {
         ...values,
-        avatar: options?.avatar
-            ? {
-                  data: options.avatar.data,
-                  alt: options.avatar.alt || undefined,
-              }
-            : undefined,
+        avatar: options?.avatar ? options.avatar : undefined,
         removeAvatar: options?.removeAvatar ?? false,
     };
 }
@@ -208,12 +180,7 @@ export function normalizeProfileInput(
 ): ProfileUpdateInput {
     return {
         ...values,
-        avatar: options?.avatar
-            ? {
-                  data: options.avatar.data,
-                  alt: options.avatar.alt || undefined,
-              }
-            : undefined,
+        avatar: options?.avatar ? options.avatar.data : undefined,
         removeAvatar: options?.removeAvatar ?? false,
     };
 }

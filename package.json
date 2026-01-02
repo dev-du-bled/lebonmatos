@@ -31,6 +31,7 @@
         "@trpc/client": "^11.8.1",
         "@trpc/react-query": "^11.8.1",
         "@trpc/server": "^11.8.1",
+        "@uploadthing/react": "^7.3.3",
         "better-auth": "^1.4.7",
         "class-variance-authority": "^0.7.1",
         "client-only": "^0.0.1",
@@ -49,6 +50,7 @@
         "server-only": "^0.0.1",
         "superjson": "^2.2.6",
         "tailwind-merge": "^3.4.0",
+        "uploadthing": "^7.7.4",
         "zod": "^4.2.1"
     },
     "devDependencies": {
