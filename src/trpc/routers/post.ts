@@ -10,14 +10,6 @@ export const postRouter = createTRPCRouter({
             orderBy: { id: "desc" },
             include: {
                 component: true,
-                images: {
-                    select: {
-                        id: true,
-                        image: true,
-                        alt: true,
-                    },
-                    take: 1,
-                },
             },
         });
 
@@ -31,7 +23,9 @@ export const postRouter = createTRPCRouter({
                 name: post.component.name,
                 type: post.component.type,
             },
-            thumbnail: post.images[0] ?? null,
+            thumbnail: post.images[0]
+                ? { id: "", image: post.images[0], alt: null }
+                : null,
         }));
     }),
 
