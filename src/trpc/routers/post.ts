@@ -2,6 +2,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { postCreateSchema } from "@/lib/schema/post";
 import { createTRPCRouter, privateProcedure } from "../init";
+import { utapi } from "@/lib/utapi";
 
 export const postRouter = createTRPCRouter({
     getUserListings: privateProcedure.query(async ({ ctx }) => {
@@ -42,6 +43,15 @@ export const postRouter = createTRPCRouter({
 
             if (post.userId !== ctx.session!.user.id) {
                 throw new Error("Unauthorized");
+            }
+
+            if (post.images.length > 0) {
+                const keys = post.images.map((img) => {
+                    const url = new URL(img);
+                    const pathname = url.pathname.split("/").pop();
+                    return pathname?.split("?")[0] ?? img;
+                });
+                await utapi.deleteFiles(keys);
             }
 
             await prisma.post.delete({
