@@ -1,10 +1,10 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export default function ProfilePage() {
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const load = () => {
         setIsLoading(true);

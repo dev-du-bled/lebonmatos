@@ -194,10 +194,23 @@ export const userRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session!.user.id;
 
+            if (input.email) {
+                const existingUser = await prisma.user.findUnique({
+                    where: { email: input.email },
+                });
+                if (existingUser && existingUser.id !== userId) {
+                    throw new TRPCError({
+                        code: "CONFLICT",
+                        message: "Cet email est déjà utilisé.",
+                    });
+                }
+            }
+
             await prisma.user.update({
                 where: { id: userId },
                 data: {
                     name: input.name,
+                    email: input.email,
                     phoneNumber: input.phoneNumber,
                 },
             });

@@ -6,7 +6,7 @@ const nodeEnv = process.env.NODE_ENV || "development";
 loadEnvConfig(process.cwd(), nodeEnv !== "production");
 
 export default defineConfig({
-    schema: path.join("prisma", "schema", "schema.prisma"),
+    schema: path.join("prisma", "schema"),
     migrations: {
         path: path.join("prisma", "schema", "migrations"),
     },

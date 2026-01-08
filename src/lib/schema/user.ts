@@ -72,8 +72,22 @@ export const publicProfileFormSchema = z.object({
 
 export const personalInfoFormSchema = z.object({
     name: nameField,
+    email: z.string().email({ message: "Email invalide" }),
     phoneNumber: phoneNumberFormField,
 });
+
+export const changePasswordSchema = z
+    .object({
+        currentPassword: z.string().min(1, "Mot de passe actuel requis"),
+        newPassword: z
+            .string()
+            .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+        confirmPassword: z.string().min(1, "Confirmation requise"),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+        message: "Les mots de passe ne correspondent pas",
+        path: ["confirmPassword"],
+    });
 
 export const profileFormSchema = z.object({
     name: nameField,
@@ -106,6 +120,7 @@ export const publicProfileUpdateSchema = z
 
 export const personalInfoUpdateSchema = z.object({
     name: nameField,
+    email: z.string().email(),
     phoneNumber: phoneNumberFormField.transform(emptyToNull),
 });
 
@@ -143,6 +158,7 @@ export type UserProfile = z.infer<typeof userProfileSchema>;
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export type PublicProfileFormValues = z.infer<typeof publicProfileFormSchema>;
 export type PersonalInfoFormValues = z.infer<typeof personalInfoFormSchema>;
+export type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
 export type ProfileUpdateInput = z.input<typeof profileUpdateSchema>;
 export type PublicProfileUpdateInput = z.input<
     typeof publicProfileUpdateSchema
