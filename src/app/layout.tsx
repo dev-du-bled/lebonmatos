@@ -32,6 +32,8 @@ export const metadata: Metadata = {
         "La plateforme experte en seconde main de matériel informatique",
 };
 
+import { Toaster } from "@/components/ui/sonner";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -60,6 +62,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <TRPCProvider>{children}</TRPCProvider>
+                    <Toaster />
                     {process.env.NODE_ENV === "development" && <DevToolbox />}
                 </ThemeProvider>
             </body>
