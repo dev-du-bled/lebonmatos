@@ -10,6 +10,33 @@ services:
         volumes:
             - lbm_data:/var/lib/postgresql/data
 
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+                ]
+            interval: 10s
+            retries: 5
+            start_period: 30s
+            timeout: 10s
+
+    search:
+        container_name: search
+        image: getmeili/meilisearch:v1.26.0
+        ports:
+            - 7700:7700
+        volumes:
+            - lmb_search_data:/meili_data
+
+        env_file: .env
+
+        depends_on:
+            db:
+                condition: service_healthy
+
 volumes:
     lbm_data:
+        driver: local
+    lmb_search_data:
         driver: local

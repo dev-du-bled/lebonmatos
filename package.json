@@ -10,7 +10,9 @@
         "lint": "eslint .",
         "prisma:generate": "prisma generate --schema prisma/schema/",
         "prisma:data": "bun ./prisma/seed/data.ts",
-        "prisma:reset": "prisma migrate reset --schema prisma/schema/"
+        "prisma:reset": "prisma migrate reset --schema prisma/schema/",
+        "sync:start": "bun sync/index.ts",
+        "sync:reset": "bun sync/resetMeili.ts"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.2",
@@ -29,6 +31,7 @@
         "@trpc/client": "^11.7.1",
         "@trpc/react-query": "^11.7.1",
         "@trpc/server": "^11.7.1",
+        "@types/pg": "^8.16.0",
         "better-auth": "^1.3.34",
         "class-variance-authority": "^0.7.1",
         "client-only": "^0.0.1",
@@ -36,8 +39,10 @@
         "cmdk": "^1.1.1",
         "embla-carousel-react": "^8.6.0",
         "lucide-react": "^0.545.0",
+        "meilisearch": "^0.54.0",
         "next": "^16.0.1",
         "next-themes": "^0.4.6",
+        "pg": "^8.16.3",
         "prisma": "^6.18.0",
         "react": "19.1.0",
         "react-dom": "19.1.0",
