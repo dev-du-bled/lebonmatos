@@ -25,7 +25,9 @@ import {
 } from "@/lib/compatibility";
 import { trpc } from "@/trpc/client";
 import { authClient } from "@/lib/auth-client";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Pencil, Check, X, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type ConfigurationState = {
     id?: string;
@@ -61,6 +63,10 @@ export function ConfiguratorContent() {
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
     const [loginPromptOpen, setLoginPromptOpen] = useState(false);
     const [shareUrl, setShareUrl] = useState("");
+
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState("");
+    const [isSavingName, setIsSavingName] = useState(false);
 
     // Load configuration if ID is provided
     const configQuery = trpc.configuration.get.useQuery(
@@ -303,15 +309,147 @@ export function ConfiguratorContent() {
         }
     }, [isAuthenticated, configId]);
 
+    const handleSaveName = async () => {
+        if (!tempName.trim() || !config.id) return;
+
+        setIsSavingName(true);
+        try {
+            await saveMutation.mutateAsync({
+                id: config.id,
+                name: tempName,
+                isPublic: config.isPublic,
+                items: config.slots
+                    .filter((slot) => slot.post)
+                    .map((slot) => ({
+                        componentType: slot.componentType,
+                        postId: slot.post!.id,
+                        quantity: slot.quantity,
+                    })),
+            });
+            setConfig((prev) => ({ ...prev, name: tempName }));
+            setIsEditingName(false);
+            toast.success("Nom mis à jour");
+        } catch (error) {
+            console.error("Failed to update name:", error);
+            let errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "Erreur lors de la mise à jour du nom";
+
+            // Try to parse raw Zod error array
+            try {
+                if (
+                    errorMessage.startsWith("[") &&
+                    errorMessage.endsWith("]")
+                ) {
+                    const parsed = JSON.parse(errorMessage);
+                    if (
+                        Array.isArray(parsed) &&
+                        parsed.length > 0 &&
+                        parsed[0].message
+                    ) {
+                        errorMessage = parsed[0].message;
+                    }
+                }
+            } catch {
+                errorMessage =
+                    error instanceof Error
+                        ? error.message
+                        : "Erreur lors de la mise à jour du nom";
+                toast.error(errorMessage);
+            }
+
+            toast.error(errorMessage);
+        } finally {
+            setIsSavingName(false);
+        }
+    };
+
+    const handleCancelNameEdit = () => {
+        setIsEditingName(false);
+        setTempName(config.name);
+    };
+
+    // Loading state for config
+    const isLoadingConfig = !!configId && configQuery.isLoading;
+
     return (
         <section className="mx-auto w-full max-w-7xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">
-                        {config.id && config.name
-                            ? config.name
-                            : "Configurateur"}
-                    </h1>
+                <div className="flex-1 min-w-0">
+                    {isLoadingConfig && configId ? (
+                        <Skeleton className="h-9 w-64" />
+                    ) : isEditingName ? (
+                        <form
+                            className="flex items-center gap-1 max-w-sm"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                handleSaveName();
+                            }}
+                        >
+                            <Input
+                                value={tempName}
+                                onChange={(e) => setTempName(e.target.value)}
+                                className="h-auto py-0.5 px-2 text-3xl font-bold tracking-tight"
+                                onKeyDown={(e) => {
+                                    if (e.key === "Escape") {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleCancelNameEdit();
+                                    }
+                                }}
+                                onBlur={handleCancelNameEdit}
+                                autoFocus
+                                disabled={isSavingName}
+                            />
+                            <Button
+                                type="submit"
+                                size="icon"
+                                variant="ghost"
+                                className="size-9 shrink-0"
+                                disabled={isSavingName}
+                                onMouseDown={(e) => e.preventDefault()}
+                            >
+                                {isSavingName ? (
+                                    <Loader2 className="size-5 animate-spin" />
+                                ) : (
+                                    <Check className="size-5 text-green-600" />
+                                )}
+                            </Button>
+                            <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                onClick={handleCancelNameEdit}
+                                className="size-9 shrink-0"
+                                disabled={isSavingName}
+                                onMouseDown={(e) => e.preventDefault()}
+                            >
+                                <X className="size-5 text-red-600" />
+                            </Button>
+                        </form>
+                    ) : (
+                        <div className="flex items-center gap-2 group">
+                            <h1 className="text-3xl font-bold tracking-tight truncate">
+                                {config.id && config.name
+                                    ? config.name
+                                    : "Configurateur"}
+                            </h1>
+                            {config.id && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-9 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                                    onClick={() => {
+                                        setTempName(config.name);
+                                        setIsEditingName(true);
+                                    }}
+                                >
+                                    <Pencil className="size-4 text-muted-foreground" />
+                                </Button>
+                            )}
+                        </div>
+                    )}
                     <p className="text-muted-foreground mt-1">
                         Créez votre PC sur mesure en sélectionnant vos
                         composants.
@@ -348,7 +486,7 @@ export function ConfiguratorContent() {
                                 onOpenSelector={openSelector}
                                 onRemove={handleRemovePost}
                                 onQuantityChange={handleQuantityChange}
-                                isLoading={!!configId && configQuery.isLoading}
+                                isLoading={isLoadingConfig}
                             />
                         );
                     })}
@@ -365,7 +503,7 @@ export function ConfiguratorContent() {
                     isSaving={saveMutation.isPending}
                     onSave={handleSave}
                     onShare={handleShare}
-                    isLoading={!!configId && configQuery.isLoading}
+                    isLoading={isLoadingConfig}
                 />
             </div>
 
