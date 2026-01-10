@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FileText, Plus, ArrowLeft } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ListingCard } from "./listing-card";
@@ -106,7 +106,10 @@ export default function ListingsPage() {
                     <Link
                         href="/profile"
                         className={cn(
-                            buttonVariants({ variant: "ghost", size: "icon" })
+                            buttonVariants({
+                                variant: "ghost",
+                                size: "icon",
+                            })
                         )}
                     >
                         <ArrowLeft className="size-5" />
