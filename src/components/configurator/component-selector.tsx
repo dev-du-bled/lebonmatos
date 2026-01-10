@@ -104,7 +104,7 @@ export function ComponentSelector({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogContent className="max-w-[min(90vw,600px)] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>
                         Sélectionner un{" "}
@@ -117,6 +117,7 @@ export function ComponentSelector({
                     onValueChange={(v) =>
                         setActiveTab(v as "search" | "favorites")
                     }
+                    className="w-full"
                 >
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger
@@ -142,7 +143,7 @@ export function ComponentSelector({
                     </TabsList>
 
                     <TabsContent value="search" className="mt-4">
-                        <div className="space-y-4">
+                        <div className="space-y-4 w-full">
                             <Input
                                 placeholder={`Rechercher un ${COMPONENT_TYPE_LABELS[componentType].toLowerCase()}...`}
                                 value={searchQuery}
@@ -150,45 +151,47 @@ export function ComponentSelector({
                                 className="w-full"
                             />
 
-                            <ScrollArea className="h-[400px] pr-4">
-                                {searchQuery$.isLoading ? (
-                                    <div className="space-y-2">
-                                        {Array.from({ length: 5 }).map(
-                                            (_, i) => (
-                                                <Skeleton
-                                                    key={i}
-                                                    className="h-20 w-full"
+                            <ScrollArea className="h-[400px] -mr-4 pr-4">
+                                <div className="w-full">
+                                    {searchQuery$.isLoading ? (
+                                        <div className="space-y-2 w-full">
+                                            {Array.from({ length: 5 }).map(
+                                                (_, i) => (
+                                                    <Skeleton
+                                                        key={i}
+                                                        className="h-20 w-full"
+                                                    />
+                                                )
+                                            )}
+                                        </div>
+                                    ) : searchQuery$.data?.length === 0 ? (
+                                        <div className="text-center text-muted-foreground py-8">
+                                            Aucune annonce trouvée
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2 w-full">
+                                            {searchQuery$.data?.map((post) => (
+                                                <PostCard
+                                                    key={post.id}
+                                                    post={post as SelectedPost}
+                                                    onSelect={handleSelect}
                                                 />
-                                            )
-                                        )}
-                                    </div>
-                                ) : searchQuery$.data?.length === 0 ? (
-                                    <div className="text-center text-muted-foreground py-8">
-                                        Aucune annonce trouvée
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        {searchQuery$.data?.map((post) => (
-                                            <PostCard
-                                                key={post.id}
-                                                post={post as SelectedPost}
-                                                onSelect={handleSelect}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </ScrollArea>
                         </div>
                     </TabsContent>
 
                     <TabsContent value="favorites" className="mt-4">
-                        <ScrollArea className="h-[400px] pr-4">
+                        <ScrollArea className="h-[400px] -mr-6 pr-6">
                             {!isAuthenticated ? (
                                 <div className="text-center text-muted-foreground py-8">
                                     Connectez-vous pour voir vos favoris
                                 </div>
                             ) : favoritesQuery$.isLoading ? (
-                                <div className="space-y-2">
+                                <div className="space-y-2 w-full">
                                     {Array.from({ length: 5 }).map((_, i) => (
                                         <Skeleton
                                             key={i}
@@ -201,7 +204,7 @@ export function ComponentSelector({
                                     Aucun favori pour ce type de composant
                                 </div>
                             ) : (
-                                <div className="space-y-2">
+                                <div className="space-y-2 w-full">
                                     {favoritesQuery$.data?.map((post) => (
                                         <PostCard
                                             key={post.id}
@@ -229,7 +232,7 @@ function PostCard({
     const imageUrl = post.images?.[0];
 
     return (
-        <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+        <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors max-w-full box-border">
             <div className="relative size-16 shrink-0 bg-muted rounded-md overflow-hidden">
                 {imageUrl ? (
                     <Image
@@ -245,24 +248,26 @@ function PostCard({
                 )}
             </div>
 
-            <div className="flex-1 min-w-0">
-                <h4 className="font-medium truncate">{post.title}</h4>
-                <p className="text-sm text-muted-foreground truncate">
+            <div className="flex-1 min-w-0 overflow-hidden">
+                <h4 className="font-medium truncate w-full block">
+                    {post.title}
+                </h4>
+                <p className="text-sm text-muted-foreground truncate w-full block">
                     {post.component.name}
                 </p>
                 {post.component.Motherboard && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground truncate">
                         Socket: {post.component.Motherboard.socket} |{" "}
                         {post.component.Motherboard.formFactor}
                     </p>
                 )}
                 {post.component.Cpu && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground truncate">
                         {post.component.Cpu.microarch}
                     </p>
                 )}
                 {post.component.Ram && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground truncate">
                         {post.component.Ram.type} | {post.component.Ram.modules}
                         x{post.component.Ram.size}Go
                     </p>
