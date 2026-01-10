@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { PublicProfileDialog } from "@/components/profile/public-profile-dialog";
+import RequiredLogin from "@/components/required-login";
 
 type QuickAction = {
     title: string;
@@ -163,40 +164,42 @@ async function ProfileHeader() {
 
 export default function ProfilePage() {
     return (
-        <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
-            <Suspense fallback={<ProfileHeaderSkeleton />}>
-                <ProfileHeader />
-            </Suspense>
+        <RequiredLogin>
+            <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+                <Suspense fallback={<ProfileHeaderSkeleton />}>
+                    <ProfileHeader />
+                </Suspense>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {QUICK_ACTIONS.map(({ title, description, href, Icon }) => (
-                    <Link
-                        key={title}
-                        href={href}
-                        className="group"
-                        prefetch={false}
-                    >
-                        <Card className="h-full gap-3 border-transparent bg-secondary/40 p-5 transition hover:border-primary hover:bg-background hover:shadow-md">
-                            <CardContent className="flex h-full flex-col gap-4 p-0">
-                                <div className="flex items-center gap-3">
-                                    <span
-                                        className="flex size-11 items-center justify-center rounded-lg bg-primary/20
+                <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {QUICK_ACTIONS.map(({ title, description, href, Icon }) => (
+                        <Link
+                            key={title}
+                            href={href}
+                            className="group"
+                            prefetch={false}
+                        >
+                            <Card className="h-full gap-3 border-transparent bg-secondary/40 p-5 transition hover:border-primary hover:bg-background hover:shadow-md">
+                                <CardContent className="flex h-full flex-col gap-4 p-0">
+                                    <div className="flex items-center gap-3">
+                                        <span
+                                            className="flex size-11 items-center justify-center rounded-lg bg-primary/20
                                     group-hover:text-black transition group-hover:bg-primary"
-                                    >
-                                        <Icon className="size-5" />
-                                    </span>
-                                    <CardTitle className="text-base font-semibold">
-                                        {title}
-                                    </CardTitle>
-                                </div>
-                                <CardDescription className="text-sm text-muted-foreground">
-                                    {description}
-                                </CardDescription>
-                            </CardContent>
-                        </Card>
-                    </Link>
-                ))}
-            </div>
-        </section>
+                                        >
+                                            <Icon className="size-5" />
+                                        </span>
+                                        <CardTitle className="text-base font-semibold">
+                                            {title}
+                                        </CardTitle>
+                                    </div>
+                                    <CardDescription className="text-sm text-muted-foreground">
+                                        {description}
+                                    </CardDescription>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    ))}
+                </div>
+            </section>
+        </RequiredLogin>
     );
 }
