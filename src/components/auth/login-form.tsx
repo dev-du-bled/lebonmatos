@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Button } from "@/components/ui/button";
+import { Lock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
 import {
@@ -26,7 +27,8 @@ export function LoginForm() {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const { executeRecaptcha } = useGoogleReCaptcha();
-
+    const searchParams = useSearchParams();
+    const redirect = searchParams.get("redirect");
     const form = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
@@ -76,7 +78,7 @@ export function LoginForm() {
                         "La connexion a échoué. Veuillez réessayer.",
                 });
             } else {
-                router.push("/");
+                router.push(redirect || "/");
                 router.refresh();
             }
         } catch {
@@ -106,6 +108,13 @@ export function LoginForm() {
                                     pour accéder à toutes les fonctionnalités.
                                 </p>
                             </div>
+
+                            {redirect && (
+                                <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 rounded-md p-3 text-sm font-medium">
+                                    <Lock className="size-4" />
+                                    Cette page nécessite une connexion.
+                                </div>
+                            )}
 
                             {form.formState.errors.root && (
                                 <div className="text-destructive text-sm text-center">
