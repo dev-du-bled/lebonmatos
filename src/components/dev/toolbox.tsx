@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
-import { WrenchIcon, SunIcon, MoonIcon, MonitorIcon } from "lucide-react";
+import { WrenchIcon, SunIcon, MoonIcon, MonitorIcon, CircleHelp } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -18,12 +18,25 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
 type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+const defaultUser = {
+    email: "dev@example.com",
+    password: "azertyuiop",
+    username: "default",
+    name: "Jean Michel Defaut",
+};
 
 const positionClasses: Record<Position, string> = {
     "top-left": "top-4 left-4",
@@ -77,10 +90,10 @@ export function DevToolbox() {
     const createDefaultUser = async () => {
         setIsLoading(true);
         const { error } = await authClient.signUp.email({
-            email: "dev@example.com",
-            password: "azertyuiop",
-            username: "default",
-            name: "Jean Michel Defaut",
+            email: defaultUser.email,
+            password: defaultUser.password,
+            username: defaultUser.username,
+            name: defaultUser.name,
         });
 
         if (error) {
@@ -97,14 +110,15 @@ export function DevToolbox() {
     const loginDefaultUser = async () => {
         setIsLoading(true);
         const { error } = await authClient.signIn.email({
-            email: "dev@example.com",
-            password: "azertyuiop",
+            email: defaultUser.email,
+            password: defaultUser.password,
         });
 
         if (error) {
             toast.error(error.message || "Erreur lors de la connexion");
         } else {
-            toast.success("Connecté en tant que dev@example.com");
+            toast.success("Connecté en tant que " + defaultUser.email);
+            window.location.reload();
         }
         setIsLoading(false);
     };
@@ -211,9 +225,34 @@ export function DevToolbox() {
 
                     {/* Utilisateur par défaut */}
                     <div className="space-y-2">
-                        <Label htmlFor="default-user">
-                            Utilisateur par défaut (dev)
-                        </Label>
+                        <div className="flex items-center gap-2">
+                            <Label htmlFor="default-user">
+                                Utilisateur par défaut (dev)
+                            </Label>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <CircleHelp className="size-4 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <div className="text-xs space-y-1">
+                                            <p>
+                                                <strong>Email:</strong>{" "}
+                                                {defaultUser.email}
+                                            </p>
+                                            <p>
+                                                <strong>Username:</strong>{" "}
+                                                {defaultUser.username}
+                                            </p>
+                                            <p>
+                                                <strong>Password:</strong>{" "}
+                                                {defaultUser.password}
+                                            </p>
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
