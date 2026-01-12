@@ -1,14 +1,14 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { FileText, Plus, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Cpu, Plus } from "lucide-react";
 import { trpc } from "@/trpc/server";
-import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { ListingCard } from "./listing-card";
+import { ConfigurationCard } from "@/components/profile/configuration-card";
+import { Card, CardContent } from "@/components/ui/card";
 
-function ListingCardSkeleton() {
+function ConfigurationCardSkeleton() {
     return (
         <Card className="overflow-hidden p-0 gap-0">
             <div className="flex flex-col sm:flex-row">
@@ -33,11 +33,11 @@ function ListingCardSkeleton() {
     );
 }
 
-function ListingsSkeleton() {
+function ConfigurationsSkeleton() {
     return (
         <div className="grid gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
-                <ListingCardSkeleton key={i} />
+                <ConfigurationCardSkeleton key={i} />
             ))}
         </div>
     );
@@ -47,58 +47,65 @@ function EmptyState() {
     return (
         <div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
             <div className="flex size-20 items-center justify-center rounded-full bg-secondary">
-                <FileText className="size-10 text-muted-foreground" />
+                <Cpu className="size-10 text-muted-foreground" />
             </div>
             <div className="space-y-2">
-                <h2 className="text-xl font-semibold">Aucune annonce</h2>
+                <h2 className="text-xl font-semibold">Aucune configuration</h2>
                 <p className="max-w-sm text-muted-foreground">
-                    Vous n&apos;avez pas encore publié d&apos;annonce. Commencez
-                    à vendre vos composants dès maintenant !
+                    Vous n&apos;avez pas encore créé de configuration. Commencez
+                    à créer votre PC de rêve dès maintenant !
                 </p>
             </div>
             <Link
-                href="/create-post"
+                href="/configurator"
                 className={cn(buttonVariants({ size: "lg" }))}
             >
                 <Plus className="size-4" />
-                Publier une annonce
+                Créer une configuration
             </Link>
         </div>
     );
 }
 
-async function ListingsContent() {
-    const listings = await trpc.posts.getUserListings();
+async function ConfigurationsContent() {
+    const configurations = await trpc.configuration.list();
 
-    if (listings.length === 0) {
+    if (configurations.length === 0) {
         return <EmptyState />;
     }
 
+    // Serialize dates for Client Component
+    const serializedConfigurations = configurations.map((config) => ({
+        ...config,
+        createdAt: config.createdAt.toISOString(),
+        updatedAt: config.updatedAt.toISOString(),
+    }));
+
     return (
         <div className="grid gap-4">
-            {listings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
+            {serializedConfigurations.map((config) => (
+                <ConfigurationCard key={config.id} configuration={config} />
             ))}
         </div>
     );
 }
 
 async function HeaderAction() {
-    const listings = await trpc.posts.getUserListings();
+    const configurations = await trpc.configuration.list();
 
-    if (listings.length === 0) {
+    if (configurations.length === 0) {
         return null;
     }
 
     return (
-        <Link href="/create-post" className={cn(buttonVariants())}>
+        <Link href="/configurator" className={cn(buttonVariants())}>
             <Plus className="size-4" />
-            Nouvelle annonce
+            Nouvelle config
         </Link>
     );
 }
 
-export default function ListingsPage() {
+export default function ConfigurationsPage() {
     return (
         <section className="mx-auto w-full max-w-4xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -106,18 +113,17 @@ export default function ListingsPage() {
                     <Link
                         href="/profile"
                         className={cn(
-                            buttonVariants({
-                                variant: "ghost",
-                                size: "icon",
-                            })
+                            buttonVariants({ variant: "ghost", size: "icon" })
                         )}
                     >
                         <ArrowLeft className="size-5" />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-semibold">Mes annonces</h1>
+                        <h1 className="text-2xl font-semibold">
+                            Mes configurations
+                        </h1>
                         <p className="text-sm text-muted-foreground">
-                            Gérez vos annonces en ligne
+                            Gérez vos configurations PC enregistrées
                         </p>
                     </div>
                 </div>
@@ -126,8 +132,8 @@ export default function ListingsPage() {
                 </Suspense>
             </div>
 
-            <Suspense fallback={<ListingsSkeleton />}>
-                <ListingsContent />
+            <Suspense fallback={<ConfigurationsSkeleton />}>
+                <ConfigurationsContent />
             </Suspense>
         </section>
     );
