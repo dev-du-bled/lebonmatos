@@ -45,8 +45,8 @@ export function ConfigSummary({
     if (isLoading) {
         return (
             <div className="space-y-4" id="compatibility-summary">
-                <Card className="sticky top-24 shadow-sm border-2 overflow-hidden p-0 gap-0">
-                    <CardHeader className="bg-muted/30 p-4">
+                <Card className="sticky top-24 shadow-sm overflow-hidden p-0 gap-0">
+                    <CardHeader className="bg-muted py-3 px-4">
                         <CardTitle className="text-xl">Récapitulatif</CardTitle>
                     </CardHeader>
                     <Separator />
@@ -75,8 +75,8 @@ export function ConfigSummary({
 
     return (
         <div className="space-y-4" id="compatibility-summary">
-            <Card className="sticky top-24 shadow-sm border-2 overflow-hidden p-0 gap-0">
-                <CardHeader className="bg-muted/30 p-4">
+            <Card className="sticky top-24 shadow-sm overflow-hidden p-0 gap-0">
+                <CardHeader className="py-3 px-4 gap-0">
                     <CardTitle className="text-xl">Récapitulatif</CardTitle>
                 </CardHeader>
                 <Separator />

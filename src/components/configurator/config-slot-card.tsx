@@ -45,7 +45,7 @@ export function ConfigSlotCard({
     if (isLoading) {
         return (
             <Card className="p-0 gap-0">
-                <CardHeader className="p-4">
+                <CardHeader className="py-3 px-4 gap-0">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-lg flex items-center gap-2">
                             {COMPONENT_TYPE_LABELS[componentType]}
@@ -76,9 +76,9 @@ export function ConfigSlotCard({
                 hasError ? "border-destructive border-2" : ""
             }`}
         >
-            <CardHeader className="p-4">
+            <CardHeader className="py-3 px-4 gap-0">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="text-lg flex">
                         {COMPONENT_TYPE_LABELS[componentType]}
                         {hasError && (
                             <TooltipProvider>
@@ -107,7 +107,7 @@ export function ConfigSlotCard({
                     {(!post || isMulti) && (
                         <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             onClick={() => onOpenSelector(componentType)}
                         >
                             <Plus className="size-4" />
@@ -190,9 +190,7 @@ export function ConfigSlotCard({
                         </div>
                         <span className="font-medium">
                             Ajouter un{" "}
-                            {COMPONENT_TYPE_LABELS[
-                                componentType
-                            ].toLowerCase()}
+                            {COMPONENT_TYPE_LABELS[componentType].toLowerCase()}
                         </span>
                     </button>
                 )}
