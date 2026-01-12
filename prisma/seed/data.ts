@@ -1,4 +1,6 @@
 import { PrismaClient, ComponentType } from "@prisma/client";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 import cpu from "../../data/cpu.json";
 import mb from "../../data/motherboard.json";
 import ram from "../../data/memory.json";
@@ -11,7 +13,13 @@ import caseFan from "../../data/case-fan.json";
 import cases from "../../data/case.json";
 import netCard from "../../data/wireless-network-card.json";
 
-const prisma = new PrismaClient();
+import { loadEnvConfig } from "@next/env";
+loadEnvConfig(process.cwd(), true);
+
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   await addCpu();
