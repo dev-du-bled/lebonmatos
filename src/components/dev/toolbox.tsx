@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
-import { WrenchIcon, SunIcon, MoonIcon, MonitorIcon, CircleHelp } from "lucide-react";
+import {
+    WrenchIcon,
+    SunIcon,
+    MoonIcon,
+    MonitorIcon,
+    CircleHelp,
+} from "lucide-react";
 import {
     Dialog,
     DialogContent,
