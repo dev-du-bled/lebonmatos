@@ -31,6 +31,7 @@ export default function CreatePostForm() {
         resolver: zodResolver(postFormSchema),
         defaultValues: {
             component: undefined,
+            title: "",
             description: "",
             price: 0,
             images: [],
@@ -52,7 +53,7 @@ export default function CreatePostForm() {
         mutation.mutate(
             {
                 componentId: formData.component.id,
-                title: formData.component.name,
+                title: formData.title,
                 description: formData.description,
                 price: formData.price,
                 images: uploadResult
@@ -128,6 +129,29 @@ export default function CreatePostForm() {
                                                     !!form.formState.errors
                                                         .component
                                                 }
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="title"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Titre
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Titre de mon annonce"
+                                                disabled={mutation.isPending}
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />
