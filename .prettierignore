@@ -1,0 +1,7 @@
+node_modules/
+.next/
+data/
+components.json
+eslint.config.mjs
+tsconfig.json
+bun.lock

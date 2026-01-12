@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -13,6 +12,7 @@ model User {
   email             String
   emailVerified     Boolean      @default(false)
   image             String?
+  phoneNumber       String?
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @default(now()) @updatedAt
   sessions          Session[]
@@ -26,6 +26,7 @@ model User {
 
   username        String?
   displayUsername String?
+  bio             String?
   ratingsReceived Rating[] @relation("ratee")
   ratingsGiven    Rating[] @relation("rater")
 
@@ -91,7 +92,7 @@ model Post {
   Report      Report[]
   Discussion  Discussion[]
   user        User         @relation(fields: [userId], references: [id])
-  images      Images[]
+  images      String[]
 
   @@map("post")
 }
@@ -104,16 +105,6 @@ model Favorite {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("favorite")
-}
-
-model Images {
-  id     String  @id @default(cuid())
-  image  String
-  alt    String?
-  postId String
-  post   Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@map("images")
 }
 
 enum REPORT_TYPE {
