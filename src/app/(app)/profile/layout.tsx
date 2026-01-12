@@ -5,5 +5,10 @@ export default function ProfileLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <RequiredLogin>{children}</RequiredLogin>;
+    return (
+        <>
+            <RequiredLogin />
+            {children}
+        </>
+    );
 }
