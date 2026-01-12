@@ -104,7 +104,7 @@ export function ComponentSelector({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[min(90vw,600px)] max-h-[85vh] overflow-y-auto">
+            <DialogContent className="w-full max-w-[95vw] sm:max-w-[600px] max-h-[85vh]">
                 <DialogHeader>
                     <DialogTitle>
                         Sélectionner un{" "}
@@ -151,8 +151,8 @@ export function ComponentSelector({
                                 className="w-full"
                             />
 
-                            <ScrollArea className="h-[400px] -mr-4 pr-4">
-                                <div className="w-full">
+                            <ScrollArea className="h-[400px] -mr-4 pr-2">
+                                <div className="w-full pr-2">
                                     {searchQuery$.isLoading ? (
                                         <div className="space-y-2 w-full">
                                             {Array.from({ length: 5 }).map(
@@ -185,13 +185,13 @@ export function ComponentSelector({
                     </TabsContent>
 
                     <TabsContent value="favorites" className="mt-4">
-                        <ScrollArea className="h-[400px] -mr-6 pr-6">
+                        <ScrollArea className="h-[400px] -mr-4 pr-4">
                             {!isAuthenticated ? (
                                 <div className="text-center text-muted-foreground py-8">
                                     Connectez-vous pour voir vos favoris
                                 </div>
                             ) : favoritesQuery$.isLoading ? (
-                                <div className="space-y-2 w-full">
+                                <div className="space-y-2 w-full pr-2">
                                     {Array.from({ length: 5 }).map((_, i) => (
                                         <Skeleton
                                             key={i}
@@ -204,7 +204,7 @@ export function ComponentSelector({
                                     Aucun favori pour ce type de composant
                                 </div>
                             ) : (
-                                <div className="space-y-2 w-full">
+                                <div className="space-y-2 w-full pr-2">
                                     {favoritesQuery$.data?.map((post) => (
                                         <PostCard
                                             key={post.id}
@@ -232,7 +232,7 @@ function PostCard({
     const imageUrl = post.images?.[0];
 
     return (
-        <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors max-w-full box-border">
+        <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors w-full box-border min-w-0">
             <div className="relative size-16 shrink-0 bg-muted rounded-md overflow-hidden">
                 {imageUrl ? (
                     <Image
