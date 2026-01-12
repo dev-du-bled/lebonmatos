@@ -84,7 +84,11 @@ type ShareDialogProps = {
     shareUrl: string;
 };
 
-export function ShareDialog({ open, onOpenChange, shareUrl }: ShareDialogProps) {
+export function ShareDialog({
+    open,
+    onOpenChange,
+    shareUrl,
+}: ShareDialogProps) {
     const [copied, setCopied] = useState(false);
 
     const handleCopyUrl = async () => {

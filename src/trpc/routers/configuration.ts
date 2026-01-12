@@ -12,7 +12,10 @@ const configurationItemSchema = z.object({
 
 const saveConfigurationSchema = z.object({
     id: z.string().optional(), // If provided, update existing configuration
-    name: z.string().min(1, "Le nom ne peut pas être vide").max(50, "Le nom ne doit pas dépasser 50 caractères"),
+    name: z
+        .string()
+        .min(1, "Le nom ne peut pas être vide")
+        .max(50, "Le nom ne doit pas dépasser 50 caractères"),
     isPublic: z.boolean().default(false),
     items: z.array(configurationItemSchema),
 });
