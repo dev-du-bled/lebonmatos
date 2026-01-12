@@ -1,23 +1,20 @@
 import Header from "@/components/nav/header";
-import Footer from "@/components/nav/footer";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import "../globals.css";
 
 export default async function AppLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-    return (
-        <main className="flex min-h-svh flex-col">
-            <Header initialSession={session} />
-            <div className="flex-1">{children}</div>
-            <Footer />
-        </main>
-    );
+  return (
+    <main className="bg-muted min-h-svh">
+      <Header initialSession={session} />
+      {children}
+    </main>
+  );
 }
