@@ -56,7 +56,7 @@ export function ListingCard({ listing }: ListingCardProps) {
         <Card className="overflow-hidden transition hover:border-primary hover:shadow-md p-0 gap-0">
             <div className="flex flex-col sm:flex-row">
                 <Link
-                    href={`/listing/${listing.id}`}
+                    href={`/post/${listing.id}`}
                     className="relative h-40 w-full bg-secondary sm:h-auto sm:w-48 shrink-0"
                 >
                     {listing.thumbnail ? (
@@ -73,7 +73,7 @@ export function ListingCard({ listing }: ListingCardProps) {
                     )}
                 </Link>
                 <div className="flex flex-1 flex-col justify-between p-4 gap-4">
-                    <Link href={`/listing/${listing.id}`} className="space-y-1">
+                    <Link href={`/post/${listing.id}`} className="space-y-1">
                         <div className="flex justify-between items-start gap-2">
                             <CardTitle className="text-base line-clamp-1">
                                 {listing.title}
