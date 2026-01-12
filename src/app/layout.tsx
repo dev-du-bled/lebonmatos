@@ -23,40 +23,33 @@ export const metadata: Metadata = {
   description: "La plateforme experte en seconde main de matériel informatique",
 };
 
-import { Toaster } from "@/components/ui/sonner";
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-    return (
-        <html lang="en" suppressHydrationWarning>
-            <head>
-                {process.env.NODE_ENV === "development" && (
-                    <Script
-                        crossOrigin="anonymous"
-                        src="//unpkg.com/react-scan/dist/auto.global.js"
-                    />
-                )}
-            </head>
-            <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-svh`}
-            >
-                <NextSSRPlugin
-                    routerConfig={extractRouterConfig(lbmFileRouter)}
-                />
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                >
-                    <TRPCProvider>{children}</TRPCProvider>
-                    <Toaster />
-                    {process.env.NODE_ENV === "development" && <DevToolbox />}
-                </ThemeProvider>
-            </body>
-        </html>
-    );
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {process.env.NODE_ENV === "development" && (
+          <Script
+            crossOrigin="anonymous"
+            src="//unpkg.com/react-scan/dist/auto.global.js"
+          />
+        )}
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-svh`}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TRPCProvider>{children}</TRPCProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
 }

@@ -25,12 +25,21 @@ export function UserMenu({ initialSession }: UserMenuProps) {
 
   const session = isPending ? initialSession : data;
 
-    if (!session?.user?.name)
-        return (
-            <Link className="shrink-0" href="/login">
-                <Button variant="outline">Se connecter</Button>
-            </Link>
-        );
+  if (!session?.user?.name)
+    return (
+      <Link
+        className="shrink-0"
+        href={`/login${
+          actualPath !== "/"
+            ? `?from=${encodeURIComponent(actualPath ?? "/")}`
+            : ""
+        }`}
+      >
+        <Button variant="outline" size="sm">
+          Se connecter
+        </Button>
+      </Link>
+    );
 
   return (
     <div>

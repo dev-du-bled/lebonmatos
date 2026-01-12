@@ -28,7 +28,6 @@ model User {
   displayUsername String?
   ratingsReceived Rating[] @relation("ratee")
   ratingsGiven    Rating[] @relation("rater")
-  configurations  Configuration[]
 
   @@unique([email])
   @@unique([username])
@@ -81,19 +80,18 @@ model Verification {
 }
 
 model Post {
-  id                 String              @id @default(cuid())
-  userId             String
-  title              String              @db.VarChar(50)
-  description        String?
-  price              Int
-  componentId        String
-  component          Component           @relation(fields: [componentId], references: [id])
-  Favorites          Favorite[]
-  Report             Report[]
-  Discussion         Discussion[]
-  user               User                @relation(fields: [userId], references: [id])
-  images             String[]
-  ConfigurationItems ConfigurationItem[]
+  id          String       @id @default(cuid())
+  userId      String
+  title       String       @db.VarChar(50)
+  description String?
+  price       Int
+  componentId String
+  component   Component    @relation(fields: [componentId], references: [id])
+  Favorites   Favorite[]
+  Report      Report[]
+  Discussion  Discussion[]
+  user        User         @relation(fields: [userId], references: [id])
+  images      Images[]
 
   @@map("post")
 }
@@ -186,29 +184,4 @@ model Rating {
   createdAt DateTime @default(now())
 
   @@map("rating")
-}
-
-model Configuration {
-  id        String              @id @default(cuid())
-  name      String              @db.VarChar(100)
-  userId    String?
-  user      User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isPublic  Boolean             @default(false)
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
-  items     ConfigurationItem[]
-
-  @@map("configuration")
-}
-
-model ConfigurationItem {
-  id              String        @id @default(cuid())
-  configurationId String
-  configuration   Configuration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
-  componentType   ComponentType
-  postId          String?
-  post            Post?         @relation(fields: [postId], references: [id], onDelete: SetNull)
-  quantity        Int           @default(1) @db.SmallInt
-
-  @@map("configuration_item")
 }
