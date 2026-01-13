@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import z from "zod";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { FieldGroup, Field } from "../ui/field";
@@ -19,17 +18,20 @@ import {
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import ComponentSelector from "./component-selector";
-import { Components, ReturnedComponent } from "@/utils/components";
+import { ReturnedComponent } from "@/utils/components";
 import { trpc } from "@/trpc/client";
-import ImageUpload from "../ui/image-upload";
-import { FileToBase64 } from "@/utils/file";
 import { postFormSchema, type PostFormData } from "@/lib/schema/post";
+import ImageUpload from "../ui/image-upload";
+import { useUploadThing } from "@/utils/uploadthing";
 
 export default function CreatePostForm() {
+    const ut = useUploadThing("postUploader");
+
     const form = useForm<PostFormData>({
         resolver: zodResolver(postFormSchema),
         defaultValues: {
             component: undefined,
+            title: "",
             description: "",
             location: "",
             price: 0,
@@ -44,25 +46,21 @@ export default function CreatePostForm() {
     const router = useRouter();
 
     const onSubmit = async (formData: PostFormData) => {
-        const images = await Promise.all(
-            formData.images?.map(async (file) => {
-                return FileToBase64(file);
-            }) || []
-        );
+        let uploadResult;
+        if (formData.images && formData.images.length > 0) {
+            uploadResult = await ut.startUpload(formData.images);
+        }
 
         mutation.mutate(
             {
                 componentId: formData.component.id,
-                title: formData.component.name,
+                title: formData.title,
                 description: formData.description,
                 location: formData.location,
                 price: formData.price,
-                images: images.map((data, index) => ({
-                    data,
-                    alt:
-                        formData.images?.[index]?.name ||
-                        `${formData.component?.name} image ${index + 1}`,
-                })),
+                images: uploadResult
+                    ? uploadResult.map((img) => img.ufsUrl)
+                    : [],
             },
             {
                 onSuccess: (data) => {
@@ -133,6 +131,29 @@ export default function CreatePostForm() {
                                                     !!form.formState.errors
                                                         .component
                                                 }
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="title"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Titre
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Titre de mon annonce"
+                                                disabled={mutation.isPending}
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -229,15 +250,23 @@ export default function CreatePostForm() {
                                                         : "text-muted-foreground"
                                                 }`}
                                             >
-                                                {field.value?.length || 0} / 6
+                                                {field.value?.length} / 6
                                             </span>
                                         </div>
                                         <FormControl>
                                             <ImageUpload
+                                                variant="dropzone"
+                                                maxImages={6}
+                                                disabled={
+                                                    form.formState
+                                                        .isSubmitting ||
+                                                    (field.value?.length ??
+                                                        0) >= 6
+                                                }
                                                 images={field.value || []}
-                                                onChange={(files) => {
-                                                    field.onChange(files);
-                                                }}
+                                                onChange={(file) =>
+                                                    field.onChange(file)
+                                                }
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -248,10 +277,10 @@ export default function CreatePostForm() {
                             <Field>
                                 <Button
                                     type="submit"
-                                    disabled={mutation.isPending}
+                                    disabled={form.formState.isSubmitting}
                                     className="w-full"
                                 >
-                                    {mutation.isPending
+                                    {form.formState.isSubmitting
                                         ? "Création..."
                                         : "Créer"}
                                 </Button>

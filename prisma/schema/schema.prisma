@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -14,8 +13,6 @@ model User {
   emailVerified     Boolean      @default(false)
   image             String?
   phoneNumber       String?
-  profileImageId    String?      @unique
-  profileImage      Image?       @relation("UserProfileImage", fields: [profileImageId], references: [id], onDelete: SetNull)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @default(now()) @updatedAt
   sessions          Session[]
@@ -29,9 +26,10 @@ model User {
 
   username        String?
   displayUsername String?
+  bio             String?
   ratingsReceived Rating[] @relation("ratee")
   ratingsGiven    Rating[] @relation("rater")
-  uploadedImage   Image[]  @relation("UserImage")
+  configurations  Configuration[]
 
   @@unique([email])
   @@unique([username])
@@ -84,19 +82,20 @@ model Verification {
 }
 
 model Post {
-  id          String       @id @default(cuid())
-  userId      String
-  title       String       @db.VarChar(50)
-  description String?
-  price       Int
-  location    String?
-  componentId String
-  component   Component    @relation(fields: [componentId], references: [id])
-  Favorites   Favorite[]
-  Report      Report[]
-  Discussion  Discussion[]
-  user        User         @relation(fields: [userId], references: [id])
-  images      Image[]
+  id                 String              @id @default(cuid())
+  userId             String
+  title              String              @db.VarChar(50)
+  description        String?
+  location           String?
+  price              Int
+  componentId        String
+  component          Component           @relation(fields: [componentId], references: [id])
+  Favorites          Favorite[]
+  Report             Report[]
+  Discussion         Discussion[]
+  user               User                @relation(fields: [userId], references: [id])
+  images             String[]
+  ConfigurationItems ConfigurationItem[]
 
   @@map("post")
 }
@@ -109,22 +108,6 @@ model Favorite {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("favorite")
-}
-
-model Image {
-  id    String  @id @default(cuid())
-  image String
-  alt   String?
-
-  ownerId String
-  owner   User   @relation("UserImage", fields: [ownerId], references: [id], onDelete: Cascade)
-
-  postId String?
-  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  profileOwner User? @relation("UserProfileImage")
-
-  @@map("images")
 }
 
 enum REPORT_TYPE {
@@ -195,4 +178,29 @@ model Rating {
   createdAt DateTime @default(now())
 
   @@map("rating")
+}
+
+model Configuration {
+  id        String              @id @default(cuid())
+  name      String              @db.VarChar(100)
+  userId    String?
+  user      User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isPublic  Boolean             @default(false)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  items     ConfigurationItem[]
+
+  @@map("configuration")
+}
+
+model ConfigurationItem {
+  id              String        @id @default(cuid())
+  configurationId String
+  configuration   Configuration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  componentType   ComponentType
+  postId          String?
+  post            Post?         @relation(fields: [postId], references: [id], onDelete: SetNull)
+  quantity        Int           @default(1) @db.SmallInt
+
+  @@map("configuration_item")
 }

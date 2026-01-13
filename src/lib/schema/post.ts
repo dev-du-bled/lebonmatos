@@ -1,10 +1,5 @@
 import { z } from "zod";
-import { base64ImageSchema } from "./shared";
 import type { ReturnedComponent } from "@/utils/components";
-
-/**
- * Schémas Zod pour le modèle Post
- */
 
 /**
  * Schéma pour le modèle Post (correspondant à Prisma)
@@ -41,20 +36,14 @@ export const postCreateSchema = z.object({
     price: z.number().int().min(1, {
         message: "Le prix doit être supérieur ou égal à 1€",
     }),
-
     location: z
         .string()
         .optional()
         .refine((val) => !val || /.+ \d{5}/.test(val), {
             message: "La localisation doit être au format 'Ville 12345'",
         }),
-    imgaes: z
-        .array(
-            z.object({
-                data: base64ImageSchema,
-                alt: z.string().max(120).optional(),
-            })
-        )
+    images: z
+        .array(z.string())
         .max(6, { message: "Vous pouvez télécharger jusqu'à 6 images" })
         .optional(),
 });
@@ -65,6 +54,9 @@ export const postCreateSchema = z.object({
 export const postFormSchema = z.object({
     component: z.custom<ReturnedComponent>((value) => value !== undefined, {
         error: "Vous devez sélectionner un composant",
+    }),
+    title: z.string().min(3).max(50, {
+        error: "Le titre doit contenir entre 3 et 50 caractères",
     }),
     description: z
         .string()
@@ -86,7 +78,7 @@ export const postFormSchema = z.object({
         }),
     images: z
         .array(z.instanceof(File))
-        .max(6)
+        .max(6, { message: "Le nombre d'images est limité à 6" })
         .refine(
             (files) => {
                 return files.every((file) => file.type.startsWith("image/"));

@@ -26,9 +26,7 @@ export function UserMenu({ initialSession }: { initialSession?: unknown }) {
     if (!session?.user?.name)
         return (
             <Link className="shrink-0" href="/login">
-                <Button variant="outline" size="sm">
-                    Se connecter
-                </Button>
+                <Button variant="outline">Se connecter</Button>
             </Link>
         );
 
