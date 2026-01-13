@@ -1,10 +1,13 @@
 import { PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { Faker, fr } from "@faker-js/faker";
-import fs from "fs";
-import path from "path";
-import { FileToBase64 } from "../../src/utils/file";
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
 const faker = new Faker({
     locale: [fr],
 });
@@ -27,33 +30,6 @@ async function addUsers(count: number) {
         users.push(user);
     }
     return users;
-}
-
-async function mockComponentImage(ctype: string): Promise<string> {
-    const imagesDir = path.join(process.cwd(), "data", "mock_images", ctype);
-    if (!fs.existsSync(imagesDir)) {
-        console.warn(
-            `Warning: Image directory for component ${ctype} not found at ${imagesDir}. No mock images will be for this component.`
-        );
-        return "";
-    }
-
-    const files = fs
-        .readdirSync(imagesDir)
-        .filter((f) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f));
-    const choosenImage = files[Math.floor(Math.random() * files.length)];
-
-    const filePath = path.join(imagesDir, choosenImage);
-    const buffer = fs.readFileSync(filePath);
-    const mimeType = `image/${choosenImage.split(".").pop()}`; // Simple mime type guess
-    const blob = new Blob([buffer], { type: mimeType });
-    try {
-        // @ts-expect-error idc
-        return await FileToBase64(blob);
-    } catch (error) {
-        console.error(`Error converting ${choosenImage} to base64:`, error);
-        return "";
-    }
 }
 
 async function main() {
@@ -92,20 +68,12 @@ async function main() {
                     connect: { id: component.id },
                 },
                 location: `${faker.location.city().replace(" ", "-")} ${faker.location.zipCode()}`,
-                images: {
-                    create:
-                        Math.random() < 0.8
-                            ? [
-                                  {
-                                      image: await mockComponentImage(
-                                          component.type
-                                      ),
-                                      alt: `Image of ${component.name}`,
-                                      ownerId: user.id,
-                                  },
-                              ]
-                            : [],
-                },
+                images:
+                    Math.random() < 0.8
+                        ? [
+                              `https://pinjasaur-unsplashsourcereimplementation.web.val.run/?query=${component.type.toLowerCase()}`,
+                          ]
+                        : [],
             },
         });
         console.log(`Created post with id: ${post.id}`);
@@ -115,10 +83,7 @@ async function main() {
     for (const user of users) {
         const ratingsCount = faker.number.int({ min: 0, max: 5 });
         const potentialRaters = users.filter((u) => u.id !== user.id);
-        const raters = faker.helpers.arrayElements(
-            potentialRaters,
-            Math.min(ratingsCount, potentialRaters.length)
-        );
+        const raters = faker.helpers.arrayElements(potentialRaters, Math.min(ratingsCount, potentialRaters.length));
 
         for (const rater of raters) {
             await prisma.rating.create({
