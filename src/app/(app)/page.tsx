@@ -1,70 +1,9 @@
 import Advert from "@/components/home-page/advert";
 import PostCarousel from "@/components/home-page/post-carousel";
-import { prisma } from "@/lib/prisma";
+import { trpc } from "@/trpc/server";
 
 export default async function Home() {
-    const posts = await prisma.post.findMany({
-        take: 10,
-        include: {
-            user: true,
-        },
-        where: {
-            images: {
-                isEmpty: false,
-            },
-        },
-    });
-
-    const cases = await prisma.post.findMany({
-        take: 10,
-        include: {
-            user: true,
-            component: {
-                select: {
-                    type: true,
-                },
-            },
-        },
-        where: {
-            component: {
-                type: "CASE",
-            },
-        },
-    });
-
-    const cpus = await prisma.post.findMany({
-        take: 10,
-        include: {
-            user: true,
-            component: {
-                select: {
-                    type: true,
-                },
-            },
-        },
-        where: {
-            component: {
-                type: "CPU",
-            },
-        },
-    });
-
-    const gpus = await prisma.post.findMany({
-        take: 10,
-        include: {
-            user: true,
-            component: {
-                select: {
-                    type: true,
-                },
-            },
-        },
-        where: {
-            component: {
-                type: "GPU",
-            },
-        },
-    });
+    const { posts, cases, cpus, gpus } = await trpc.posts.getHomePage();
 
     return (
         <div className="wide-lock font-serif w-[70%] flex flex-col justify-center gap-3 mb-3!">

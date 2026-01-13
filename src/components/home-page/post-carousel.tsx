@@ -1,42 +1,24 @@
-import { Post, User, Image } from "@prisma/client";
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "../ui/carousel";
+import { Post, User } from "@prisma/client";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../ui/carousel";
 import PostPreview from "./post-preview";
 
 interface PostCarouselProps {
     headerText: string;
-    posts: (Post & { user: User; images: Image[] })[];
+    posts: (Post & { user: User })[];
     fullHeight?: boolean;
 }
 
-export default function PostCarousel({
-    headerText,
-    posts,
-    fullHeight,
-}: PostCarouselProps) {
+export default function PostCarousel({ headerText, posts, fullHeight }: PostCarouselProps) {
     return (
         <div className="flex flex-col w-full">
-            <span className="text-2xl font-bold font-sans text-foreground">
-                {headerText}
-            </span>
+            <span className="text-2xl font-bold font-sans text-foreground">{headerText}</span>
             {posts.length > 0 ? (
                 <Carousel className="w-full">
                     <CarouselContent>
                         {posts.map((post) => {
                             return (
-                                <CarouselItem
-                                    className="lg:basis-1/5 sm:basis-1/3"
-                                    key={post.id}
-                                >
-                                    <PostPreview
-                                        fullHeight={fullHeight || false}
-                                        post={post}
-                                    />
+                                <CarouselItem className="lg:basis-1/5 sm:basis-1/3" key={post.id}>
+                                    <PostPreview fullHeight={fullHeight || false} post={post} />
                                 </CarouselItem>
                             );
                         })}
@@ -45,9 +27,7 @@ export default function PostCarousel({
                     <CarouselNext />
                 </Carousel>
             ) : (
-                <span className="self-center text-xl font-sans my-10 text-foreground">
-                    Aucune annonces :(
-                </span>
+                <span className="self-center text-xl font-sans my-10 text-foreground">Aucune annonces :(</span>
             )}
         </div>
     );
