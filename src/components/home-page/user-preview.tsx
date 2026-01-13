@@ -18,7 +18,9 @@ export default async function UserPreview({ user }: UserPreviewProps) {
             </Avatar>
 
             <div className="flex font-sans flex-col">
-                <span className="text-sm">{user?.name ?? "Utilisateur supprimé"}</span>
+                <span className="text-sm">
+                    {user?.name ?? "Utilisateur supprimé"}
+                </span>
                 <span className="flex flex-row items-center gap-1 text-xs font-sans">
                     {profile?.rating.average?.toFixed(1) ?? "-"}
                     <Star size={12} className="fill-primary stroke-0" />

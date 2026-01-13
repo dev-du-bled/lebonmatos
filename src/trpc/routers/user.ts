@@ -85,7 +85,8 @@ export const userRouter = createTRPCRouter({
             if (!userId) {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",
-                    message: "Vous devez être connecté pour accéder à ce profil",
+                    message:
+                        "Vous devez être connecté pour accéder à ce profil",
                 });
             }
             return buildProfilePayload(userId);

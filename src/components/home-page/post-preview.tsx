@@ -9,7 +9,10 @@ interface PostPreviewProps {
     fullHeight: boolean;
 }
 
-export default async function PostPreview({ post, fullHeight }: PostPreviewProps) {
+export default async function PostPreview({
+    post,
+    fullHeight,
+}: PostPreviewProps) {
     return (
         <Link
             href={`/post/${post.id}`}
@@ -24,13 +27,17 @@ export default async function PostPreview({ post, fullHeight }: PostPreviewProps
                 src={post.images.at(0) || "/images/fallback.webp"}
                 className={cn(
                     "w-full object-cover rounded-sm shadow-2xl",
-                    fullHeight ? "aspect-3/4 hover:scale-105 transition-transform" : "aspect-16/10"
+                    fullHeight
+                        ? "aspect-3/4 hover:scale-105 transition-transform"
+                        : "aspect-16/10"
                 )}
                 alt=""
             />
             {!fullHeight && (
                 <>
-                    <span className="text-md font-medium font-sans">{post.title}</span>
+                    <span className="text-md font-medium font-sans">
+                        {post.title}
+                    </span>
                     <span className="text-sm font-sans">{`${post.price}€${post.location ? ` ⋅ ${post.location}` : ""}`}</span>
                     <UserPreview user={post.user} />
                 </>

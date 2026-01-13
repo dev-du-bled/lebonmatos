@@ -11,7 +11,11 @@ interface PostCardProps {
 
 export default function PostCard({ id, title, price, images }: PostCardProps) {
     return (
-        <Link key={id} href={`/post/${id}`} className="border rounded-lg overflow-hidden group relative shadow-sm">
+        <Link
+            key={id}
+            href={`/post/${id}`}
+            className="border rounded-lg overflow-hidden group relative shadow-sm"
+        >
             <Image
                 src={images[0] || "/images/fallback.webp"}
                 alt={`Image of ${title}`}

@@ -83,7 +83,10 @@ async function main() {
     for (const user of users) {
         const ratingsCount = faker.number.int({ min: 0, max: 5 });
         const potentialRaters = users.filter((u) => u.id !== user.id);
-        const raters = faker.helpers.arrayElements(potentialRaters, Math.min(ratingsCount, potentialRaters.length));
+        const raters = faker.helpers.arrayElements(
+            potentialRaters,
+            Math.min(ratingsCount, potentialRaters.length)
+        );
 
         for (const rater of raters) {
             await prisma.rating.create({

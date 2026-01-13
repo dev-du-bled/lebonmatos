@@ -14,7 +14,8 @@ const nextConfig: NextConfig = {
             // by seeded test data from prisma/seed/mock-data.ts
             {
                 protocol: "https",
-                hostname: "pinjasaur-unsplashsourcereimplementation.web.val.run",
+                hostname:
+                    "pinjasaur-unsplashsourcereimplementation.web.val.run",
             },
         ],
     },
