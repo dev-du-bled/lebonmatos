@@ -7,15 +7,10 @@ export default async function Home() {
         take: 10,
         include: {
             user: true,
-            images: true,
         },
         where: {
             images: {
-                some: {
-                    image: {
-                        not: undefined,
-                    },
-                },
+                isEmpty: false,
             },
         },
     });
@@ -24,7 +19,6 @@ export default async function Home() {
         take: 10,
         include: {
             user: true,
-            images: true,
             component: {
                 select: {
                     type: true,
@@ -42,7 +36,6 @@ export default async function Home() {
         take: 10,
         include: {
             user: true,
-            images: true,
             component: {
                 select: {
                     type: true,
@@ -60,7 +53,6 @@ export default async function Home() {
         take: 10,
         include: {
             user: true,
-            images: true,
             component: {
                 select: {
                     type: true,
@@ -76,11 +68,7 @@ export default async function Home() {
 
     return (
         <div className="wide-lock font-serif w-[70%] flex flex-col justify-center gap-3 mb-3!">
-            <PostCarousel
-                headerText="En recherche de Matos?"
-                fullHeight={true}
-                posts={posts}
-            />
+            <PostCarousel headerText="En recherche de Matos?" fullHeight={true} posts={posts} />
             <Advert />
             <PostCarousel headerText="Boitiers de PC" posts={cases} />
             <PostCarousel headerText="Processeurs" posts={cpus} />
