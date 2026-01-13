@@ -78,27 +78,9 @@ export const userRouter = createTRPCRouter({
     meId: privateProcedure.query(({ ctx }) => {
         return ctx.session!.user.id;
     }),
-    getProfile: publicProcedure
-        .input(
-            z
-                .object({
-                    userId: z.string().optional(),
-                })
-                .optional()
-        )
-        .query(({ ctx, input }) => {
-            const userId = input?.userId ?? ctx.session?.user.id;
-
-            if (!userId) {
-                throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message:
-                        "Vous devez être connecté ou spécifier un ID utilisateur.",
-                });
-            }
-
-            return buildProfilePayload(userId);
-        }),
+    getProfile: privateProcedure.query(({ ctx }) =>
+        buildProfilePayload(ctx.session!.user.id)
+    ),
     updateProfile: privateProcedure
         .input(profileUpdateSchema)
         .mutation(async ({ ctx, input }) => {
