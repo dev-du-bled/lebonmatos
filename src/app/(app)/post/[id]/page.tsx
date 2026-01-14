@@ -64,19 +64,35 @@ export default async function PostPage({
                 <div className="flex flex-col flex-1">
                     <Carousel className="w-full">
                         <CarouselContent className="ml-0">
-                            {post.images.map((image, index) => (
+                            {post.images.length > 0 ? (
+                                post.images.map((image, index) => (
+                                    <CarouselItem
+                                        key={index}
+                                        className="relative aspect-square w-full max-h-96"
+                                    >
+                                        <Image
+                                            src={
+                                                image || "/images/fallback.webp"
+                                            }
+                                            alt={`Image ${index + 1}`}
+                                            fill
+                                            className="object-cover rounded-lg"
+                                        />
+                                    </CarouselItem>
+                                ))
+                            ) : (
                                 <CarouselItem
-                                    key={index}
+                                    key={0}
                                     className="relative aspect-square w-full max-h-96"
                                 >
                                     <Image
-                                        src={image || "/placeholder.jpg"}
-                                        alt={`Image ${index + 1}`}
+                                        src={"/images/fallback.webp"}
+                                        alt={`L'utilisateur n'a pas téléversé d'images`}
                                         fill
                                         className="object-cover rounded-lg"
                                     />
                                 </CarouselItem>
-                            ))}
+                            )}
                         </CarouselContent>
                         <CarouselPrevious className="-left-4" />
                         <CarouselNext className="-right-4" />

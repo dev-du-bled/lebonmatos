@@ -72,6 +72,7 @@ export const postRouter = createTRPCRouter({
                         title: input.title,
                         description: input.description,
                         price: input.price,
+                        location: input.location,
                         componentId: input.componentId,
                         images: input.images || [],
                     },
@@ -219,4 +220,76 @@ export const postRouter = createTRPCRouter({
                 images: post.images,
             }));
         }),
+
+    getHomePage: publicProcedure.query(async () => {
+        const posts = await prisma.post.findMany({
+            take: 10,
+            include: {
+                user: true,
+            },
+            where: {
+                images: {
+                    isEmpty: false,
+                },
+            },
+        });
+
+        const cases = await prisma.post.findMany({
+            take: 10,
+            include: {
+                user: true,
+                component: {
+                    select: {
+                        type: true,
+                    },
+                },
+            },
+            where: {
+                component: {
+                    type: "CASE",
+                },
+            },
+        });
+
+        const cpus = await prisma.post.findMany({
+            take: 10,
+            include: {
+                user: true,
+                component: {
+                    select: {
+                        type: true,
+                    },
+                },
+            },
+            where: {
+                component: {
+                    type: "CPU",
+                },
+            },
+        });
+
+        const gpus = await prisma.post.findMany({
+            take: 10,
+            include: {
+                user: true,
+                component: {
+                    select: {
+                        type: true,
+                    },
+                },
+            },
+            where: {
+                component: {
+                    type: "GPU",
+                },
+            },
+        });
+
+        return {
+            posts,
+            cases,
+            cpus,
+            gpus,
+        };
+    }),
 });

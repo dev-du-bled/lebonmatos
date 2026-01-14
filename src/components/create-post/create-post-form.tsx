@@ -33,6 +33,7 @@ export default function CreatePostForm() {
             component: undefined,
             title: "",
             description: "",
+            location: "",
             price: 0,
             images: [],
         },
@@ -55,6 +56,7 @@ export default function CreatePostForm() {
                 componentId: formData.component.id,
                 title: formData.title,
                 description: formData.description,
+                location: formData.location,
                 price: formData.price,
                 images: uploadResult
                     ? uploadResult.map((img) => img.ufsUrl)
@@ -174,6 +176,24 @@ export default function CreatePostForm() {
                                             <Textarea
                                                 className="min-h-40 max-h-80"
                                                 placeholder="Description de mon super composant"
+                                                disabled={mutation.isPending}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="location"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Location</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Paris 75000"
                                                 disabled={mutation.isPending}
                                                 {...field}
                                             />

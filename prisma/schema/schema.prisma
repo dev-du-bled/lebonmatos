@@ -86,6 +86,7 @@ model Post {
   userId             String
   title              String              @db.VarChar(50)
   description        String?
+  location           String?
   price              Int
   componentId        String
   component          Component           @relation(fields: [componentId], references: [id])
