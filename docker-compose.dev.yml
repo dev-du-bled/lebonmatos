@@ -3,12 +3,10 @@ services:
         image: postgres:alpine
         ports:
             - 5432:5432
-        environment:
-            POSTGRES_USER: lbmuser
-            POSTGRES_PASSWORD: lbmsupersecurepassword
-            POSTGRES_DB: lbmdb
         volumes:
-            - lbm_data:/var/lib/postgresql/data
+            - lbm_dev_data:/var/lib/postgresql/data
+        env_file:
+            - .env.dev
 
         healthcheck:
             test:
@@ -36,7 +34,7 @@ services:
                 condition: service_healthy
 
 volumes:
-    lbm_data:
+    lbm_dev_data:
         driver: local
     lmb_search_data:
         driver: local
