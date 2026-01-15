@@ -1,6 +1,11 @@
 import { Client } from "pg";
 import { MeiliSearch } from "meilisearch";
-import { wrappMeiliTask } from "./utils";
+import {
+    wrappMeiliTask,
+    POST_QUERY_BASE,
+    TYPE_TO_TABLE,
+    COMPONENT_QUERIES_BASE,
+} from "./utils";
 
 const pg_url = process.env["DATABASE_URL"];
 
@@ -23,26 +28,9 @@ const meilisearch = new MeiliSearch({
 });
 
 async function syncPost(id: string) {
-    const { rows } = await client.query(
-        `
-        SELECT
-            p.id,
-            p.title,
-            p.description,
-            p.price,
-            p."userId",
-            p."componentId",
-            c.name as "componentName",
-            c.type as "componentType",
-            u.name as "userName",
-            (SELECT image FROM images WHERE "postId" = p.id LIMIT 1) as image
-        FROM post p
-        LEFT JOIN component c ON p."componentId" = c.id
-        LEFT JOIN "user" u ON p."userId" = u.id
-        WHERE p.id = $1
-    `,
-        [id]
-    );
+    const { rows } = await client.query(POST_QUERY_BASE + " WHERE p.id = $1", [
+        id,
+    ]);
 
     if (rows.length > 0) {
         const task = await wrappMeiliTask(
@@ -50,59 +38,30 @@ async function syncPost(id: string) {
         );
         console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
     } else {
-        // If for some reason it does not exists in Postgres, remove it from meilisearch
         await meilisearch.index("posts").deleteDocument(id);
         console.log(`Pruned old post ${id}`);
     }
 }
 
-async function syncComponent(id: string) {
-    const { rows } = await client.query(
-        `
-        SELECT
-            c.id,
-            c.name,
-            c."estimatedPrice",
-            c.color,
-            c.type,
-            cpu."coreCount", cpu."coreClock"::float as "cpuCoreClock", cpu."boostClock"::float as "cpuBoostClock", cpu.microarch, cpu.tdp, cpu.graphics as "cpuGraphics",
-            gpu.chipset, gpu.memory as "gpuMemory", gpu."coreClock" as "gpuCoreClock", gpu."boostClock" as "gpuBoostClock", gpu.length as "gpuLength",
-            mb.socket, mb."formFactor" as "mbFormFactor", mb."maxMemory", mb."memorySlots",
-            ram.type as "ramType", ram.speed, ram.modules, ram.size, ram."casLatency",
-            ssd.capacity as "ssdCapacity", ssd.cache as "ssdCache", ssd.interface as "ssdInterface", ssd."formFactor" as "ssdFormFactor",
-            hdd.capacity as "hddCapacity", hdd.cache as "hddCache", hdd."formFactor" as "hddFormFactor", hdd.interface as "hddInterface",
-            psu.type as "psuType", psu.wattage, psu.efficiency, psu.modular,
-            cooler."rpmIdle" as "coolerRpmIdle", cooler."rpmMax" as "coolerRpmMax", cooler."noiseIdle"::float as "coolerNoiseIdle", cooler."noiseMax"::float as "coolerNoiseMax", cooler.size as "coolerSize",
-            pc_case.type as "caseType", pc_case."sidePanel", pc_case.volume::float as "caseVolume", pc_case."bays3_5",
-            fan.size as "fanSize", fan."rpmIdle" as "fanRpmIdle", fan."rpmMax" as "fanRpmMax", fan."noiseIdle"::float as "fanNoiseIdle", fan."noiseMax"::float as "fanNoiseMax", fan."airflowIdle"::float as "fanAirflowIdle", fan."airflowMax"::float as "fanAirflowMax", fan.pwm,
-            sound.channels, sound."digitalAudio", sound.snr, sound."sampleRate", sound.chipset as "soundChipset", sound.interface as "soundInterface",
-            wifi.interface as "wifiInterface", wifi.protocol
-        FROM component c
-        LEFT JOIN cpu ON c.id = cpu."componentId"
-        LEFT JOIN gpu ON c.id = gpu."componentId"
-        LEFT JOIN motherboard mb ON c.id = mb."componentId"
-        LEFT JOIN ram ON c.id = ram."componentId"
-        LEFT JOIN ssd ON c.id = ssd."componentId"
-        LEFT JOIN hdd ON c.id = hdd."componentId"
-        LEFT JOIN "powerSupply" psu ON c.id = psu."componentId"
-        LEFT JOIN "cpuCooler" cooler ON c.id = cooler."componentId"
-        LEFT JOIN "case" pc_case ON c.id = pc_case."componentId"
-        LEFT JOIN "caseFan" fan ON c.id = fan."componentId"
-        LEFT JOIN "soundCard" sound ON c.id = sound."componentId"
-        LEFT JOIN "wirelessNetworkCard" wifi ON c.id = wifi."componentId"
-        WHERE c.id = $1
-    `,
-        [id]
-    );
+async function syncComponent(id: string, table: string) {
+    const queryBase = COMPONENT_QUERIES_BASE[table];
+    if (!queryBase) {
+        console.error(`No query defined for component table '${table}'`);
+        return;
+    }
+
+    const { rows } = await client.query(queryBase + " WHERE c.id = $1", [id]);
 
     if (rows.length > 0) {
         const task = await wrappMeiliTask(
-            meilisearch.index("components").addDocuments(rows)
+            meilisearch.index(table).addDocuments(rows)
         );
-        console.log(`Synced component with id '${id}' at ${task.finishedAt}`);
+        console.log(
+            `Synced component with id '${id}' to index '${table}' at ${task.finishedAt}`
+        );
     } else {
-        await meilisearch.index("components").deleteDocument(id);
-        console.log(`Pruned old component ${id}`);
+        await meilisearch.index(table).deleteDocument(id);
+        console.log(`Pruned component ${id} from index ${table}`);
     }
 }
 
@@ -121,7 +80,9 @@ client.on("notification", async (msg) => {
     if (!msg.payload) return;
 
     try {
-        const { id, table, operation } = JSON.parse(msg.payload);
+        const payload = JSON.parse(msg.payload);
+        const { id, table, operation, data } = payload;
+
         console.log(`Received '${operation}' on '${table}' with id '${id}'`);
 
         if (table === "post") {
@@ -133,17 +94,36 @@ client.on("notification", async (msg) => {
             } else {
                 await syncPost(id);
             }
-            // would probably be better to use a case statement here, to avoid slowing down
-            // the sync each time we add a new table
         } else if (table === "component") {
+            const type = data.type as string;
+            const targetTable = TYPE_TO_TABLE[type];
+
+            if (!targetTable) {
+                console.warn(`Unknown component type '${type}' for id '${id}'`);
+                return;
+            }
+
             if (operation === "DELETE") {
                 await wrappMeiliTask(
-                    meilisearch.index("components").deleteDocument(id)
+                    meilisearch.index(targetTable).deleteDocument(id)
                 );
-                console.log(`Deleted component ${id} from index`);
+                console.log(
+                    `Deleted component ${id} from index ${targetTable}`
+                );
             } else {
-                await syncComponent(id);
+                await syncComponent(id, targetTable);
                 await syncLinkedPosts(id);
+            }
+        } else if (COMPONENT_QUERIES_BASE[table]) {
+            if (operation === "DELETE") {
+                const componentId = data.componentId;
+                if (componentId) {
+                    await syncComponent(componentId, table);
+                }
+            } else {
+                // INSERT or UPDATE
+                const componentId = data.componentId;
+                await syncComponent(componentId, table);
             }
         }
     } catch (e) {

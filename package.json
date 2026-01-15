@@ -12,7 +12,8 @@
         "prisma:data": "bun ./prisma/seed/data.ts",
         "prisma:reset": "prisma migrate reset --schema prisma/schema/",
         "sync:start": "bun sync/index.ts",
-        "sync:reset": "bun sync/resetMeili.ts"
+        "sync:reset": "bun sync/resetMeili.ts",
+        "sync:all": "bun sync/syncAll.ts"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.2",

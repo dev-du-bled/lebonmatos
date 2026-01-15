@@ -13,22 +13,34 @@ const meilisearch = new MeiliSearch({
     apiKey: meilisearch_api_key,
 });
 
+const indexes = [
+    "posts",
+    "cpu",
+    "gpu",
+    "motherboard",
+    "ram",
+    "ssd",
+    "hdd",
+    "powerSupply",
+    "cpuCooler",
+    "case",
+    "caseFan",
+    "soundCard",
+    "wirelessNetworkCard",
+];
+
 try {
-    // don't care if the indexes don't exists and can't be deleted, no need to yell at me
-    await wrappMeiliTask(meilisearch.deleteIndex("posts")).catch(() => {});
-    await wrappMeiliTask(meilisearch.deleteIndex("components")).catch(() => {});
+    for (const index of indexes) {
+        // don't care if the indexes don't exists and can't be deleted, no need to yell at me
+        await wrappMeiliTask(meilisearch.deleteIndex(index)).catch(() => {});
 
-    await wrappMeiliTask(
-        meilisearch.createIndex("posts", {
-            primaryKey: "id",
-        })
-    );
-
-    await wrappMeiliTask(
-        meilisearch.createIndex("components", {
-            primaryKey: "id",
-        })
-    );
+        await wrappMeiliTask(
+            meilisearch.createIndex(index, {
+                primaryKey: "id",
+            })
+        );
+        console.log(`Reset index: ${index}`);
+    }
 } catch (err) {
     console.error((err as MeiliSearchErrorResponse).message);
 }
