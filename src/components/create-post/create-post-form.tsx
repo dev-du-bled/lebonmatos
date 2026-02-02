@@ -172,7 +172,7 @@ export default function CreatePostForm() {
 
                             <div className="space-y-4">
                                 <h3 className="text-lg font-medium">
-                                    2. Détails de l'annonce
+                                    2. Détails de l&apos;annonce
                                 </h3>
                                 <FormField
                                     control={form.control}
@@ -180,7 +180,7 @@ export default function CreatePostForm() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>
-                                                Titre de l'annonce{" "}
+                                                Titre de l&apos;annonce{" "}
                                                 <span className="text-destructive">
                                                     *
                                                 </span>
@@ -328,8 +328,8 @@ export default function CreatePostForm() {
                                                 />
                                             </FormControl>
                                             <p className="text-xs text-muted-foreground mt-2">
-                                                Ajoutez jusqu'à 6 photos pour
-                                                mettre en valeur votre
+                                                Ajoutez jusqu&apos;à 6 photos
+                                                pour mettre en valeur votre
                                                 composant.
                                             </p>
                                             <FormMessage />
