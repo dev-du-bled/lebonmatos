@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
@@ -24,6 +24,8 @@ import AlreadyLoggedInRedirect from "./already-loggedin-redirect";
 export function SignupForm() {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirect = searchParams.get("redirect");
     const { executeRecaptcha } = useGoogleReCaptcha();
 
     const form = useForm<SignupFormData>({
@@ -80,7 +82,7 @@ export function SignupForm() {
                         "L'inscription a échoué. Veuillez réessayer.",
                 });
             } else {
-                router.push("/");
+                router.push(redirect || "/");
                 router.refresh();
             }
         } catch {
@@ -228,7 +230,15 @@ export function SignupForm() {
                                 </Field>
                                 <FieldDescription className="text-center">
                                     Vous avez déjà un compte ?{" "}
-                                    <a href="/login">Se connecter</a>
+                                    <a
+                                        href={
+                                            redirect
+                                                ? `/login?redirect=${encodeURIComponent(redirect)}`
+                                                : "/login"
+                                        }
+                                    >
+                                        Se connecter
+                                    </a>
                                 </FieldDescription>
                             </FieldGroup>
                         </form>
