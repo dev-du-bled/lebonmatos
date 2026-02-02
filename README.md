@@ -12,7 +12,12 @@ Pour démarrer le serveur de développement, exécuter les étapes suivantes :
 2. `bun dev:docker` démarrer le conteneur Docker de la base de données de dev
 3. `bun prisma:generate` générer les modèles Prisma
 4. `bun prisma:push` appliquer les migrations à la base de données
-5. `bun dev` démarrer le serveur de développement
+5. `bun sync:reset` initialiser meilisearch
+6. `bun sync:all` synchroniser meilisearch la base de donnée
+7. `bun sync:start` démarer le service de synchronisation
+> [!warning]
+> Toujours démarer le service de synchronisation **après** avoir seed la base de donnée avec les données des composants
+6. `bun dev` démarrer le serveur de développement
 
 ### Version de production avec Docker
 
