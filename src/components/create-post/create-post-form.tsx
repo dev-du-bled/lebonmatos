@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
-import { FieldGroup, Field } from "../ui/field";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Separator } from "../ui/separator";
 import {
     FormField,
     FormItem,
@@ -23,6 +23,7 @@ import { trpc } from "@/trpc/client";
 import { postFormSchema, type PostFormData } from "@/lib/schema/post";
 import ImageUpload from "../ui/image-upload";
 import { useUploadThing } from "@/utils/uploadthing";
+import { Loader2 } from "lucide-react";
 
 export default function CreatePostForm() {
     const ut = useUploadThing("postUploader");
@@ -48,7 +49,22 @@ export default function CreatePostForm() {
     const onSubmit = async (formData: PostFormData) => {
         let uploadResult;
         if (formData.images && formData.images.length > 0) {
-            uploadResult = await ut.startUpload(formData.images);
+            try {
+                uploadResult = await ut.startUpload(formData.images);
+                if (!uploadResult) {
+                    form.setError("images", {
+                        message: "L'upload des images a échoué. Veuillez réessayer.",
+                    });
+                    return;
+                }
+            } catch (error) {
+                form.setError("images", {
+                    message: error instanceof Error 
+                        ? error.message 
+                        : "Une erreur est survenue lors de l'upload des images.",
+                });
+                return;
+            }
         }
 
         mutation.mutate(
@@ -76,216 +92,194 @@ export default function CreatePostForm() {
     };
 
     return (
-        <Card className="overflow-hidden p-0">
+        <Card className="w-full border-none shadow-none bg-transparent">
+            <CardHeader className="text-center px-0">
+                <CardTitle className="text-3xl font-bold">Créer une Annonce</CardTitle>
+                <CardDescription>
+                    Mettez en vente vos composants informatiques en quelques clics.
+                </CardDescription>
+            </CardHeader>
             <CardContent className="p-0">
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}
-                        className="p-6 md:p-8"
+                        className="space-y-8"
                     >
-                        <FieldGroup>
-                            <h1 className="text-2xl font-bold text-center">
-                                Créer une Annonce
-                            </h1>
+                        {form.formState.errors.root && (
+                            <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm text-center">
+                                {form.formState.errors.root.message}
+                            </div>
+                        )}
 
-                            {form.formState.errors.root && (
-                                <div className="text-destructive text-sm text-center">
-                                    <span>
-                                        {form.formState.errors.root.message}
-                                    </span>
-                                </div>
-                            )}
+                        <div className="space-y-6">
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium">1. Quel composant vendez-vous ?</h3>
+                                <FormField
+                                    control={form.control}
+                                    name="component"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <ComponentSelector
+                                                    selectedComponent={selectedComponent}
+                                                    setSelectedComponent={(component) => {
+                                                        setSelectedComponent(component);
+                                                        if (component) {
+                                                            form.setValue("price", component.price || form.getValues("price"));
+                                                        }
+                                                        field.onChange(component);
+                                                    }}
+                                                    errored={!!form.formState.errors.component}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                            <FormField
-                                control={form.control}
-                                name="component"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>
-                                            Composant
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </FormLabel>
-                                        <FormControl>
-                                            <ComponentSelector
-                                                selectedComponent={
-                                                    selectedComponent
-                                                }
-                                                setSelectedComponent={(
-                                                    component
-                                                ) => {
-                                                    setSelectedComponent(
-                                                        component
-                                                    );
-                                                    form.setValue(
-                                                        "price",
-                                                        component?.price ||
-                                                            form.getValues(
-                                                                "price"
+                            <Separator />
+
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium">2. Détails de l'annonce</h3>
+                                <FormField
+                                    control={form.control}
+                                    name="title"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Titre de l'annonce <span className="text-destructive">*</span></FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Ex: Carte Graphique RTX 3080 Excellent état"
+                                                    disabled={mutation.isPending}
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="description"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Description détaillée <span className="text-destructive">*</span></FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    className="min-h-[120px] resize-y"
+                                                    placeholder="Décrivez l'état du produit, la raison de la vente, etc..."
+                                                    disabled={mutation.isPending}
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="price"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Prix (€) <span className="text-destructive">*</span></FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Input
+                                                        type="number"
+                                                        step={0.01}
+                                                        min={0}
+                                                        disabled={mutation.isPending}
+                                                        className="pl-8"
+                                                        {...field}
+                                                        onChange={(e) =>
+                                                            field.onChange(
+                                                                parseFloat(e.target.value) || 0
                                                             )
-                                                    );
-                                                    field.onChange(component);
-                                                }}
-                                                errored={
-                                                    !!form.formState.errors
-                                                        .component
-                                                }
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                                        }
+                                                    />
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            <FormField
-                                control={form.control}
-                                name="title"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>
-                                            Titre
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Titre de mon annonce"
-                                                disabled={mutation.isPending}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="location"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Localisation</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Ville ou Code Postal"
+                                                    disabled={mutation.isPending}
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                            <FormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>
-                                            Description
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Textarea
-                                                className="min-h-40 max-h-80"
-                                                placeholder="Description de mon super composant"
-                                                disabled={mutation.isPending}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <Separator />
 
-                            <FormField
-                                control={form.control}
-                                name="location"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Location</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Paris 75000"
-                                                disabled={mutation.isPending}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium">3. Photos</h3>
+                                <FormField
+                                    control={form.control}
+                                    name="images"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <FormLabel className="text-base">Ajouter des photos</FormLabel>
+                                                <span className={`text-xs ${form.formState.errors.images ? "text-destructive" : "text-muted-foreground"}`}>
+                                                    {field.value?.length || 0} / 6
+                                                </span>
+                                            </div>
+                                            <FormControl>
+                                                <ImageUpload
+                                                    variant="dropzone"
+                                                    maxImages={6}
+                                                    disabled={form.formState.isSubmitting || (field.value?.length ?? 0) >= 6}
+                                                    images={field.value || []}
+                                                    onChange={(file) => field.onChange(file)}
+                                                />
+                                            </FormControl>
+                                            <p className="text-xs text-muted-foreground mt-2">
+                                                Ajoutez jusqu'à 6 photos pour mettre en valeur votre composant.
+                                            </p>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
 
-                            <FormField
-                                control={form.control}
-                                name="price"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>
-                                            Prix (€)
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                step={0.01}
-                                                min={0}
-                                                disabled={mutation.isPending}
-                                                {...field}
-                                                onChange={(e) =>
-                                                    // make it a number cause input type number returns string 🤡
-                                                    field.onChange(
-                                                        parseFloat(
-                                                            e.target.value
-                                                        ) || 0
-                                                    )
-                                                }
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
+                        <div className="pt-4">
+                            <Button
+                                type="submit"
+                                size="lg"
+                                disabled={form.formState.isSubmitting}
+                                className="w-full font-semibold text-base"
+                            >
+                                {form.formState.isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Publication en cours...
+                                    </>
+                                ) : (
+                                    "Publier l'annonce"
                                 )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="images"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <div className="flex gap-2">
-                                            <FormLabel>Images</FormLabel>
-                                            <span
-                                                className={`text-xs ${
-                                                    form.formState.errors.images
-                                                        ? "text-destructive"
-                                                        : "text-muted-foreground"
-                                                }`}
-                                            >
-                                                {field.value?.length} / 6
-                                            </span>
-                                        </div>
-                                        <FormControl>
-                                            <ImageUpload
-                                                variant="dropzone"
-                                                maxImages={6}
-                                                disabled={
-                                                    form.formState
-                                                        .isSubmitting ||
-                                                    (field.value?.length ??
-                                                        0) >= 6
-                                                }
-                                                images={field.value || []}
-                                                onChange={(file) =>
-                                                    field.onChange(file)
-                                                }
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <Field>
-                                <Button
-                                    type="submit"
-                                    disabled={form.formState.isSubmitting}
-                                    className="w-full"
-                                >
-                                    {form.formState.isSubmitting
-                                        ? "Création..."
-                                        : "Créer"}
-                                </Button>
-                            </Field>
-                        </FieldGroup>
+                            </Button>
+                        </div>
                     </form>
                 </Form>
             </CardContent>

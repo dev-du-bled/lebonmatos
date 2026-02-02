@@ -1,32 +1,62 @@
 "use client";
 
-import { Input } from "../ui/input";
+import { useState, useEffect } from "react";
 import {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-} from "../ui/select";
-import { trpc } from "@/trpc/client";
-import { useEffect, useState } from "react";
-import { LoaderCircle, X } from "lucide-react";
+    Search,
+    X,
+    Loader2,
+    ChevronRight,
+    Package,
+    Cpu,
+    MonitorUp,
+    CircuitBoard,
+    MemoryStick,
+    HardDrive,
+    Database,
+    Plug,
+    Fan,
+    Box,
+    Wind,
+    AudioLines,
+    Wifi,
+    type LucideIcon,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
-    Components,
-    formatComponentData,
-    getEnumDisplay,
-    ReturnedComponent,
-} from "@/utils/components";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ComponentType } from "@prisma/client";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
-import { ScrollArea } from "../ui/scroll-area";
+    getEnumDisplay,
+    formatComponentData,
+    ReturnedComponent,
+    Components,
+} from "@/utils/components";
+import { trpc } from "@/trpc/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+
+// Mapping des icônes pour chaque type de composant
+const componentTypeIcons: Record<ComponentType, LucideIcon> = {
+    CPU: Cpu,
+    GPU: MonitorUp,
+    MOTHERBOARD: CircuitBoard,
+    RAM: MemoryStick,
+    SSD: HardDrive,
+    HDD: Database,
+    POWER_SUPPLY: Plug,
+    CPU_COOLER: Fan,
+    CASE: Box,
+    CASE_FAN: Wind,
+    SOUND_CARD: AudioLines,
+    WIRELESS_NETWORK_CARD: Wifi,
+};
 
 interface ComponentSelectorProps {
     selectedComponent?: ReturnedComponent;
@@ -39,176 +69,308 @@ export default function ComponentSelector({
     setSelectedComponent,
     errored,
 }: ComponentSelectorProps) {
-    const componentTypes = Object.values(ComponentType);
+    const [open, setOpen] = useState(false);
+    const [selectedType, setSelectedType] = useState<ComponentType | undefined>(
+        undefined
+    );
     const [query, setQuery] = useState("");
     const [debouncedQuery, setDebouncedQuery] = useState("");
-    const [type, setType] = useState<ComponentType | undefined>(undefined);
 
-    const clearQuery = () => {
-        setDebouncedQuery("");
+    const componentTypes = Object.values(ComponentType);
+
+    // Reset state when dialog opens
+    useEffect(() => {
+        if (open) {
+            setSelectedType(undefined);
+            setQuery("");
+            setDebouncedQuery("");
+        }
+    }, [open]);
+
+    // Reset query when type changes
+    useEffect(() => {
         setQuery("");
-    };
+        setDebouncedQuery("");
+    }, [selectedType]);
 
+    // Debounce query
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedQuery(query);
-        }, 500);
-
-        return () => {
-            clearTimeout(handler);
-        };
+        }, 300);
+        return () => clearTimeout(handler);
     }, [query]);
 
-    const { data, isFetching, error } = trpc.components.getComponents.useQuery(
+    // Fetch components
+    const { data, isFetching } = trpc.components.getComponents.useQuery(
         {
             query: debouncedQuery,
-            type: type as ComponentType,
+            type: selectedType as ComponentType,
         },
         {
-            enabled: type !== undefined && debouncedQuery.length >= 3,
+            enabled: !!selectedType && debouncedQuery.length >= 3,
         }
     );
 
+    const handleSelectComponent = (component: ReturnedComponent) => {
+        setSelectedComponent(component);
+        setOpen(false);
+    };
+
+    const clearSelection = () => {
+        setSelectedComponent(undefined);
+    };
+
+    // Get icon for a component type
+    const getTypeIcon = (type: ComponentType) => {
+        const Icon = componentTypeIcons[type];
+        return Icon ? <Icon className="h-4 w-4" /> : null;
+    };
+
     return (
-        <Card className={errored ? "border-destructive" : ""}>
-            <CardContent>
-                <CardHeader className="p-0 mb-4">
-                    <CardTitle>Sélectionner un composant</CardTitle>
-                    <CardDescription>
-                        Sélectionner un composant pour créer votre annonce.
-                    </CardDescription>
-                </CardHeader>
-
-                {!selectedComponent && (
-                    <div className="space-y-2">
-                        <Select
-                            onValueChange={(value) => {
-                                setType(value as ComponentType);
-                            }}
-                            value={type}
-                        >
-                            {/* TODO: fix responsive of the select trigger on small phones screen */}
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Composant" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {componentTypes.map((type) => (
-                                    <SelectItem key={type} value={type}>
-                                        {getEnumDisplay(type)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <div className="relative">
-                            <Input
-                                value={query}
-                                disabled={type === undefined}
-                                onChange={(e) => setQuery(e.target.value)}
-                                placeholder="Rechercher un composant..."
-                                className="pr-8"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => clearQuery()}
-                                disabled={type === undefined || isFetching}
-                                className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                            >
-                                {query && query.length > 0 && (
-                                    <X
-                                        size={14}
-                                        className="text-muted-foreground hover:text-accent-foreground transition-colors"
-                                    />
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {selectedComponent ? (
-                    <div className="relative">
-                        <div className="mt-4 p-4 border border-secondary rounded-md overflow-auto wrap-break-word">
+        <div className="flex flex-col gap-2">
+            {!selectedComponent && !errored && (
+                <>
+                    {/* Trigger Button */}
+                    <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>
                             <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-2 top-2 w-6 h-6"
-                                onClick={() => setSelectedComponent(undefined)}
+                                variant="outline"
+                                className={cn(
+                                    "w-full justify-start h-auto min-h-12 px-4 py-3 text-left font-normal",
+                                    !selectedComponent &&
+                                        "text-muted-foreground",
+                                    errored &&
+                                        "border-destructive ring-1 ring-destructive/50"
+                                )}
                             >
-                                <X />
+                                <Package className="h-5 w-5 mr-3 shrink-0 text-muted-foreground" />
+                                <span>Sélectionner un composant...</span>
                             </Button>
-                            <span className="text-sm text-muted-foreground">
-                                {getEnumDisplay(selectedComponent.type)}
-                            </span>
-                            <h2 className="font-semibold mb-2">
-                                {selectedComponent.name}
-                            </h2>
-                            {formatComponentData(
-                                selectedComponent.type,
-                                selectedComponent.data as Components
-                            ).map((uiString, index) => (
-                                <div
-                                    key={index}
-                                    className="text-sm text-muted-foreground"
-                                >
-                                    {uiString}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                ) : data && data.length > 0 ? (
-                    <>
-                        <ScrollArea className="h-72 mt-2 w-full rounded-md border px-2">
-                            {data.map((component) => (
-                                <div
-                                    key={component.id}
-                                    className="cursor-pointer hover:bg-accent border border-transparent rounded-md p-2"
-                                    onClick={() => {
-                                        setSelectedComponent(
-                                            component as ReturnedComponent
-                                        );
-                                        clearQuery();
-                                    }}
-                                >
-                                    <div className="flex flex-col">
-                                        <h1>{component.name}</h1>
-                                        {formatComponentData(
-                                            component.type,
-                                            component.data as Components
-                                        ).map((uiString, index) => (
-                                            <div
-                                                key={index}
-                                                className="text-sm text-muted-foreground"
+                        </DialogTrigger>
+
+                        <DialogContent className="sm:max-w-lg p-0 gap-0">
+                            <DialogHeader className="px-4 pt-4 pb-2">
+                                <DialogTitle>
+                                    {selectedType ? (
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 px-2 -ml-2"
+                                                onClick={() =>
+                                                    setSelectedType(undefined)
+                                                }
                                             >
-                                                {uiString}
-                                            </div>
-                                        ))}
+                                                <ChevronRight className="h-4 w-4 rotate-180" />
+                                                Retour
+                                            </Button>
+                                            <span className="text-muted-foreground">
+                                                |
+                                            </span>
+                                            {getEnumDisplay(selectedType)}
+                                        </div>
+                                    ) : (
+                                        "Choisir un composant"
+                                    )}
+                                </DialogTitle>
+                            </DialogHeader>
+
+                            {/* Step 1: Select Category */}
+                            {!selectedType ? (
+                                <>
+                                    <p className="text-sm text-muted-foreground px-4 pb-3">
+                                        Sélectionnez le type de composant que
+                                        vous vendez :
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-2 px-4 pb-4">
+                                        {componentTypes.map((type) => {
+                                            const Icon =
+                                                componentTypeIcons[type];
+                                            return (
+                                                <Button
+                                                    key={type}
+                                                    variant="outline"
+                                                    className="h-auto py-3 px-3 justify-start text-left gap-3"
+                                                    onClick={() =>
+                                                        setSelectedType(type)
+                                                    }
+                                                >
+                                                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                                    <span className="truncate flex-1">
+                                                        {getEnumDisplay(type)}
+                                                    </span>
+                                                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                                </Button>
+                                            );
+                                        })}
                                     </div>
-                                </div>
-                            ))}
-                        </ScrollArea>
-                        <span className="text-xs text-muted-foreground">
-                            {data.length} résultats.
-                        </span>
-                    </>
-                ) : isFetching ? (
-                    <div
-                        className="flex items-center justify-center h-30 text-muted-foreground text-sm"
-                        aria-busy="true"
-                    >
-                        <LoaderCircle className="animate-spin mr-2" /> Recherche
-                        en cours...
+                                </>
+                            ) : (
+                                /* Step 2: Search Component */
+                                <>
+                                    <div className="px-4 pb-3">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                placeholder={`Rechercher un ${getEnumDisplay(selectedType).toLowerCase()}...`}
+                                                value={query}
+                                                onChange={(e) =>
+                                                    setQuery(e.target.value)
+                                                }
+                                                className="pl-9 pr-9"
+                                                autoFocus
+                                            />
+                                            {query && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setQuery("")}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                                                >
+                                                    <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <ScrollArea className="max-h-[300px] border-t">
+                                        <div className="p-2">
+                                            {query.length < 3 ? (
+                                                <div className="py-12 text-center text-sm text-muted-foreground">
+                                                    <Search className="h-8 w-8 mx-auto mb-3 opacity-50" />
+                                                    <p>
+                                                        Tapez au moins 3
+                                                        caractères pour
+                                                        rechercher
+                                                    </p>
+                                                </div>
+                                            ) : isFetching ? (
+                                                <div className="py-12 text-center text-sm text-muted-foreground">
+                                                    <Loader2 className="h-8 w-8 mx-auto mb-3 animate-spin" />
+                                                    <p>Recherche en cours...</p>
+                                                </div>
+                                            ) : data && data.length === 0 ? (
+                                                <div className="py-12 text-center text-sm text-muted-foreground">
+                                                    <Package className="h-8 w-8 mx-auto mb-3 opacity-50" />
+                                                    <p>
+                                                        Aucun composant trouvé
+                                                    </p>
+                                                    <p className="text-xs mt-1">
+                                                        Essayez avec
+                                                        d&apos;autres termes
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-1">
+                                                    {data?.map((component) => (
+                                                        <button
+                                                            key={component.id}
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleSelectComponent(
+                                                                    component as ReturnedComponent
+                                                                )
+                                                            }
+                                                            className="w-full text-left p-3 rounded-md hover:bg-accent transition-colors"
+                                                        >
+                                                            <div className="flex items-start justify-between gap-2">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="font-medium truncate">
+                                                                        {
+                                                                            component.name
+                                                                        }
+                                                                    </p>
+                                                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                                                        {formatComponentData(
+                                                                            component.type,
+                                                                            component.data as Components
+                                                                        )
+                                                                            .filter(
+                                                                                Boolean
+                                                                            )
+                                                                            .slice(
+                                                                                0,
+                                                                                3
+                                                                            )
+                                                                            .join(
+                                                                                " • "
+                                                                            )}
+                                                                    </p>
+                                                                </div>
+                                                                {component.price && (
+                                                                    <Badge
+                                                                        variant="secondary"
+                                                                        className="shrink-0"
+                                                                    >
+                                                                        ~
+                                                                        {component.price.toFixed(
+                                                                            0
+                                                                        )}
+                                                                        €
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </ScrollArea>
+
+                                    {data && data.length > 0 && (
+                                        <div className="px-4 py-2 border-t text-xs text-muted-foreground">
+                                            {data.length} résultat
+                                            {data.length > 1 ? "s" : ""}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </DialogContent>
+                    </Dialog>
+                </>
+            )}
+            {/* Selected component details */}
+            {selectedComponent && (
+                <div className="p-3 rounded-md bg-muted/50 border">
+                    <div className="flex items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="outline" className="text-xs">
+                                    {getEnumDisplay(selectedComponent.type)}
+                                </Badge>
+                            </div>
+                            <p className="font-semibold">
+                                {selectedComponent.name}
+                            </p>
+                            <div className="mt-2 text-sm text-muted-foreground space-y-0.5">
+                                {formatComponentData(
+                                    selectedComponent.type,
+                                    selectedComponent.data as Components
+                                )
+                                    .filter(Boolean)
+                                    .slice(0, 4)
+                                    .map((line, i) => (
+                                        <p key={i}>{line}</p>
+                                    ))}
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={clearSelection}
+                            className="p-1.5 rounded-md hover:bg-muted transition-colors shrink-0"
+                            aria-label="Supprimer le composant"
+                        >
+                            <X className="h-4 w-4 text-muted-foreground" />
+                        </button>
                     </div>
-                ) : error ? (
-                    <div className="flex items-center justify-center h-30 text-destructive text-sm">
-                        Une erreur est survenue lors de la recherche de
-                        composants.
-                    </div>
-                ) : data && data.length === 0 ? (
-                    <div className="flex items-center justify-center h-30 text-muted-foreground text-sm">
-                        Aucun composant trouvé.
-                    </div>
-                ) : null}
-            </CardContent>
-        </Card>
+                </div>
+            )}
+
+            {!selectedComponent && (
+                <p className="text-[0.8rem] text-muted-foreground">
+                    Recherchez votre composant dans notre base de données.
+                </p>
+            )}
+        </div>
     );
 }
