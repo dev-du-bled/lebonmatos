@@ -212,7 +212,7 @@ export default function CreatePostForm() {
                                             </FormLabel>
                                             <FormControl>
                                                 <Textarea
-                                                    className="min-h-[120px] resize-y"
+                                                    className="min-h-30 resize-y"
                                                     placeholder="Décrivez l'état du produit, la raison de la vente, etc..."
                                                     disabled={
                                                         mutation.isPending
@@ -226,12 +226,12 @@ export default function CreatePostForm() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex gap-6 flex-col sm:flex-row items-start">
                                 <FormField
                                     control={form.control}
                                     name="price"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 Prix (€){" "}
                                                 <span className="text-destructive">
@@ -244,6 +244,11 @@ export default function CreatePostForm() {
                                                         type="number"
                                                         step={0.01}
                                                         min={0}
+                                                        aria-invalid={
+                                                            !!form.formState
+                                                                .errors.price
+                                                        }
+                                                        placeholder="0.00"
                                                         disabled={
                                                             mutation.isPending
                                                         }
@@ -272,7 +277,7 @@ export default function CreatePostForm() {
                                     control={form.control}
                                     name="location"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>Localisation</FormLabel>
                                             <FormControl>
                                                 <Input

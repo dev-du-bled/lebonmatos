@@ -233,7 +233,7 @@ export default function ComponentSelector({
                                         </div>
                                     </div>
 
-                                    <ScrollArea className="max-h-[300px] border-t">
+                                    <ScrollArea className="max-h-75 border-t">
                                         <div className="p-2">
                                             {query.length < 3 ? (
                                                 <div className="py-12 text-center text-sm text-muted-foreground">
@@ -275,7 +275,7 @@ export default function ComponentSelector({
                                                         >
                                                             <div className="flex items-start justify-between gap-2">
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className="font-medium truncate">
+                                                                    <p className="font-medium line-clamp-1">
                                                                         {
                                                                             component.name
                                                                         }

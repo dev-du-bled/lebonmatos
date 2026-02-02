@@ -55,9 +55,12 @@ export const postFormSchema = z.object({
     component: z.custom<ReturnedComponent>((value) => value !== undefined, {
         error: "Vous devez sélectionner un composant",
     }),
-    title: z.string().min(3).max(50, {
-        error: "Le titre doit contenir entre 3 et 50 caractères",
-    }),
+    title: z
+        .string()
+        .min(3, { error: "Le titre doit contenir au moins 3 caractères" })
+        .max(50, {
+            error: "Le titre doit contenir au plus 50 caractères",
+        }),
     description: z
         .string()
         .min(20, {
