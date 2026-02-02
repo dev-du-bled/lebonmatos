@@ -1,6 +1,8 @@
 import { EnqueuedTaskPromise, Task } from "meilisearch";
 
-export const wrappMeiliTask = async (task: EnqueuedTaskPromise): Promise<Task> => {
+export const wrappMeiliTask = async (
+    task: EnqueuedTaskPromise
+): Promise<Task> => {
     // timeout after 20 minutes to give some time to meilisearch to return us the results of the tasks
     // useful when we spawn dozen thousands tasks roughfly at once
     const taskresult = await task.waitTask({ timeout: 1200000 });
