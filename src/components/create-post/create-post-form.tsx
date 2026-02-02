@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "../ui/card";
 import { Separator } from "../ui/separator";
 import {
     FormField,
@@ -53,15 +59,17 @@ export default function CreatePostForm() {
                 uploadResult = await ut.startUpload(formData.images);
                 if (!uploadResult) {
                     form.setError("images", {
-                        message: "L'upload des images a échoué. Veuillez réessayer.",
+                        message:
+                            "L'upload des images a échoué. Veuillez réessayer.",
                     });
                     return;
                 }
             } catch (error) {
                 form.setError("images", {
-                    message: error instanceof Error 
-                        ? error.message 
-                        : "Une erreur est survenue lors de l'upload des images.",
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : "Une erreur est survenue lors de l'upload des images.",
                 });
                 return;
             }
@@ -94,9 +102,12 @@ export default function CreatePostForm() {
     return (
         <Card className="w-full border-none shadow-none bg-transparent">
             <CardHeader className="text-center px-0">
-                <CardTitle className="text-3xl font-bold">Créer une Annonce</CardTitle>
+                <CardTitle className="text-3xl font-bold">
+                    Créer une Annonce
+                </CardTitle>
                 <CardDescription>
-                    Mettez en vente vos composants informatiques en quelques clics.
+                    Mettez en vente vos composants informatiques en quelques
+                    clics.
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -113,7 +124,9 @@ export default function CreatePostForm() {
 
                         <div className="space-y-6">
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium">1. Quel composant vendez-vous ?</h3>
+                                <h3 className="text-lg font-medium">
+                                    1. Quel composant vendez-vous ?
+                                </h3>
                                 <FormField
                                     control={form.control}
                                     name="component"
@@ -121,15 +134,32 @@ export default function CreatePostForm() {
                                         <FormItem>
                                             <FormControl>
                                                 <ComponentSelector
-                                                    selectedComponent={selectedComponent}
-                                                    setSelectedComponent={(component) => {
-                                                        setSelectedComponent(component);
+                                                    selectedComponent={
+                                                        selectedComponent
+                                                    }
+                                                    setSelectedComponent={(
+                                                        component
+                                                    ) => {
+                                                        setSelectedComponent(
+                                                            component
+                                                        );
                                                         if (component) {
-                                                            form.setValue("price", component.price || form.getValues("price"));
+                                                            form.setValue(
+                                                                "price",
+                                                                component.price ||
+                                                                    form.getValues(
+                                                                        "price"
+                                                                    )
+                                                            );
                                                         }
-                                                        field.onChange(component);
+                                                        field.onChange(
+                                                            component
+                                                        );
                                                     }}
-                                                    errored={!!form.formState.errors.component}
+                                                    errored={
+                                                        !!form.formState.errors
+                                                            .component
+                                                    }
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -141,17 +171,26 @@ export default function CreatePostForm() {
                             <Separator />
 
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium">2. Détails de l'annonce</h3>
+                                <h3 className="text-lg font-medium">
+                                    2. Détails de l'annonce
+                                </h3>
                                 <FormField
                                     control={form.control}
                                     name="title"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Titre de l'annonce <span className="text-destructive">*</span></FormLabel>
+                                            <FormLabel>
+                                                Titre de l'annonce{" "}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder="Ex: Carte Graphique RTX 3080 Excellent état"
-                                                    disabled={mutation.isPending}
+                                                    disabled={
+                                                        mutation.isPending
+                                                    }
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -165,12 +204,19 @@ export default function CreatePostForm() {
                                     name="description"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Description détaillée <span className="text-destructive">*</span></FormLabel>
+                                            <FormLabel>
+                                                Description détaillée{" "}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Textarea
                                                     className="min-h-[120px] resize-y"
                                                     placeholder="Décrivez l'état du produit, la raison de la vente, etc..."
-                                                    disabled={mutation.isPending}
+                                                    disabled={
+                                                        mutation.isPending
+                                                    }
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -186,23 +232,35 @@ export default function CreatePostForm() {
                                     name="price"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Prix (€) <span className="text-destructive">*</span></FormLabel>
+                                            <FormLabel>
+                                                Prix (€){" "}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
                                                     <Input
                                                         type="number"
                                                         step={0.01}
                                                         min={0}
-                                                        disabled={mutation.isPending}
+                                                        disabled={
+                                                            mutation.isPending
+                                                        }
                                                         className="pl-8"
                                                         {...field}
                                                         onChange={(e) =>
                                                             field.onChange(
-                                                                parseFloat(e.target.value) || 0
+                                                                parseFloat(
+                                                                    e.target
+                                                                        .value
+                                                                ) || 0
                                                             )
                                                         }
                                                     />
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                                        €
+                                                    </span>
                                                 </div>
                                             </FormControl>
                                             <FormMessage />
@@ -219,7 +277,9 @@ export default function CreatePostForm() {
                                             <FormControl>
                                                 <Input
                                                     placeholder="Ville ou Code Postal"
-                                                    disabled={mutation.isPending}
+                                                    disabled={
+                                                        mutation.isPending
+                                                    }
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -232,29 +292,45 @@ export default function CreatePostForm() {
                             <Separator />
 
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium">3. Photos</h3>
+                                <h3 className="text-lg font-medium">
+                                    3. Photos
+                                </h3>
                                 <FormField
                                     control={form.control}
                                     name="images"
                                     render={({ field }) => (
                                         <FormItem>
                                             <div className="flex justify-between items-center mb-2">
-                                                <FormLabel className="text-base">Ajouter des photos</FormLabel>
-                                                <span className={`text-xs ${form.formState.errors.images ? "text-destructive" : "text-muted-foreground"}`}>
-                                                    {field.value?.length || 0} / 6
+                                                <FormLabel className="text-base">
+                                                    Ajouter des photos
+                                                </FormLabel>
+                                                <span
+                                                    className={`text-xs ${form.formState.errors.images ? "text-destructive" : "text-muted-foreground"}`}
+                                                >
+                                                    {field.value?.length || 0} /
+                                                    6
                                                 </span>
                                             </div>
                                             <FormControl>
                                                 <ImageUpload
                                                     variant="dropzone"
                                                     maxImages={6}
-                                                    disabled={form.formState.isSubmitting || (field.value?.length ?? 0) >= 6}
+                                                    disabled={
+                                                        form.formState
+                                                            .isSubmitting ||
+                                                        (field.value?.length ??
+                                                            0) >= 6
+                                                    }
                                                     images={field.value || []}
-                                                    onChange={(file) => field.onChange(file)}
+                                                    onChange={(file) =>
+                                                        field.onChange(file)
+                                                    }
                                                 />
                                             </FormControl>
                                             <p className="text-xs text-muted-foreground mt-2">
-                                                Ajoutez jusqu'à 6 photos pour mettre en valeur votre composant.
+                                                Ajoutez jusqu'à 6 photos pour
+                                                mettre en valeur votre
+                                                composant.
                                             </p>
                                             <FormMessage />
                                         </FormItem>
