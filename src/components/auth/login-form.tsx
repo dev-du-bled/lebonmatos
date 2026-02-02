@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Button } from "@/components/ui/button";
-import { Lock } from "lucide-react";
+import { AlertCircle, Lock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
 import {
@@ -112,19 +112,21 @@ export function LoginForm() {
                                         fonctionnalités.
                                     </p>
                                 </div>
+                                <div className="flex flex-col gap-2">
+                                    {redirect && (
+                                        <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 rounded-md p-3 text-sm font-medium">
+                                            <Lock className="size-4" />
+                                            Cette page nécessite une connexion.
+                                        </div>
+                                    )}
 
-                                {redirect && (
-                                    <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 rounded-md p-3 text-sm font-medium">
-                                        <Lock className="size-4" />
-                                        Cette page nécessite une connexion.
-                                    </div>
-                                )}
-
-                                {form.formState.errors.root && (
-                                    <div className="text-destructive text-sm text-center">
-                                        {form.formState.errors.root.message}
-                                    </div>
-                                )}
+                                    {form.formState.errors.root && (
+                                        <div className="bg-destructive/10 text-destructive flex items-center justify-center gap-2 rounded-md p-3 text-sm font-medium">
+                                            <AlertCircle className="size-4" />
+                                            {form.formState.errors.root.message}
+                                        </div>
+                                    )}
+                                </div>
 
                                 <FormField
                                     control={form.control}
@@ -186,7 +188,15 @@ export function LoginForm() {
                                 </Field>
                                 <FieldDescription className="text-center">
                                     Vous n&apos;avez pas de compte ?{" "}
-                                    <a href="/signup">S&apos;inscrire</a>
+                                    <a
+                                        href={
+                                            redirect
+                                                ? `/signup?redirect=${encodeURIComponent(redirect)}`
+                                                : "/signup"
+                                        }
+                                    >
+                                        S&apos;inscrire
+                                    </a>
                                 </FieldDescription>
                             </FieldGroup>
                         </form>
