@@ -1,8 +1,6 @@
 import { EnqueuedTaskPromise, Task } from "meilisearch";
 
-export const wrappMeiliTask = async (
-    task: EnqueuedTaskPromise
-): Promise<Task> => {
+export const wrappMeiliTask = async (task: EnqueuedTaskPromise): Promise<Task> => {
     // timeout after 20 minutes to give some time to meilisearch to return us the results of the tasks
     // useful when we spawn dozen thousands tasks roughfly at once
     const taskresult = await task.waitTask({ timeout: 1200000 });
@@ -21,8 +19,7 @@ export const POST_QUERY_BASE = `
         p."componentId",
         c.name as "componentName",
         c.type as "componentType",
-        u.name as "userName",
-        (SELECT image FROM images WHERE "postId" = p.id LIMIT 1) as image
+        u.name as "userName"
     FROM post p
     LEFT JOIN component c ON p."componentId" = c.id
     LEFT JOIN "user" u ON p."userId" = u.id
