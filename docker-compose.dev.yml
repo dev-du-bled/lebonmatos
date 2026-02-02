@@ -6,7 +6,7 @@ services:
         volumes:
             - lbm_dev_data:/var/lib/postgresql/data
         env_file:
-            - .env.dev
+            - .env.development
 
 volumes:
     lbm_dev_data:
