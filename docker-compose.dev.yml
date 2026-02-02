@@ -27,7 +27,7 @@ services:
         volumes:
             - lmb_search_data:/meili_data
 
-        env_file: .env
+        env_file: .env.development
 
         depends_on:
             db:
