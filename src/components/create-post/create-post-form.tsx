@@ -30,19 +30,24 @@ import { postFormSchema, type PostFormData } from "@/lib/schema/post";
 import ImageUpload from "../ui/image-upload";
 import { useUploadThing } from "@/utils/uploadthing";
 import { Loader2 } from "lucide-react";
+import { Component, Post } from "@prisma/client";
 
-export default function CreatePostForm() {
+interface PostFormProps {
+    post: (Post & { component: Component }) | null;
+}
+
+export default function CreatePostForm({ post }: PostFormProps) {
     const ut = useUploadThing("postUploader");
 
     const form = useForm<PostFormData>({
         resolver: zodResolver(postFormSchema),
         defaultValues: {
-            component: undefined,
-            title: "",
-            description: "",
-            location: "",
-            price: 0,
-            images: [],
+            component: post?.component,
+            title: post?.title,
+            description: post?.description ? post.description : undefined,
+            location: post?.location ? post.location : undefined,
+            price: post?.price,
+            images: post?.images,
         },
     });
 
@@ -54,49 +59,54 @@ export default function CreatePostForm() {
 
     const onSubmit = async (formData: PostFormData) => {
         let uploadResult;
-        if (formData.images && formData.images.length > 0) {
-            try {
-                uploadResult = await ut.startUpload(formData.images);
-                if (!uploadResult) {
+        if (post) {
+        } else {
+            if (formData.images && formData.images.length > 0) {
+                try {
+                    uploadResult = await ut.startUpload(
+                        formData.images as File[]
+                    );
+                    if (!uploadResult) {
+                        form.setError("images", {
+                            message:
+                                "L'upload des images a échoué. Veuillez réessayer.",
+                        });
+                        return;
+                    }
+                } catch (error) {
                     form.setError("images", {
                         message:
-                            "L'upload des images a échoué. Veuillez réessayer.",
+                            error instanceof Error
+                                ? error.message
+                                : "Une erreur est survenue lors de l'upload des images.",
                     });
                     return;
                 }
-            } catch (error) {
-                form.setError("images", {
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Une erreur est survenue lors de l'upload des images.",
-                });
-                return;
             }
-        }
 
-        mutation.mutate(
-            {
-                componentId: formData.component.id,
-                title: formData.title,
-                description: formData.description,
-                location: formData.location,
-                price: formData.price,
-                images: uploadResult
-                    ? uploadResult.map((img) => img.ufsUrl)
-                    : [],
-            },
-            {
-                onSuccess: (data) => {
-                    router.push(`/post/${data.postId}`);
+            mutation.mutate(
+                {
+                    componentId: formData.component.id,
+                    title: formData.title,
+                    description: formData.description,
+                    location: formData.location,
+                    price: formData.price,
+                    images: uploadResult
+                        ? uploadResult.map((img) => img.ufsUrl)
+                        : [],
                 },
-                onError: (error) => {
-                    form.setError("root", {
-                        message: error.message || "Une erreur est survenue",
-                    });
-                },
-            }
-        );
+                {
+                    onSuccess: (data) => {
+                        router.push(`/post/${data.postId}`);
+                    },
+                    onError: (error) => {
+                        form.setError("root", {
+                            message: error.message || "Une erreur est survenue",
+                        });
+                    },
+                }
+            );
+        }
     };
 
     return (
@@ -326,7 +336,11 @@ export default function CreatePostForm() {
                                                         (field.value?.length ??
                                                             0) >= 6
                                                     }
-                                                    images={field.value || []}
+                                                    images={
+                                                        (field.value as
+                                                            | File[]
+                                                            | string[]) || []
+                                                    }
                                                     onChange={(file) =>
                                                         field.onChange(file)
                                                     }
@@ -354,8 +368,12 @@ export default function CreatePostForm() {
                                 {form.formState.isSubmitting ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Publication en cours...
+                                        {post
+                                            ? "Edition en cours..."
+                                            : "Publication en cours..."}
                                     </>
+                                ) : post ? (
+                                    "Editer l'annonce"
                                 ) : (
                                     "Publier l'annonce"
                                 )}

@@ -107,6 +107,7 @@ export const postRouter = createTRPCRouter({
             const component = await prisma.component.findUnique({
                 where: { id: post?.componentId },
                 include: {
+                    // TODO: reafactor this mess
                     Cpu: post?.component.type === ComponentType.CPU,
                     Gpu: post?.component.type === ComponentType.GPU,
                     Ram: post?.component.type === ComponentType.RAM,
@@ -148,6 +149,7 @@ export const postRouter = createTRPCRouter({
                 price: post.price,
                 images: post.images,
                 component: {
+                    // TODO: refactor this mess
                     type: post.component.type,
                     details:
                         post.component.type === ComponentType.CPU

@@ -233,7 +233,7 @@ export default function ComponentSelector({
                                         </div>
                                     </div>
 
-                                    <ScrollArea className="max-h-75 border-t">
+                                    <ScrollArea className="max-h-125 border-t">
                                         <div className="p-2">
                                             {query.length < 3 ? (
                                                 <div className="py-12 text-center text-sm text-muted-foreground">

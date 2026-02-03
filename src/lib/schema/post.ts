@@ -80,11 +80,15 @@ export const postFormSchema = z.object({
             message: "La localisation doit être au format 'Ville 12345'",
         }),
     images: z
-        .array(z.instanceof(File))
+        .array(z.union([z.instanceof(File), z.string()]))
         .max(6, { message: "Le nombre d'images est limité à 6" })
         .refine(
             (files) => {
-                return files.every((file) => file.type.startsWith("image/"));
+                return files.every(
+                    (file) =>
+                        typeof file === "string" ||
+                        file.type.startsWith("image/")
+                );
             },
             { error: "Tous les fichiers doivent être des images" }
         )
