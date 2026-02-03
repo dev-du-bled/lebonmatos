@@ -99,30 +99,22 @@ export default function ImageUpload({
                         <div
                             key={
                                 typeof image === "string"
-                                    ? `image-${index}`
-                                    : `${image.name}`
+                                    ? image
+                                    : image.name + index
                             }
                             className="relative border border-muted-foreground/20 rounded-md overflow-hidden flex h-30 w-30"
                         >
                             <button
                                 type="button"
                                 className="hover:cursor-pointer absolute top-1 right-1 rounded-full bg-destructive flex items-center justify-center w-5 h-5 hover:bg-destructive/80 opacity-90"
-                                title={`Remove ${
-                                    typeof image === "string"
-                                        ? `image-${index}`
-                                        : `${image.name}`
-                                }`}
+                                title={`Remove image ${index + 1}`}
                                 onClick={() => removeImage(index)}
                             >
                                 <X size={14} />
                             </button>
                             <Image
                                 src={imageSources[index]}
-                                alt={
-                                    typeof image === "string"
-                                        ? "Uploaded Image"
-                                        : image.name
-                                }
+                                alt={`${typeof image !== "string" ? image.name : `Image ${index + 1}`}`}
                                 width={160}
                                 height={160}
                                 className="object-cover rounded-md w-full h-auto"
