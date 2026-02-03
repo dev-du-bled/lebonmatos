@@ -3,6 +3,7 @@ import CreatePostForm from "@/components/create-post/create-post-form";
 import { Metadata } from "next";
 import { Component, Post } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { trpc } from "@/trpc/client";
 
 interface PageProps {
     searchParams: Promise<{ edit?: string }>;

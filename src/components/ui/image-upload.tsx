@@ -6,15 +6,13 @@ import Image from "next/image";
 import { useCallback, useMemo } from "react";
 
 type UploadComponentProps = {
-    variant: "button" | "dropzone";
     disabled?: boolean;
     maxImages: number;
-    images: File[] | string[];
-    onChange: (files: File[] | string[]) => void;
+    images: (File | string)[];
+    onChange: (files: (File | string)[]) => void;
 };
 
 export default function ImageUpload({
-    variant,
     disabled,
     maxImages,
     images,
@@ -22,13 +20,13 @@ export default function ImageUpload({
 }: UploadComponentProps) {
     const removeImage = (index: number) => {
         const filtered = images.filter((_, i) => i !== index);
-        onChange(filtered as File[] | string[]);
+        onChange(filtered);
     };
 
     const onDrop = useCallback(
         (acceptedFiles: File[]) => {
             if (!acceptedFiles?.length) return;
-            onChange([...images, ...acceptedFiles] as File[] | string[]);
+            onChange([...images, ...acceptedFiles]);
         },
         [onChange, images]
     );
@@ -62,9 +60,7 @@ export default function ImageUpload({
         };
     }, [imageSources]);
 
-    return variant === "button" ? (
-        <></>
-    ) : (
+    return (
         <>
             <div {...getRootProps()}>
                 <input
@@ -92,16 +88,11 @@ export default function ImageUpload({
                     </p>
                 </div>
             </div>
-
             {images.length > 0 && (
                 <div className="mt-3 flex flex-wrap items-center justify-start  gap-3">
-                    {images.map((image, index) => (
+                    {images.map((_, index) => (
                         <div
-                            key={
-                                typeof image === "string"
-                                    ? image
-                                    : image.name + index
-                            }
+                            key={index}
                             className="relative border border-muted-foreground/20 rounded-md overflow-hidden flex h-30 w-30"
                         >
                             <button
@@ -114,7 +105,7 @@ export default function ImageUpload({
                             </button>
                             <Image
                                 src={imageSources[index]}
-                                alt={`${typeof image !== "string" ? image.name : `Image ${index + 1}`}`}
+                                alt={`Image ${index + 1}`}
                                 width={160}
                                 height={160}
                                 className="object-cover rounded-md w-full h-auto"

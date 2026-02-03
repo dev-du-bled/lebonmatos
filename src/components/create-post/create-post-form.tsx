@@ -54,12 +54,68 @@ export default function CreatePostForm({ post }: PostFormProps) {
     const [selectedComponent, setSelectedComponent] = useState<
         ReturnedComponent | undefined
     >(undefined);
-    const mutation = trpc.posts.createPost.useMutation();
+    const create = trpc.posts.createPost.useMutation();
+    const edit = trpc.posts.editPost.useMutation();
     const router = useRouter();
 
     const onSubmit = async (formData: PostFormData) => {
         let uploadResult;
         if (post) {
+            if (formData.images) {
+                const newImages = formData.images.filter(
+                    (img) => typeof img !== "string"
+                );
+
+                if (newImages.length > 0) {
+                    try {
+                        uploadResult = await ut.startUpload(newImages);
+                        if (!uploadResult) {
+                            form.setError("images", {
+                                message:
+                                    "L'upload des images a échoué. Veuillez réessayer.",
+                            });
+                            return;
+                        }
+                    } catch (error) {
+                        form.setError("images", {
+                            message:
+                                error instanceof Error
+                                    ? error.message
+                                    : "Une erreur est survenue lors de l'upload des images.",
+                        });
+                        return;
+                    }
+                }
+            }
+
+            edit.mutate(
+                {
+                    id: post.id,
+                    componentId: formData.component.id,
+                    title: formData.title,
+                    description: formData.description,
+                    location: formData.location,
+                    price: formData.price,
+                    images: uploadResult
+                        ? [
+                              ...(formData.images || [])
+                                  .filter((img) => typeof img === "string")
+                                  .map((img) => img as string),
+                              ...uploadResult.map((img) => img.ufsUrl),
+                          ]
+                        : (formData.images as string[]) || [],
+                },
+                {
+                    onSuccess: (data) => {
+                        router.push(`/post/${data.postId}`);
+                    },
+                    onError: (error) => {
+                        form.setError("root", {
+                            message: error.message || "Une erreur est survenue",
+                        });
+                    },
+                }
+            );
         } else {
             if (formData.images && formData.images.length > 0) {
                 try {
@@ -84,7 +140,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                 }
             }
 
-            mutation.mutate(
+            create.mutate(
                 {
                     componentId: formData.component.id,
                     title: formData.title,
@@ -199,7 +255,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                 <Input
                                                     placeholder="Ex: Carte Graphique RTX 3080 Excellent état"
                                                     disabled={
-                                                        mutation.isPending
+                                                        create.isPending ||
+                                                        edit.isPending
                                                     }
                                                     {...field}
                                                 />
@@ -225,7 +282,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                     className="min-h-30 resize-y"
                                                     placeholder="Décrivez l'état du produit, la raison de la vente, etc..."
                                                     disabled={
-                                                        mutation.isPending
+                                                        create.isPending ||
+                                                        edit.isPending
                                                     }
                                                     {...field}
                                                 />
@@ -260,7 +318,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                         }
                                                         placeholder="0.00"
                                                         disabled={
-                                                            mutation.isPending
+                                                            create.isPending ||
+                                                            edit.isPending
                                                         }
                                                         className="pl-8"
                                                         {...field}
@@ -293,7 +352,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                 <Input
                                                     placeholder="Ville ou Code Postal"
                                                     disabled={
-                                                        mutation.isPending
+                                                        create.isPending ||
+                                                        edit.isPending
                                                     }
                                                     {...field}
                                                 />
@@ -328,7 +388,6 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                             </div>
                                             <FormControl>
                                                 <ImageUpload
-                                                    variant="dropzone"
                                                     maxImages={6}
                                                     disabled={
                                                         form.formState
@@ -336,11 +395,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                         (field.value?.length ??
                                                             0) >= 6
                                                     }
-                                                    images={
-                                                        (field.value as
-                                                            | File[]
-                                                            | string[]) || []
-                                                    }
+                                                    images={field.value || []}
                                                     onChange={(file) =>
                                                         field.onChange(file)
                                                     }
@@ -362,7 +417,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                             <Button
                                 type="submit"
                                 size="lg"
-                                disabled={form.formState.isSubmitting}
+                                disabled={create.isPending || edit.isPending}
                                 className="w-full font-semibold text-base"
                             >
                                 {form.formState.isSubmitting ? (

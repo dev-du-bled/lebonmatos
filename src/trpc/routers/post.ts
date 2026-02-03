@@ -32,7 +32,7 @@ export const postRouter = createTRPCRouter({
     }),
 
     deletePost: privateProcedure
-        .input(z.object({ id: z.string() }))
+        .input(z.object({ id: z.cuid() }))
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.id },
@@ -83,6 +83,44 @@ export const postRouter = createTRPCRouter({
                 };
             } catch (error) {
                 // TODO: better error handling
+                throw new Error(
+                    error instanceof Error ? error.message : "Unknown error"
+                );
+            }
+        }),
+
+    editPost: privateProcedure
+        .input(postCreateSchema.extend({ id: z.cuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const post = await prisma.post.findUnique({
+                where: { id: input.id },
+            });
+
+            if (!post) {
+                throw new Error("Post not found");
+            }
+
+            if (post.userId !== ctx.session.user.id) {
+                throw new Error("Unauthorized");
+            }
+
+            try {
+                await prisma.post.update({
+                    where: { id: input.id },
+                    data: {
+                        title: input.title,
+                        description: input.description,
+                        price: input.price,
+                        location: input.location,
+                        componentId: input.componentId,
+                        images: input.images || [],
+                    },
+                });
+
+                return {
+                    postId: post.id,
+                };
+            } catch (error) {
                 throw new Error(
                     error instanceof Error ? error.message : "Unknown error"
                 );
