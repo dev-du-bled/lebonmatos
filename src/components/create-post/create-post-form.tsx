@@ -25,15 +25,15 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import ComponentSelector from "./component-selector";
 import { ReturnedComponent } from "@/utils/components";
+import type { trpc as trpcServerType } from "@/trpc/server";
 import { trpc } from "@/trpc/client";
 import { postFormSchema, type PostFormData } from "@/lib/schema/post";
 import ImageUpload from "../ui/image-upload";
 import { useUploadThing } from "@/utils/uploadthing";
 import { Loader2 } from "lucide-react";
-import { Component, Post } from "@prisma/client";
 
 interface PostFormProps {
-    post: (Post & { component: Component }) | null;
+    post: Awaited<ReturnType<typeof trpcServerType.posts.getPost>> | null;
 }
 
 export default function CreatePostForm({ post }: PostFormProps) {
@@ -53,7 +53,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
 
     const [selectedComponent, setSelectedComponent] = useState<
         ReturnedComponent | undefined
-    >(undefined);
+    >(post?.component || undefined);
     const create = trpc.posts.createPost.useMutation();
     const edit = trpc.posts.editPost.useMutation();
     const router = useRouter();
@@ -169,11 +169,12 @@ export default function CreatePostForm({ post }: PostFormProps) {
         <Card className="w-full border-none shadow-none bg-transparent">
             <CardHeader className="text-center px-0">
                 <CardTitle className="text-3xl font-bold">
-                    Créer une Annonce
+                    {post ? "Editer une Annonce" : "Créer une Annonce"}
                 </CardTitle>
                 <CardDescription>
-                    Mettez en vente vos composants informatiques en quelques
-                    clics.
+                    {post
+                        ? "Éditez votre annonce en quelques clics."
+                        : "Mettez en vente vos composants informatiques en quelques clics."}
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-0">

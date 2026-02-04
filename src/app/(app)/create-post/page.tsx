@@ -1,8 +1,7 @@
 import { getUser } from "@/utils/getUser";
 import CreatePostForm from "@/components/create-post/create-post-form";
 import { Metadata } from "next";
-import { Component, Post } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { trpc } from "@/trpc/server";
 
 interface PageProps {
     searchParams: Promise<{ edit?: string }>;
@@ -25,16 +24,15 @@ export default async function CreatePostPage({ searchParams }: PageProps) {
 
     const { edit } = await searchParams;
 
-    let post: (Post & { component: Component }) | null = null;
+    let post: Awaited<ReturnType<typeof trpc.posts.getPost>> | null = null;
     if (edit) {
-        post = await prisma.post.findUnique({
-            where: {
-                id: edit,
-            },
-            include: {
-                component: true,
-            },
+        const basePost = await trpc.posts.getPost({
+            postId: edit,
+            sellerData: false,
         });
+
+        // hacky fix for "Only plain objects can be passed to Client Components from Server Components. Decimal objects are not supported."
+        post = JSON.parse(JSON.stringify(basePost));
     }
 
     return (

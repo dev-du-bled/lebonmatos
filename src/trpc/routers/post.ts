@@ -169,6 +169,7 @@ export const postRouter = createTRPCRouter({
         .input(
             z.object({
                 postId: z.cuid(),
+                sellerData: z.boolean().default(true),
             })
         )
         .query(async ({ input }) => {
@@ -189,17 +190,20 @@ export const postRouter = createTRPCRouter({
                 },
             });
 
-            const rating = await prisma.rating.aggregate({
-                where: {
-                    userId: post?.userId,
-                },
-                _avg: {
-                    rating: true,
-                },
-                _count: {
-                    rating: true,
-                },
-            });
+            let rating = null;
+            if (input.sellerData) {
+                rating = await prisma.rating.aggregate({
+                    where: {
+                        userId: post?.userId,
+                    },
+                    _avg: {
+                        rating: true,
+                    },
+                    _count: {
+                        rating: true,
+                    },
+                });
+            }
 
             if (!post || !component) {
                 throw new Error("Post not found");
@@ -210,22 +214,30 @@ export const postRouter = createTRPCRouter({
                 title: post.title,
                 description: post.description,
                 price: post.price,
+                location: post.location,
                 images: post.images,
                 component: {
-                    ...post.component,
-                    details: getComponentDetails(
-                        post.component.type,
-                        component
-                    ),
+                    id: component.id,
+                    name: component.name,
+                    color: component.color,
+                    type: component.type,
+                    price: component.estimatedPrice,
+                    data: getComponentDetails(post.component.type, component),
                 },
-                seller: {
-                    id: post.user.id,
-                    name: post.user.name,
-                    rating: {
-                        avg: rating._avg.rating || 0,
-                        count: rating._count.rating || 0,
+                ...(input.sellerData && {
+                    seller: {
+                        id: post.user.id,
+                        name: post.user.name,
+                        rating: rating
+                            ? {
+                                  avg: rating._avg.rating
+                                      ? Number(rating._avg.rating.toFixed(2))
+                                      : 0,
+                                  count: rating._count.rating || 0,
+                              }
+                            : null,
                     },
-                },
+                }),
             };
         }),
 
