@@ -23,7 +23,7 @@ export type ReturnedComponent<T = unknown> = {
     data: T;
 };
 
-export type Components = { name: string } & (
+export type Components =
     | Cpu
     | Gpu
     | Ram
@@ -35,8 +35,7 @@ export type Components = { name: string } & (
     | CaseFan
     | CpuCooler
     | SoundCard
-    | WirelessNetworkCard
-);
+    | WirelessNetworkCard;
 
 // loop over the entries of the data object and format them into a string to display on ui
 export function formatComponentData(type: ComponentType, data: Components) {

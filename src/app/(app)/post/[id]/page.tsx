@@ -51,7 +51,6 @@ export default async function PostPage({
     const user = await getUser(false);
 
     const post = await getPost(id);
-
     const similarPost = await trpc.posts.getSimilarPosts({
         id: post.id,
         type: post.component.type,
@@ -147,9 +146,10 @@ export default async function PostPage({
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
+                            <h3 className="font-mono">{post.component.name}</h3>
                             {formatComponentData(
                                 post.component.type,
-                                post.component.details as Components
+                                post.component.details
                             ).map((uiString, index) => (
                                 <div
                                     key={index}

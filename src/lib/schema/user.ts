@@ -6,7 +6,7 @@ import { profileImageSchema } from "./images";
 export const userBaseSchema = z.object({
     id: z.string(),
     name: z.string().min(2).max(80),
-    email: z.string().email(),
+    email: z.email(),
     emailVerified: z.boolean().default(false),
     image: z.string().nullable().optional(),
     phoneNumber: z.string().nullable().optional(),
@@ -72,7 +72,7 @@ export const publicProfileFormSchema = z.object({
 
 export const personalInfoFormSchema = z.object({
     name: nameField,
-    email: z.string().email({ message: "Email invalide" }),
+    email: z.email({ message: "Email invalide" }),
     phoneNumber: phoneNumberFormField,
 });
 
@@ -120,7 +120,7 @@ export const publicProfileUpdateSchema = z
 
 export const personalInfoUpdateSchema = z.object({
     name: nameField,
-    email: z.string().email(),
+    email: z.email(),
     phoneNumber: phoneNumberFormField.transform(emptyToNull),
 });
 

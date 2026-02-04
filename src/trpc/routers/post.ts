@@ -4,11 +4,49 @@ import { postCreateSchema } from "@/lib/schema/post";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { utapi } from "@/lib/utapi";
 import { ComponentType } from "@prisma/client";
+import { Components } from "@/utils/components";
+
+// return wich component to fetch based on the component type
+const getComponentIncludes = (componentType: ComponentType) => ({
+    Cpu: componentType === ComponentType.CPU,
+    Gpu: componentType === ComponentType.GPU,
+    Ram: componentType === ComponentType.RAM,
+    Motherboard: componentType === ComponentType.MOTHERBOARD,
+    Hdd: componentType === ComponentType.HDD,
+    Ssd: componentType === ComponentType.SSD,
+    Psu: componentType === ComponentType.POWER_SUPPLY,
+    Case: componentType === ComponentType.CASE,
+    CaseFan: componentType === ComponentType.CASE_FAN,
+    CpuCooler: componentType === ComponentType.CPU_COOLER,
+    WirelessNetworkCard: componentType === ComponentType.WIRELESS_NETWORK_CARD,
+    SoundCard: componentType === ComponentType.SOUND_CARD,
+});
+
+const getComponentDetails = (
+    componentType: ComponentType,
+    component: Record<string, unknown>
+): Components => {
+    const map: Record<ComponentType, string> = {
+        CPU: "Cpu",
+        GPU: "Gpu",
+        RAM: "Ram",
+        MOTHERBOARD: "Motherboard",
+        HDD: "Hdd",
+        SSD: "Ssd",
+        POWER_SUPPLY: "Psu",
+        CASE: "Case",
+        CASE_FAN: "CaseFan",
+        CPU_COOLER: "CpuCooler",
+        WIRELESS_NETWORK_CARD: "WirelessNetworkCard",
+        SOUND_CARD: "SoundCard",
+    };
+    return component[map[componentType]] as Components;
+};
 
 export const postRouter = createTRPCRouter({
     getUserListings: privateProcedure.query(async ({ ctx }) => {
         const posts = await prisma.post.findMany({
-            where: { userId: ctx.session!.user.id },
+            where: { userId: ctx.session.user.id },
             orderBy: { id: "desc" },
             include: {
                 component: true,
@@ -42,7 +80,7 @@ export const postRouter = createTRPCRouter({
                 throw new Error("Post not found");
             }
 
-            if (post.userId !== ctx.session!.user.id) {
+            if (post.userId !== ctx.session.user.id) {
                 throw new Error("Unauthorized");
             }
 
@@ -145,22 +183,9 @@ export const postRouter = createTRPCRouter({
             const component = await prisma.component.findUnique({
                 where: { id: post?.componentId },
                 include: {
-                    // TODO: reafactor this mess
-                    Cpu: post?.component.type === ComponentType.CPU,
-                    Gpu: post?.component.type === ComponentType.GPU,
-                    Ram: post?.component.type === ComponentType.RAM,
-                    Motherboard:
-                        post?.component.type === ComponentType.MOTHERBOARD,
-                    Hdd: post?.component.type === ComponentType.HDD,
-                    Ssd: post?.component.type === ComponentType.SSD,
-                    Psu: post?.component.type === ComponentType.POWER_SUPPLY,
-                    Case: post?.component.type === ComponentType.CASE,
-                    CaseFan: post?.component.type === ComponentType.CASE_FAN,
-                    CpuCooler:
-                        post?.component.type === ComponentType.CPU_COOLER,
-                    WirelessNetworkCard:
-                        post?.component.type ===
-                        ComponentType.WIRELESS_NETWORK_CARD,
+                    ...getComponentIncludes(
+                        post?.component.type as ComponentType
+                    ),
                 },
             });
 
@@ -187,38 +212,11 @@ export const postRouter = createTRPCRouter({
                 price: post.price,
                 images: post.images,
                 component: {
-                    // TODO: refactor this mess
-                    type: post.component.type,
-                    details:
-                        post.component.type === ComponentType.CPU
-                            ? component?.Cpu
-                            : post.component.type === ComponentType.GPU
-                              ? component?.Gpu
-                              : post.component.type === ComponentType.RAM
-                                ? component?.Ram
-                                : post.component.type ===
-                                    ComponentType.MOTHERBOARD
-                                  ? component?.Motherboard
-                                  : post.component.type === ComponentType.HDD
-                                    ? component?.Hdd
-                                    : post.component.type === ComponentType.SSD
-                                      ? component?.Ssd
-                                      : post.component.type ===
-                                          ComponentType.POWER_SUPPLY
-                                        ? component?.Psu
-                                        : post.component.type ===
-                                            ComponentType.CASE
-                                          ? component?.Case
-                                          : post.component.type ===
-                                              ComponentType.CASE_FAN
-                                            ? component?.CaseFan
-                                            : post.component.type ===
-                                                ComponentType.CPU_COOLER
-                                              ? component?.CpuCooler
-                                              : post.component.type ===
-                                                  ComponentType.WIRELESS_NETWORK_CARD
-                                                ? component?.WirelessNetworkCard
-                                                : undefined,
+                    ...post.component,
+                    details: getComponentDetails(
+                        post.component.type,
+                        component
+                    ),
                 },
                 seller: {
                     id: post.user.id,
