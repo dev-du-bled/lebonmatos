@@ -1,28 +1,28 @@
 /**
- * @description Component to wrap children and redirect to login page if user is not logged in
+ * @description Server component that checks authentication and redirects to login if not authenticated.
+ * Also includes RequiredLoginClient to handle client-side session changes (e.g., logout).
  *
- * @param children - The children to wrap (optional)
+ * @param children - The children to render if authenticated
  */
 
-"use client";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import RequiredLoginClient from "./required-login-client";
 
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
-
-export default function RequiredLogin({
+export default async function RequiredLogin({
     children,
 }: {
     children?: React.ReactNode | null;
 }) {
-    const router = useRouter();
-    const pathname = usePathname();
+    const hdrs = await headers();
+    const session = await auth.api.getSession({ headers: hdrs });
 
-    const { data, isPending } = authClient.useSession();
-
-    if (!isPending && !data?.user) {
-        router.push("/login?redirect=" + pathname);
-        return null;
+    if (!session?.user) {
+        const pathname = hdrs.get("x-current-path") || "/";
+        redirect(`/login?redirect=${pathname}`);
     }
-    return children;
+
+    // Wrap children in RequiredLoginClient to handle client-side session changes
+    return <RequiredLoginClient>{children}</RequiredLoginClient>;
 }
