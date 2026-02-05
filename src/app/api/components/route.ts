@@ -8,7 +8,10 @@ declare global {
 const prisma =
     globalThis.prisma ||
     new PrismaClient({
-        log: process.env.NODE_ENV === "development" ? ["query", "info", "warn", "error"] : ["error"],
+        log:
+            process.env.NODE_ENV === "development"
+                ? ["query", "info", "warn", "error"]
+                : ["error"],
     });
 
 if (process.env.NODE_ENV !== "production") {
@@ -51,6 +54,9 @@ export async function GET(req: Request) {
         return NextResponse.json(payload, { status: 200 });
     } catch (error) {
         console.error("Error fetching components:", error);
-        return NextResponse.json({ message: "Unable to load components" }, { status: 500 });
+        return NextResponse.json(
+            { message: "Unable to load components" },
+            { status: 500 }
+        );
     }
 }

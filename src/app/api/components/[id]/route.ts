@@ -8,14 +8,20 @@ declare global {
 const prisma =
     globalThis.prisma ||
     new PrismaClient({
-        log: process.env.NODE_ENV === "development" ? ["query", "info", "warn", "error"] : ["error"],
+        log:
+            process.env.NODE_ENV === "development"
+                ? ["query", "info", "warn", "error"]
+                : ["error"],
     });
 
 if (process.env.NODE_ENV !== "production") {
     globalThis.prisma = prisma;
 }
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         const { id } = await params;
 
@@ -38,7 +44,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         });
 
         if (!component) {
-            return NextResponse.json({ message: "Component not found" }, { status: 404 });
+            return NextResponse.json(
+                { message: "Component not found" },
+                { status: 404 }
+            );
         }
 
         // Flatten
@@ -72,7 +81,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             SoundCard ||
             WirelessNetworkCard ||
             {};
-        const { id: detailId, componentId, type: detailType, ...rest } = details;
+        const {
+            id: detailId,
+            componentId,
+            type: detailType,
+            ...rest
+        } = details;
 
         // Convert Decimals
         Object.keys(rest).forEach((key) => {
@@ -85,6 +99,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         return NextResponse.json(payload, { status: 200 });
     } catch (error) {
         console.error("Error fetching component:", error);
-        return NextResponse.json({ message: "Unable to load component" }, { status: 500 });
+        return NextResponse.json(
+            { message: "Unable to load component" },
+            { status: 500 }
+        );
     }
 }
