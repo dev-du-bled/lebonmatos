@@ -4,15 +4,19 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import "../globals.css";
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
 
     return (
-        <main className="min-h-svh">
+        <main className="flex min-h-svh flex-col">
             <Header initialSession={session} />
-            {children}
+            <div className="flex-1">{children}</div>
             <Footer />
         </main>
     );

@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { notFound, redirect } from "next/navigation";
 import ProfileEditForm from "@/components/profile/profile-edit-form";
-import { HydrateClient, trpc } from "@/trpc/server";
+import { trpc } from "@/trpc/server";
 
 export default async function ProfileEditPage() {
     let profile;
@@ -19,9 +19,5 @@ export default async function ProfileEditPage() {
         throw error;
     }
 
-    return (
-        <HydrateClient>
-            <ProfileEditForm initialData={profile} />
-        </HydrateClient>
-    );
+    return <ProfileEditForm initialData={profile} />;
 }

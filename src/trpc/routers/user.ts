@@ -1,8 +1,14 @@
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { profileUpdateSchema } from "@/lib/schema/user";
-import { createTRPCRouter, privateProcedure } from "../init";
+import {
+    profileUpdateSchema,
+    publicProfileUpdateSchema,
+    personalInfoUpdateSchema,
+} from "@/lib/schema/user";
+import { utapi } from "@/lib/utapi";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 
 const profileSelect = {
     id: true,
@@ -10,16 +16,10 @@ const profileSelect = {
     email: true,
     username: true,
     displayUsername: true,
+    bio: true,
     phoneNumber: true,
     createdAt: true,
     image: true,
-    profileImage: {
-        select: {
-            id: true,
-            image: true,
-            alt: true,
-        },
-    },
 } satisfies Prisma.UserSelect;
 
 type ProfileRecord = Prisma.UserGetPayload<{ select: typeof profileSelect }>;
@@ -34,16 +34,10 @@ function mapProfileResult(
         email: user.email,
         username: user.username,
         displayUsername: user.displayUsername,
+        bio: user.bio,
         phoneNumber: user.phoneNumber,
         createdAt: user.createdAt.toISOString(),
         image: user.image,
-        profileImage: user.profileImage
-            ? {
-                id: user.profileImage.id,
-                image: user.profileImage.image,
-                alt: user.profileImage.alt ?? null,
-            }
-            : null,
         rating,
     };
 }
@@ -73,25 +67,93 @@ async function buildProfilePayload(userId: string) {
     });
 }
 
+async function deleteUserImage(image: string) {
+    const imageKey = image.split("/").pop();
+    if (imageKey) {
+        await utapi.deleteFiles(imageKey);
+    }
+}
+
 export const userRouter = createTRPCRouter({
     meId: privateProcedure.query(({ ctx }) => {
         return ctx.session!.user.id;
     }),
-    getProfile: privateProcedure.query(({ ctx }) =>
-        buildProfilePayload(ctx.session!.user.id)
-    ),
+    getProfile: publicProcedure
+        .input(z.object({ userId: z.string().optional() }).optional())
+        .query(async ({ ctx, input }) => {
+            const userId = input?.userId ?? ctx.session?.user.id;
+            if (!userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message:
+                        "Vous devez être connecté pour accéder à ce profil",
+                });
+            }
+            return buildProfilePayload(userId);
+        }),
     updateProfile: privateProcedure
         .input(profileUpdateSchema)
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session!.user.id;
-
             const existing = await prisma.user.findUnique({
                 where: { id: userId },
-                select: {
-                    image: true,
-                },
+                select: { image: true },
             });
+            if (!existing) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Utilisateur introuvable",
+                });
+            }
+            const { avatar, removeAvatar, ...profileData } = input;
 
+            try {
+                let newImage = existing.image;
+
+                if (removeAvatar) {
+                    if (existing.image) {
+                        await deleteUserImage(existing.image);
+                    }
+                    newImage = null;
+                } else if (avatar) {
+                    if (existing.image) {
+                        await deleteUserImage(existing.image);
+                    }
+                    newImage = avatar;
+                }
+
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: {
+                        name: profileData.name,
+                        username: profileData.username,
+                        bio: profileData.bio,
+                        phoneNumber: profileData.phoneNumber,
+                        image: newImage,
+                    },
+                });
+            } catch (error) {
+                if (
+                    error instanceof Prisma.PrismaClientKnownRequestError &&
+                    error.code === "P2002"
+                ) {
+                    throw new TRPCError({
+                        code: "CONFLICT",
+                        message: "Ce nom d'utilisateur est déjà utilisé.",
+                    });
+                }
+                throw error;
+            }
+            return buildProfilePayload(userId);
+        }),
+    updatePublicProfile: privateProcedure
+        .input(publicProfileUpdateSchema)
+        .mutation(async ({ ctx, input }) => {
+            const userId = ctx.session!.user.id;
+            const existing = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { image: true },
+            });
             if (!existing) {
                 throw new TRPCError({
                     code: "NOT_FOUND",
@@ -99,67 +161,70 @@ export const userRouter = createTRPCRouter({
                 });
             }
 
-            const { avatar, removeAvatar, ...profileData } = input;
+            const { avatar, removeAvatar, username, bio } = input;
 
             try {
-                await prisma.$transaction(async (tx) => {
-                    let image = existing.image;
+                let newImage = existing.image;
 
-                    if (removeAvatar && image) {
-                        await tx.image.delete({
-                            where: { id: image },
-                        });
-                        image = null;
+                if (removeAvatar) {
+                    if (existing.image) {
+                        await deleteUserImage(existing.image);
                     }
-
-                    if (avatar) {
-                        if (image) {
-                            await tx.image.update({
-                                where: { id: image },
-                                data: {
-                                    image: avatar.data,
-                                    alt: avatar.alt,
-                                },
-                            });
-                        } else {
-                            const created = await tx.image.create({
-                                data: {
-                                    image: avatar.data,
-                                    alt: avatar.alt,
-                                    ownerId: userId,
-                                },
-                            });
-                            image = created.id;
-                        }
+                    newImage = null;
+                } else if (avatar) {
+                    if (existing.image) {
+                        await deleteUserImage(existing.image);
                     }
+                    newImage = avatar;
+                }
 
-                    await tx.user.update({
-                        where: { id: userId },
-                        data: {
-                            name: profileData.name,
-                            username: profileData.username,
-                            phoneNumber: profileData.phoneNumber,
-                            image: avatar
-                                ? avatar.data
-                                : removeAvatar
-                                    ? null
-                                    : undefined,
-                        },
-                    });
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: {
+                        username,
+                        bio,
+                        image: newImage,
+                    },
                 });
             } catch (error) {
                 if (
                     error instanceof Prisma.PrismaClientKnownRequestError &&
-                    error.code === "P2002" // Returned by Prisma when a unique constraint is violated
+                    error.code === "P2002"
                 ) {
                     throw new TRPCError({
                         code: "CONFLICT",
                         message: "Ce nom d'utilisateur est déjà utilisé.",
                     });
                 }
-
                 throw error;
             }
+            return buildProfilePayload(userId);
+        }),
+    updatePersonalInfo: privateProcedure
+        .input(personalInfoUpdateSchema)
+        .mutation(async ({ ctx, input }) => {
+            const userId = ctx.session!.user.id;
+
+            if (input.email) {
+                const existingUser = await prisma.user.findUnique({
+                    where: { email: input.email },
+                });
+                if (existingUser && existingUser.id !== userId) {
+                    throw new TRPCError({
+                        code: "CONFLICT",
+                        message: "Cet email est déjà utilisé.",
+                    });
+                }
+            }
+
+            await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    name: input.name,
+                    email: input.email,
+                    phoneNumber: input.phoneNumber,
+                },
+            });
 
             return buildProfilePayload(userId);
         }),

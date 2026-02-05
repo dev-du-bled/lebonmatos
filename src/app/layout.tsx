@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TRPCProvider } from "@/trpc/client";
+import dynamic from "next/dynamic";
 import Script from "next/script";
+import { extractRouterConfig } from "uploadthing/server";
+import { lbmFileRouter } from "./api/uploadthing/core";
+
+const DevToolbox = dynamic(() =>
+    import("@/components/dev/toolbox").then((mod) => mod.DevToolbox)
+);
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -24,6 +32,8 @@ export const metadata: Metadata = {
         "La plateforme experte en seconde main de matériel informatique",
 };
 
+import { Toaster } from "@/components/ui/sonner";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -38,10 +48,20 @@ export default function RootLayout({
                         src="//unpkg.com/react-scan/dist/auto.global.js"
                     />
                 )}
+
+                <Script
+                    async
+                    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7271888754365820"
+                    crossOrigin="anonymous"
+                    data-adbreak-test="on"
+                />
             </head>
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-svh`}
             >
+                <NextSSRPlugin
+                    routerConfig={extractRouterConfig(lbmFileRouter)}
+                />
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
@@ -49,6 +69,8 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <TRPCProvider>{children}</TRPCProvider>
+                    <Toaster />
+                    {process.env.NODE_ENV === "development" && <DevToolbox />}
                 </ThemeProvider>
             </body>
         </html>
