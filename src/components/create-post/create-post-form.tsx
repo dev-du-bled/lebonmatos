@@ -29,9 +29,9 @@ import { trpc } from "@/trpc/client";
 import { postFormSchema, type PostFormData } from "@/lib/schema/post";
 import ImageUpload from "../ui/image-upload";
 import { useUploadThing } from "@/utils/uploadthing";
-import { Loader2 } from "lucide-react";
 import { AppRouter } from "@/trpc/routers/_app";
 import { inferRouterOutputs } from "@trpc/server";
+import LocationSelector from "./location-selector";
 
 interface PostFormProps {
     post: inferRouterOutputs<AppRouter>["posts"]["getPost"] | null;
@@ -45,8 +45,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
         defaultValues: {
             component: post?.component || undefined,
             title: post?.title || "",
-            description: post?.description ? post.description : "",
-            location: post?.location ? post.location : "",
+            description: post?.description || "",
+            location: post?.location,
             price: post?.price || 0,
             images: post?.images || [],
         },
@@ -64,8 +64,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
         form.reset({
             component: post?.component || undefined,
             title: post?.title || "",
-            description: post?.description ? post.description : "",
-            location: post?.location ? post.location : "",
+            description: post?.description || "",
+            location: post?.location,
             price: post?.price || 0,
             images: post?.images || [],
         });
@@ -372,13 +372,17 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                         <FormItem className="w-full">
                                             <FormLabel>Localisation</FormLabel>
                                             <FormControl>
-                                                <Input
-                                                    placeholder="Ville ou Code Postal"
+                                                <LocationSelector
+                                                    defaultValue={field.value}
+                                                    onChange={(location) => {
+                                                        field.onChange(
+                                                            location
+                                                        );
+                                                    }}
                                                     disabled={
                                                         form.formState
                                                             .isSubmitting
                                                     }
-                                                    {...field}
                                                 />
                                             </FormControl>
                                             <FormMessage />

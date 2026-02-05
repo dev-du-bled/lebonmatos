@@ -1,10 +1,12 @@
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 import { postCreateSchema } from "@/lib/schema/post";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { utapi } from "@/lib/utapi";
 import { ComponentType } from "@prisma/client";
 import { Components } from "@/utils/components";
+import { AddressData } from "@/utils/location";
+import { TRPCError } from "@trpc/server";
+import { prisma } from "@/lib/prisma";
 
 // return wich component to fetch based on the component type
 const getComponentIncludes = (componentType: ComponentType) => ({
@@ -77,11 +79,17 @@ export const postRouter = createTRPCRouter({
             });
 
             if (!post) {
-                throw new Error("Post not found");
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
             }
 
             if (post.userId !== ctx.session.user.id) {
-                throw new Error("Unauthorized");
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "You are not authorized to delete this post",
+                });
             }
 
             if (post.images.length > 0) {
@@ -104,26 +112,35 @@ export const postRouter = createTRPCRouter({
         .input(postCreateSchema)
         .mutation(async ({ ctx, input }) => {
             try {
+                const location = await prisma.location.create({
+                    data: {
+                        label: input.location.label,
+                        context: input.location.context,
+                        x: input.location.coordinates[0],
+                        y: input.location.coordinates[1],
+                    },
+                });
+
                 const post = await prisma.post.create({
                     data: {
                         userId: ctx.session!.user.id,
                         title: input.title,
                         description: input.description,
                         price: input.price,
-                        location: input.location,
                         componentId: input.componentId,
                         images: input.images || [],
+                        locationId: location.id,
                     },
                 });
 
                 return {
                     postId: post.id,
                 };
-            } catch (error) {
-                // TODO: better error handling
-                throw new Error(
-                    error instanceof Error ? error.message : "Unknown error"
-                );
+            } catch {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Failed to create post",
+                });
             }
         }),
 
@@ -132,24 +149,40 @@ export const postRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.id },
+                include: { location: true },
             });
 
             if (!post) {
-                throw new Error("Post not found");
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
             }
 
             if (post.userId !== ctx.session.user.id) {
-                throw new Error("Unauthorized");
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "You are not authorized to edit this post",
+                });
             }
 
             try {
+                await prisma.location.update({
+                    where: { id: post.locationId },
+                    data: {
+                        label: input.location.label,
+                        context: input.location.context,
+                        x: input.location.coordinates[0],
+                        y: input.location.coordinates[1],
+                    },
+                });
+
                 await prisma.post.update({
                     where: { id: input.id },
                     data: {
                         title: input.title,
                         description: input.description,
                         price: input.price,
-                        location: input.location,
                         componentId: input.componentId,
                         images: input.images || [],
                     },
@@ -159,9 +192,13 @@ export const postRouter = createTRPCRouter({
                     postId: post.id,
                 };
             } catch (error) {
-                throw new Error(
-                    error instanceof Error ? error.message : "Unknown error"
-                );
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : "Failed to update post",
+                });
             }
         }),
 
@@ -178,23 +215,38 @@ export const postRouter = createTRPCRouter({
                 include: {
                     user: true,
                     component: true,
+                    location: true,
                 },
             });
 
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
+            }
+
             const component = await prisma.component.findUnique({
-                where: { id: post?.componentId },
+                where: { id: post.componentId },
                 include: {
                     ...getComponentIncludes(
-                        post?.component.type as ComponentType
+                        post.component.type as ComponentType
                     ),
                 },
             });
 
+            if (!component) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Component not found",
+                });
+            }
+
             let rating = null;
-            if (input.sellerData) {
+            if (input.sellerData && post.userId) {
                 rating = await prisma.rating.aggregate({
                     where: {
-                        userId: post?.userId,
+                        userId: post.userId,
                     },
                     _avg: {
                         rating: true,
@@ -205,16 +257,16 @@ export const postRouter = createTRPCRouter({
                 });
             }
 
-            if (!post || !component) {
-                throw new Error("Post not found");
-            }
-
             return {
                 id: post.id,
                 title: post.title,
                 description: post.description,
                 price: post.price,
-                location: post.location,
+                location: {
+                    label: post.location?.label,
+                    coordinates: [post.location.x, post.location.y],
+                    context: post.location?.context,
+                } satisfies AddressData,
                 images: post.images,
                 component: {
                     id: component.id,

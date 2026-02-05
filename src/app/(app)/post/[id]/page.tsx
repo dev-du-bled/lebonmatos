@@ -31,7 +31,7 @@ export async function generateMetadata({
     const post = await getPost(id);
 
     return {
-        title: `Annonce "${post.title}"`,
+        title: `Annonce "${post.title.slice(0, 15)}${post.title.length > 15 && "..."}"`,
         description: `Découvrez en détails l'annonce "${post.title}"`,
     };
 }
