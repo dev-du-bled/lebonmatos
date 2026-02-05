@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FileText, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { trpc } from "@/trpc/client";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";

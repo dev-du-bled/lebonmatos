@@ -123,12 +123,6 @@ export default function ComponentSelector({
         setSelectedComponent(undefined);
     };
 
-    // Get icon for a component type
-    const getTypeIcon = (type: ComponentType) => {
-        const Icon = componentTypeIcons[type];
-        return Icon ? <Icon className="h-4 w-4" /> : null;
-    };
-
     return (
         <div className="flex flex-col gap-2">
             {!selectedComponent && !errored && (
