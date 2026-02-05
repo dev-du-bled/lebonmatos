@@ -1,7 +1,9 @@
-import { getUser } from "@/utils/getUser";
 import CreatePostForm from "@/components/create-post/create-post-form";
+import RequiredLogin from "@/components/required-login";
 import { Metadata } from "next";
 import { trpc } from "@/trpc/server";
+import { inferRouterOutputs } from "@trpc/server";
+import { AppRouter } from "@/trpc/routers/_app";
 
 interface PageProps {
     searchParams: Promise<{ edit?: string }>;
@@ -20,11 +22,9 @@ export async function generateMetadata({
 }
 
 export default async function CreatePostPage({ searchParams }: PageProps) {
-    await getUser();
-
     const { edit } = await searchParams;
 
-    let post: Awaited<ReturnType<typeof trpc.posts.getPost>> | null = null;
+    let post: inferRouterOutputs<AppRouter>["posts"]["getPost"] | null = null;
     if (edit) {
         const basePost = await trpc.posts.getPost({
             postId: edit,
@@ -36,10 +36,12 @@ export default async function CreatePostPage({ searchParams }: PageProps) {
     }
 
     return (
-        <div className="flex flex-col items-center p-4">
-            <div className="w-full max-w-md md:max-w-lg lg:max-w-2xl transition-all">
-                <CreatePostForm post={post} />
+        <RequiredLogin>
+            <div className="flex flex-col items-center p-4">
+                <div className="w-full max-w-md md:max-w-lg lg:max-w-2xl transition-all">
+                    <CreatePostForm post={post} />
+                </div>
             </div>
-        </div>
+        </RequiredLogin>
     );
 }

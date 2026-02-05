@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import {
@@ -25,15 +25,16 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import ComponentSelector from "./component-selector";
 import { ReturnedComponent } from "@/utils/components";
-import type { trpc as trpcServerType } from "@/trpc/server";
 import { trpc } from "@/trpc/client";
 import { postFormSchema, type PostFormData } from "@/lib/schema/post";
 import ImageUpload from "../ui/image-upload";
 import { useUploadThing } from "@/utils/uploadthing";
 import { Loader2 } from "lucide-react";
+import { AppRouter } from "@/trpc/routers/_app";
+import { inferRouterOutputs } from "@trpc/server";
 
 interface PostFormProps {
-    post: Awaited<ReturnType<typeof trpcServerType.posts.getPost>> | null;
+    post: inferRouterOutputs<AppRouter>["posts"]["getPost"] | null;
 }
 
 export default function CreatePostForm({ post }: PostFormProps) {
@@ -42,13 +43,14 @@ export default function CreatePostForm({ post }: PostFormProps) {
     const form = useForm<PostFormData>({
         resolver: zodResolver(postFormSchema),
         defaultValues: {
-            component: post?.component,
-            title: post?.title,
-            description: post?.description ? post.description : undefined,
-            location: post?.location ? post.location : undefined,
-            price: post?.price,
-            images: post?.images,
+            component: post?.component || undefined,
+            title: post?.title || "",
+            description: post?.description ? post.description : "",
+            location: post?.location ? post.location : "",
+            price: post?.price || 0,
+            images: post?.images || [],
         },
+        mode: "onChange",
     });
 
     const [selectedComponent, setSelectedComponent] = useState<
@@ -57,6 +59,18 @@ export default function CreatePostForm({ post }: PostFormProps) {
     const create = trpc.posts.createPost.useMutation();
     const edit = trpc.posts.editPost.useMutation();
     const router = useRouter();
+
+    useEffect(() => {
+        form.reset({
+            component: post?.component || undefined,
+            title: post?.title || "",
+            description: post?.description ? post.description : "",
+            location: post?.location ? post.location : "",
+            price: post?.price || 0,
+            images: post?.images || [],
+        });
+        setSelectedComponent(post?.component || undefined);
+    }, [post, form]);
 
     const onSubmit = async (formData: PostFormData) => {
         let uploadResult;
@@ -426,6 +440,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                             <Button
                                 type="submit"
                                 size="lg"
+                                loading={form.formState.isSubmitting}
                                 disabled={
                                     form.formState.isSubmitting ||
                                     !form.formState.isValid ||
@@ -433,18 +448,9 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                 }
                                 className="w-full font-semibold text-base"
                             >
-                                {form.formState.isSubmitting ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        {post
-                                            ? "Edition en cours..."
-                                            : "Publication en cours..."}
-                                    </>
-                                ) : post ? (
-                                    "Editer l'annonce"
-                                ) : (
-                                    "Publier l'annonce"
-                                )}
+                                {post
+                                    ? "Editer l'annonce"
+                                    : "Publier l'annonce"}
                             </Button>
                         </div>
                     </form>
