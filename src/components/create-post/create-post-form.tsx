@@ -88,6 +88,17 @@ export default function CreatePostForm({ post }: PostFormProps) {
                 }
             }
 
+            const images = formData.images
+                ? [
+                      ...(formData.images.filter(
+                          (img) => typeof img === "string"
+                      ) as string[]),
+                      ...(uploadResult
+                          ? uploadResult.map((img) => img.ufsUrl)
+                          : []),
+                  ]
+                : post.images;
+
             edit.mutate(
                 {
                     id: post.id,
@@ -96,14 +107,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                     description: formData.description,
                     location: formData.location,
                     price: formData.price,
-                    images: uploadResult
-                        ? [
-                              ...(formData.images || [])
-                                  .filter((img) => typeof img === "string")
-                                  .map((img) => img as string),
-                              ...uploadResult.map((img) => img.ufsUrl),
-                          ]
-                        : (formData.images as string[]) || [],
+                    images: images,
                 },
                 {
                     onSuccess: (data) => {
@@ -227,6 +231,10 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                         !!form.formState.errors
                                                             .component
                                                     }
+                                                    disabled={
+                                                        form.formState
+                                                            .isSubmitting
+                                                    }
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -256,8 +264,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                 <Input
                                                     placeholder="Ex: Carte Graphique RTX 3080 Excellent état"
                                                     disabled={
-                                                        create.isPending ||
-                                                        edit.isPending
+                                                        form.formState
+                                                            .isSubmitting
                                                     }
                                                     {...field}
                                                 />
@@ -283,8 +291,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                     className="min-h-30 resize-y"
                                                     placeholder="Décrivez l'état du produit, la raison de la vente, etc..."
                                                     disabled={
-                                                        create.isPending ||
-                                                        edit.isPending
+                                                        form.formState
+                                                            .isSubmitting
                                                     }
                                                     {...field}
                                                 />
@@ -319,8 +327,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                         }
                                                         placeholder="0.00"
                                                         disabled={
-                                                            create.isPending ||
-                                                            edit.isPending
+                                                            form.formState
+                                                                .isSubmitting
                                                         }
                                                         className="pl-8"
                                                         {...field}
@@ -353,8 +361,8 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                 <Input
                                                     placeholder="Ville ou Code Postal"
                                                     disabled={
-                                                        create.isPending ||
-                                                        edit.isPending
+                                                        form.formState
+                                                            .isSubmitting
                                                     }
                                                     {...field}
                                                 />
@@ -418,7 +426,11 @@ export default function CreatePostForm({ post }: PostFormProps) {
                             <Button
                                 type="submit"
                                 size="lg"
-                                disabled={create.isPending || edit.isPending}
+                                disabled={
+                                    form.formState.isSubmitting ||
+                                    !form.formState.isValid ||
+                                    !form.formState.isDirty
+                                }
                                 className="w-full font-semibold text-base"
                             >
                                 {form.formState.isSubmitting ? (

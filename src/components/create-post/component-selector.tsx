@@ -61,12 +61,14 @@ const componentTypeIcons: Record<ComponentType, LucideIcon> = {
 interface ComponentSelectorProps {
     selectedComponent?: ReturnedComponent;
     setSelectedComponent: (component?: ReturnedComponent) => void;
+    disabled?: boolean;
     errored: boolean;
 }
 
 export default function ComponentSelector({
     selectedComponent,
     setSelectedComponent,
+    disabled,
     errored,
 }: ComponentSelectorProps) {
     const [open, setOpen] = useState(false);
@@ -135,6 +137,7 @@ export default function ComponentSelector({
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
                             <Button
+                                disabled={disabled}
                                 variant="outline"
                                 className={cn(
                                     "w-full justify-start h-auto min-h-12 px-4 py-3 text-left font-normal",
@@ -356,8 +359,9 @@ export default function ComponentSelector({
                         </div>
                         <button
                             type="button"
+                            disabled={disabled}
                             onClick={clearSelection}
-                            className="p-1.5 rounded-md hover:bg-muted transition-colors shrink-0"
+                            className="p-1.5 rounded-md hover:bg-muted transition-colors shrink-0 disabled:opacity-50"
                             aria-label="Supprimer le composant"
                         >
                             <X className="h-4 w-4 text-muted-foreground" />
