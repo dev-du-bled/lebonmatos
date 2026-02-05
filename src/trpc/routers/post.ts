@@ -112,29 +112,28 @@ export const postRouter = createTRPCRouter({
         .input(postCreateSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const location = await prisma.location.create({
+                const post = await prisma.location.create({
                     data: {
                         label: input.location.label,
                         context: input.location.context,
                         x: input.location.coordinates[0],
                         y: input.location.coordinates[1],
+                        Post: {
+                            create: {
+                                userId: ctx.session!.user.id,
+                                title: input.title,
+                                description: input.description,
+                                price: input.price,
+                                componentId: input.componentId,
+                                images: input.images || [],
+                            },
+                        },
                     },
-                });
-
-                const post = await prisma.post.create({
-                    data: {
-                        userId: ctx.session!.user.id,
-                        title: input.title,
-                        description: input.description,
-                        price: input.price,
-                        componentId: input.componentId,
-                        images: input.images || [],
-                        locationId: location.id,
-                    },
+                    include: { posts: true },
                 });
 
                 return {
-                    postId: post.id,
+                    postId: post.posts[0].id,
                 };
             } catch {
                 throw new TRPCError({
@@ -149,7 +148,6 @@ export const postRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.id },
-                include: { location: true },
             });
 
             if (!post) {
@@ -174,30 +172,28 @@ export const postRouter = createTRPCRouter({
                         context: input.location.context,
                         x: input.location.coordinates[0],
                         y: input.location.coordinates[1],
-                    },
-                });
-
-                await prisma.post.update({
-                    where: { id: input.id },
-                    data: {
-                        title: input.title,
-                        description: input.description,
-                        price: input.price,
-                        componentId: input.componentId,
-                        images: input.images || [],
+                        posts: {
+                            update: {
+                                where: { id: post.id },
+                                data: {
+                                    title: input.title,
+                                    description: input.description,
+                                    price: input.price,
+                                    componentId: input.componentId,
+                                    images: input.images || [],
+                                },
+                            },
+                        },
                     },
                 });
 
                 return {
                     postId: post.id,
                 };
-            } catch (error) {
+            } catch {
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Failed to update post",
+                    message: "Failed to update post",
                 });
             }
         }),

@@ -89,14 +89,14 @@ model Post {
   price              Int
   componentId        String
   component          Component           @relation(fields: [componentId], references: [id])
+  locationId         String
+  location           Location            @relation(fields: [locationId], references: [id])
   Favorites          Favorite[]
   Report             Report[]
   Discussion         Discussion[]
   user               User                @relation(fields: [userId], references: [id])
   images             String[]
   ConfigurationItems ConfigurationItem[]
-  location           Location            @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  locationId         String
 
   @@map("post")
 }

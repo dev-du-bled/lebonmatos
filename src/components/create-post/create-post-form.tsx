@@ -370,7 +370,12 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                     name="location"
                                     render={({ field }) => (
                                         <FormItem className="w-full">
-                                            <FormLabel>Localisation</FormLabel>
+                                            <FormLabel>
+                                                Localisation{" "}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <LocationSelector
                                                     defaultValue={field.value}
