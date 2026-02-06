@@ -24,7 +24,12 @@ import {
     Wifi,
     ChevronRight,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
 
@@ -46,16 +51,36 @@ function humanizeKey(key: string) {
     // If the key is all-uppercase, keep as-is (acronyms)
     if (key.toUpperCase() === key) return key;
     // Insert spaces before camelCase capitals, then replace underscores/hyphens with spaces
-    const spaced = key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_-]/g, " ");
+    const spaced = key
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/[_-]/g, " ");
     return spaced
         .split(" ")
         .map((s) => (s.length === 0 ? s : s[0].toUpperCase() + s.slice(1)))
         .join(" ");
 }
 
-function StatRow({ label, value, trend = "none" }: { label: string; value?: string | number; trend?: Trend }) {
-    const color = trend === "up" ? "text-emerald-500" : trend === "down" ? "text-rose-600" : "text-neutral-500";
-    const Icon = trend === "up" ? ArrowUp : trend === "down" ? ArrowDown : ArrowLeftRight;
+function StatRow({
+    label,
+    value,
+    trend = "none",
+}: {
+    label: string;
+    value?: string | number;
+    trend?: Trend;
+}) {
+    const color =
+        trend === "up"
+            ? "text-emerald-500"
+            : trend === "down"
+              ? "text-rose-600"
+              : "text-neutral-500";
+    const Icon =
+        trend === "up"
+            ? ArrowUp
+            : trend === "down"
+              ? ArrowDown
+              : ArrowLeftRight;
 
     return (
         <div className="text-center my-3">
@@ -86,7 +111,9 @@ export function ComparatorContent() {
 
     // Type picker state (local to comparator)
     const [typePickerOpen, setTypePickerOpen] = useState(false);
-    const [pickerType, setPickerType] = useState<ComponentType | undefined>(undefined);
+    const [pickerType, setPickerType] = useState<ComponentType | undefined>(
+        undefined
+    );
 
     // Calculer le type autorisé basé sur la première annonce (si disponible)
     const allowedType = useMemo<ComponentType | undefined>(() => {
@@ -97,7 +124,9 @@ export function ComparatorContent() {
     function handleSelect(post: SelectedPost) {
         // If in replace mode, replace the selected item at replaceIndex
         if (replaceIndex !== null) {
-            setSelected((prev) => prev.map((p, i) => (i === replaceIndex ? post : p)));
+            setSelected((prev) =>
+                prev.map((p, i) => (i === replaceIndex ? post : p))
+            );
             setReplaceIndex(null);
         } else {
             // Received full post from selector — add it directly
@@ -139,8 +168,10 @@ export function ComparatorContent() {
             if (c.component?.Gpu) {
                 specs["chipset"] = c.component.Gpu.chipset;
                 specs["memory"] = c.component.Gpu.memory;
-                specs["coreClock"] = c.component.Gpu.coreClock ?? specs["coreClock"];
-                specs["boostClock"] = c.component.Gpu.boostClock ?? specs["boostClock"];
+                specs["coreClock"] =
+                    c.component.Gpu.coreClock ?? specs["coreClock"];
+                specs["boostClock"] =
+                    c.component.Gpu.boostClock ?? specs["boostClock"];
                 specs["length"] = c.component.Gpu.length ?? undefined;
             }
 
@@ -154,7 +185,8 @@ export function ComparatorContent() {
 
             // RAM fields
             if (c.component?.Ram) {
-                specs["type"] = (specs["type"] || c.component.Ram.type) ?? specs["type"];
+                specs["type"] =
+                    (specs["type"] || c.component.Ram.type) ?? specs["type"];
                 specs["speed"] = c.component.Ram.speed ?? undefined;
                 specs["modules"] = c.component.Ram.modules;
                 specs["size"] = c.component.Ram.size;
@@ -171,10 +203,14 @@ export function ComparatorContent() {
 
             // HDD fields
             if (c.component?.Hdd) {
-                specs["capacity"] = specs["capacity"] ?? c.component.Hdd.capacity;
-                specs["cache"] = specs["cache"] ?? c.component.Hdd.cache ?? undefined;
-                specs["formFactor"] = specs["formFactor"] ?? c.component.Hdd.formFactor;
-                specs["interface"] = specs["interface"] ?? c.component.Hdd.interface;
+                specs["capacity"] =
+                    specs["capacity"] ?? c.component.Hdd.capacity;
+                specs["cache"] =
+                    specs["cache"] ?? c.component.Hdd.cache ?? undefined;
+                specs["formFactor"] =
+                    specs["formFactor"] ?? c.component.Hdd.formFactor;
+                specs["interface"] =
+                    specs["interface"] ?? c.component.Hdd.interface;
             }
 
             // PSU fields
@@ -189,7 +225,8 @@ export function ComparatorContent() {
             if (c.component?.CpuCooler) {
                 specs["rpmIdle"] = c.component.CpuCooler.rpmIdle ?? undefined;
                 specs["rpmMax"] = c.component.CpuCooler.rpmMax ?? undefined;
-                specs["noiseIdle"] = c.component.CpuCooler.noiseIdle ?? undefined;
+                specs["noiseIdle"] =
+                    c.component.CpuCooler.noiseIdle ?? undefined;
                 specs["noiseMax"] = c.component.CpuCooler.noiseMax ?? undefined;
                 specs["size"] = c.component.CpuCooler.size ?? undefined;
             }
@@ -205,35 +242,63 @@ export function ComparatorContent() {
             // CaseFan fields
             if (c.component?.CaseFan) {
                 specs["size"] = specs["size"] ?? c.component.CaseFan.size;
-                specs["rpmIdle"] = specs["rpmIdle"] ?? c.component.CaseFan.rpmIdle ?? undefined;
-                specs["rpmMax"] = specs["rpmMax"] ?? c.component.CaseFan.rpmMax ?? undefined;
-                specs["noiseIdle"] = specs["noiseIdle"] ?? c.component.CaseFan.noiseIdle ?? undefined;
-                specs["noiseMax"] = specs["noiseMax"] ?? c.component.CaseFan.noiseMax ?? undefined;
-                specs["airflowIdle"] = c.component.CaseFan.airflowIdle ?? undefined;
-                specs["airflowMax"] = c.component.CaseFan.airflowMax ?? undefined;
+                specs["rpmIdle"] =
+                    specs["rpmIdle"] ??
+                    c.component.CaseFan.rpmIdle ??
+                    undefined;
+                specs["rpmMax"] =
+                    specs["rpmMax"] ?? c.component.CaseFan.rpmMax ?? undefined;
+                specs["noiseIdle"] =
+                    specs["noiseIdle"] ??
+                    c.component.CaseFan.noiseIdle ??
+                    undefined;
+                specs["noiseMax"] =
+                    specs["noiseMax"] ??
+                    c.component.CaseFan.noiseMax ??
+                    undefined;
+                specs["airflowIdle"] =
+                    c.component.CaseFan.airflowIdle ?? undefined;
+                specs["airflowMax"] =
+                    c.component.CaseFan.airflowMax ?? undefined;
                 specs["pwm"] = c.component.CaseFan.pwm ?? undefined;
             }
 
             // SoundCard fields
             if (c.component?.SoundCard) {
                 specs["channels"] = c.component.SoundCard.channels;
-                specs["digitalAudio"] = c.component.SoundCard.digitalAudio ?? undefined;
+                specs["digitalAudio"] =
+                    c.component.SoundCard.digitalAudio ?? undefined;
                 specs["snr"] = c.component.SoundCard.snr ?? undefined;
-                specs["sampleRate"] = c.component.SoundCard.sampleRate ?? undefined;
-                specs["chipset"] = specs["chipset"] ?? c.component.SoundCard.chipset ?? undefined;
-                specs["interface"] = specs["interface"] ?? c.component.SoundCard.interface ?? specs["interface"];
+                specs["sampleRate"] =
+                    c.component.SoundCard.sampleRate ?? undefined;
+                specs["chipset"] =
+                    specs["chipset"] ??
+                    c.component.SoundCard.chipset ??
+                    undefined;
+                specs["interface"] =
+                    specs["interface"] ??
+                    c.component.SoundCard.interface ??
+                    specs["interface"];
             }
 
             // WirelessNetworkCard fields
             if (c.component?.WirelessNetworkCard) {
-                specs["interface"] = specs["interface"] ?? c.component.WirelessNetworkCard.interface;
-                specs["protocol"] = c.component.WirelessNetworkCard.protocol ?? undefined;
+                specs["interface"] =
+                    specs["interface"] ??
+                    c.component.WirelessNetworkCard.interface;
+                specs["protocol"] =
+                    c.component.WirelessNetworkCard.protocol ?? undefined;
             }
 
             // Ensure non-numeric display fields stay stringified
             Object.keys(specs).forEach((k) => {
                 const v = specs[k];
-                if (v !== undefined && v !== null && typeof v !== "string" && isNaN(Number(v))) {
+                if (
+                    v !== undefined &&
+                    v !== null &&
+                    typeof v !== "string" &&
+                    isNaN(Number(v))
+                ) {
                     // keep numbers as-is, stringify objects/complex values
                     if (typeof v === "object") specs[k] = String(v);
                 }
@@ -266,7 +331,13 @@ export function ComparatorContent() {
         gpu: new Set(["length", "tdp"]),
         cpu: new Set(["tdp"]),
         ram: new Set(["caslatency", "cas_latency"]),
-        cpu_cooler: new Set(["noiseidle", "noisemax", "noise_idle", "noise_max", "size"]),
+        cpu_cooler: new Set([
+            "noiseidle",
+            "noisemax",
+            "noise_idle",
+            "noise_max",
+            "size",
+        ]),
         case_fan: new Set(["noiseidle", "noisemax", "noise_idle", "noise_max"]),
         case: new Set(["volume"]),
         psu: new Set([]),
@@ -303,7 +374,9 @@ export function ComparatorContent() {
         // Vérifier si cet attribut doit être inversé
         const componentType = components[0]?.componentType?.toLowerCase() || "";
         const typeSpecific = lowerIsBetterByType[componentType] || new Set();
-        const isInverted = globalLowerIsBetter.has(key.toLowerCase()) || typeSpecific.has(key.toLowerCase());
+        const isInverted =
+            globalLowerIsBetter.has(key.toLowerCase()) ||
+            typeSpecific.has(key.toLowerCase());
 
         components.forEach((ex) => {
             const val = extractNumber(ex.specs?.[key]);
@@ -392,7 +465,11 @@ export function ComparatorContent() {
                 {components.map((ex, idx) => {
                     const priceValue = ex.price ?? ex.specs?.estimatedPrice;
                     let priceDisplay: string;
-                    if (priceValue === undefined || priceValue === null || priceValue === "-") {
+                    if (
+                        priceValue === undefined ||
+                        priceValue === null ||
+                        priceValue === "-"
+                    ) {
                         priceDisplay = "-";
                     } else if (typeof priceValue === "number") {
                         priceDisplay = new Intl.NumberFormat("fr-FR", {
@@ -413,7 +490,12 @@ export function ComparatorContent() {
                         >
                             <div className="relative h-44 bg-neutral-100">
                                 {ex.imageSrc ? (
-                                    <Image src={ex.imageSrc} alt={ex.title} fill style={{ objectFit: "cover" }} />
+                                    <Image
+                                        src={ex.imageSrc}
+                                        alt={ex.title}
+                                        fill
+                                        style={{ objectFit: "cover" }}
+                                    />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-neutral-400">
                                         Image
@@ -453,13 +535,23 @@ export function ComparatorContent() {
                                 <div className="flex flex-col items-center">
                                     {allKeys.map((key) => {
                                         const value = ex.specs?.[key];
-                                        const trend = ex.trends?.[key] ?? computedTrendsMap[ex.id]?.[key] ?? "none";
+                                        const trend =
+                                            ex.trends?.[key] ??
+                                            computedTrendsMap[ex.id]?.[key] ??
+                                            "none";
                                         const lowerKey = key.toLowerCase();
                                         if (nonNumericKeys.has(lowerKey)) {
                                             return (
-                                                <div className="text-center my-3" key={key}>
-                                                    <div className="font-semibold">{humanizeKey(key)}</div>
-                                                    <div className="mt-1 text-sm text-neutral-500">{value ?? "-"}</div>
+                                                <div
+                                                    className="text-center my-3"
+                                                    key={key}
+                                                >
+                                                    <div className="font-semibold">
+                                                        {humanizeKey(key)}
+                                                    </div>
+                                                    <div className="mt-1 text-sm text-neutral-500">
+                                                        {value ?? "-"}
+                                                    </div>
                                                 </div>
                                             );
                                         }
@@ -479,11 +571,26 @@ export function ComparatorContent() {
                                     <div className="text-lg font-bold flex items-center gap-2">
                                         <span>À partir de {priceDisplay}</span>
                                         {(() => {
-                                            const priceTrend = computedTrendsMap[ex.id]?.["price"] ?? "none";
-                                            if (priceTrend === "none") return null;
-                                            const color = priceTrend === "up" ? "text-emerald-500" : "text-rose-600";
-                                            const Icon = priceTrend === "up" ? ArrowDown : ArrowUp;
-                                            return <Icon className={color} size={20} />;
+                                            const priceTrend =
+                                                computedTrendsMap[ex.id]?.[
+                                                    "price"
+                                                ] ?? "none";
+                                            if (priceTrend === "none")
+                                                return null;
+                                            const color =
+                                                priceTrend === "up"
+                                                    ? "text-emerald-500"
+                                                    : "text-rose-600";
+                                            const Icon =
+                                                priceTrend === "up"
+                                                    ? ArrowDown
+                                                    : ArrowUp;
+                                            return (
+                                                <Icon
+                                                    className={color}
+                                                    size={20}
+                                                />
+                                            );
                                         })()}
                                     </div>
                                     <div />
@@ -520,7 +627,9 @@ export function ComparatorContent() {
                             <DialogTitle>Choisir un composant</DialogTitle>
                         </DialogHeader>
                         <div className="p-4">
-                            <p className="text-sm text-muted-foreground pb-3">Sélectionnez le type de composant :</p>
+                            <p className="text-sm text-muted-foreground pb-3">
+                                Sélectionnez le type de composant :
+                            </p>
                             <div className="grid grid-cols-2 gap-2">
                                 {componentTypes.map((type) => {
                                     const Icon = componentTypeIcons[type];
@@ -532,11 +641,16 @@ export function ComparatorContent() {
                                             onClick={() => {
                                                 setPickerType(type);
                                                 setTypePickerOpen(false);
-                                                setTimeout(() => setSelectorOpen(true), 150);
+                                                setTimeout(
+                                                    () => setSelectorOpen(true),
+                                                    150
+                                                );
                                             }}
                                         >
                                             <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                            <span className="truncate flex-1">{COMPONENT_TYPE_LABELS[type]}</span>
+                                            <span className="truncate flex-1">
+                                                {COMPONENT_TYPE_LABELS[type]}
+                                            </span>
                                             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                                         </Button>
                                     );
@@ -549,7 +663,10 @@ export function ComparatorContent() {
                 <ComponentSelector
                     open={selectorOpen}
                     onOpenChange={(v) => setSelectorOpen(v)}
-                    componentType={(selected.length > 0 ? allowedType : pickerType) ?? ComponentType.CPU}
+                    componentType={
+                        (selected.length > 0 ? allowedType : pickerType) ??
+                        ComponentType.CPU
+                    }
                     onSelect={handleSelect}
                     isAuthenticated={false}
                     excludePostIds={selected.map((s) => s.id)}
