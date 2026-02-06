@@ -17,6 +17,7 @@ import { getUser } from "@/utils/getUser";
 import { Metadata } from "next";
 import { cache } from "react";
 import Map from "@/components/post/post-map";
+import PostMap from "@/components/post/post-map";
 
 type Params = {
     id: string;
@@ -32,7 +33,7 @@ export async function generateMetadata({
     const post = await getPost(id);
 
     return {
-        title: `Annonce "${post.title.slice(0, 15)}${post.title.length > 15 && "..."}"`,
+        title: `Annonce "${post.title.slice(0, 15)}${post.title.length > 15 ? "..." : ""}"`,
         description: `Découvrez en détails l'annonce "${post.title}"`,
     };
 }
@@ -165,24 +166,21 @@ export default async function PostPage({
                         </CardContent>
                     </Card>
                 </div>
-                <div className="flex flex-col gap-8 flex-1">
-                    <Card className="gap-2">
-                        <CardHeader>
-                            <CardTitle>
-                                Plus comme &quot;{post.title}&quot;
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-200 overflow-auto">
-                            {similarPost.map((post) => (
-                                <PostCard key={post.id} {...post} />
-                            ))}
-                        </CardContent>
-                    </Card>
-                    <Map
-                        latitude={post.location.coordinates[0]}
-                        longitude={post.location.coordinates[1]}
-                    />
+                <div className="flex-1">
+                    <PostMap location={post.location} />
                 </div>
+                <Card className="gap-2">
+                    <CardHeader>
+                        <CardTitle>
+                            Plus comme &quot;{post.title}&quot;
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-200 overflow-auto">
+                        {similarPost.map((post) => (
+                            <PostCard key={post.id} {...post} />
+                        ))}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

@@ -102,12 +102,19 @@ model Post {
 }
 
 model Location {
-  id      String @id @default(cuid())
-  label   String
-  context String
-  x       Float
-  y       Float
-  posts   Post[]
+  id          String  @id @default(cuid())
+  lat         Float
+  lon         Float
+  name        String
+  displayName String
+  city        String
+  state       String
+  region      String
+  country     String
+  countryCode String
+  coordinates Float[]
+
+  posts Post[]
 
   @@map("location")
 }

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { ReturnedComponent } from "@/utils/components";
-import { AddressData } from "@/utils/location";
+import { CityData } from "@/utils/location";
 
 export const postBaseSchema = z.object({
     title: z.string().min(3).max(50, {
@@ -17,8 +17,8 @@ export const postBaseSchema = z.object({
     price: z.number().min(1, {
         message: "Le prix doit être supérieur ou égal à 1€",
     }),
-    location: z.custom<AddressData>((value) => value !== undefined, {
-        error: "Vous devez sélectionner une localisation valide",
+    location: z.custom<CityData>((value) => value !== undefined, {
+        error: "Vous devez sélectionner une ville valide",
     }),
 });
 

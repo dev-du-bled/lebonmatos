@@ -1,4 +1,4 @@
-import { AddressData, searchAddress } from "@/utils/location";
+import { CityData, searchAddress } from "@/utils/location";
 import { Dispatch, SetStateAction, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ScrollArea } from "../ui/scroll-area";
@@ -11,8 +11,8 @@ import {
 import { Button } from "../ui/button";
 
 interface LocationSelectorProps {
-    defaultValue?: AddressData;
-    onChange: Dispatch<SetStateAction<AddressData | undefined>>;
+    defaultValue?: CityData;
+    onChange: Dispatch<SetStateAction<CityData | undefined>>;
     disabled?: boolean;
 }
 
@@ -22,11 +22,11 @@ export default function LocationSelector({
     disabled,
     ...props
 }: LocationSelectorProps) {
-    const [addressSuggestions, setAddressSuggestions] = useState<AddressData[]>(
+    const [addressSuggestions, setAddressSuggestions] = useState<CityData[]>(
         []
     );
     const [inputValue, setInputValue] = useState(
-        defaultValue ? defaultValue.label : ""
+        defaultValue ? defaultValue.name : ""
     );
 
     const searchLocation = async (search: string) => {
@@ -77,21 +77,22 @@ export default function LocationSelector({
                 {inputValue.length > 3 && addressSuggestions.length > 0 && (
                     <ScrollArea className="pr-3">
                         <div className="space-y-2 max-h-40">
-                            {addressSuggestions.map((s) => (
+                            {addressSuggestions.map((s, i) => (
                                 <Button
-                                    key={s.label}
+                                    key={i}
                                     variant="ghost"
                                     className="flex justify-start w-full h-auto px-3 py-1.5"
                                     onClick={() => {
                                         onChange(s);
-                                        setInputValue(s.label);
+                                        setInputValue(s.name);
                                         setAddressSuggestions([]);
                                     }}
                                 >
                                     <div className="text-start flex flex-col">
-                                        {s.label}
+                                        {s.name}
                                         <span className="text-xs text-muted-foreground">
-                                            {s.context}
+                                            {s.state} -{" "}
+                                            {s.countryCode.toUpperCase()}
                                         </span>
                                     </div>
                                 </Button>

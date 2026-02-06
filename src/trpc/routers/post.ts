@@ -4,7 +4,7 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { utapi } from "@/lib/utapi";
 import { ComponentType } from "@prisma/client";
 import { Components } from "@/utils/components";
-import { AddressData } from "@/utils/location";
+import { CityData } from "@/utils/location";
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@/lib/prisma";
 
@@ -114,22 +114,30 @@ export const postRouter = createTRPCRouter({
             try {
                 const post = await prisma.location.create({
                     data: {
-                        label: input.location.label,
-                        context: input.location.context,
-                        x: input.location.coordinates[0],
-                        y: input.location.coordinates[1],
+                        name: input.location.name,
+                        displayName: input.location.displayName,
+                        city: input.location.city,
+                        state: input.location.state,
+                        region: input.location.region,
+                        country: input.location.country,
+                        countryCode: input.location.countryCode,
+                        lat: input.location.lat,
+                        lon: input.location.lon,
+                        coordinates: input.location.coordinates,
                         posts: {
                             create: {
-                                userId: ctx.session!.user.id,
                                 title: input.title,
                                 description: input.description,
                                 price: input.price,
                                 componentId: input.componentId,
                                 images: input.images || [],
+                                userId: ctx.session.user.id,
                             },
                         },
                     },
-                    include: { posts: true },
+                    include: {
+                        posts: true,
+                    },
                 });
 
                 return {
@@ -169,10 +177,16 @@ export const postRouter = createTRPCRouter({
                 await prisma.location.update({
                     where: { id: post.locationId },
                     data: {
-                        label: input.location.label,
-                        context: input.location.context,
-                        x: input.location.coordinates[0],
-                        y: input.location.coordinates[1],
+                        name: input.location.name,
+                        displayName: input.location.displayName,
+                        city: input.location.city,
+                        state: input.location.state,
+                        region: input.location.region,
+                        country: input.location.country,
+                        countryCode: input.location.countryCode,
+                        lat: input.location.lat,
+                        lon: input.location.lon,
+                        coordinates: input.location.coordinates,
                         posts: {
                             update: {
                                 where: { id: post.id },
@@ -260,10 +274,17 @@ export const postRouter = createTRPCRouter({
                 description: post.description,
                 price: post.price,
                 location: {
-                    label: post.location?.label,
-                    coordinates: [post.location.x, post.location.y],
-                    context: post.location?.context,
-                } satisfies AddressData,
+                    lat: post.location.lat,
+                    lon: post.location.lon,
+                    name: post.location.name,
+                    displayName: post.location.displayName,
+                    city: post.location.city,
+                    state: post.location.state,
+                    region: post.location.region,
+                    country: post.location.country,
+                    countryCode: post.location.countryCode,
+                    coordinates: post.location.coordinates,
+                } satisfies CityData,
                 images: post.images,
                 component: {
                     id: component.id,

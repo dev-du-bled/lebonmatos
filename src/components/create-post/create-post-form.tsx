@@ -43,7 +43,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
     const form = useForm<PostFormData>({
         resolver: zodResolver(postFormSchema),
         defaultValues: {
-            component: post?.component || undefined,
+            component: post?.component,
             title: post?.title || "",
             description: post?.description || "",
             location: post?.location,
@@ -55,21 +55,21 @@ export default function CreatePostForm({ post }: PostFormProps) {
 
     const [selectedComponent, setSelectedComponent] = useState<
         ReturnedComponent | undefined
-    >(post?.component || undefined);
+    >(post?.component);
     const create = trpc.posts.createPost.useMutation();
     const edit = trpc.posts.editPost.useMutation();
     const router = useRouter();
 
     useEffect(() => {
         form.reset({
-            component: post?.component || undefined,
+            component: post?.component,
             title: post?.title || "",
             description: post?.description || "",
             location: post?.location,
             price: post?.price || 0,
             images: post?.images || [],
         });
-        setSelectedComponent(post?.component || undefined);
+        setSelectedComponent(post?.component);
     }, [post, form]);
 
     useEffect(() => {
