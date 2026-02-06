@@ -61,12 +61,14 @@ const componentTypeIcons: Record<ComponentType, LucideIcon> = {
 interface ComponentSelectorProps {
     selectedComponent?: ReturnedComponent;
     setSelectedComponent: (component?: ReturnedComponent) => void;
+    disabled?: boolean;
     errored: boolean;
 }
 
 export default function ComponentSelector({
     selectedComponent,
     setSelectedComponent,
+    disabled,
     errored,
 }: ComponentSelectorProps) {
     const [open, setOpen] = useState(false);
@@ -121,12 +123,6 @@ export default function ComponentSelector({
         setSelectedComponent(undefined);
     };
 
-    // Get icon for a component type
-    const getTypeIcon = (type: ComponentType) => {
-        const Icon = componentTypeIcons[type];
-        return Icon ? <Icon className="h-4 w-4" /> : null;
-    };
-
     return (
         <div className="flex flex-col gap-2">
             {!selectedComponent && !errored && (
@@ -135,6 +131,7 @@ export default function ComponentSelector({
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
                             <Button
+                                disabled={disabled}
                                 variant="outline"
                                 className={cn(
                                     "w-full justify-start h-auto min-h-12 px-4 py-3 text-left font-normal",
@@ -233,7 +230,7 @@ export default function ComponentSelector({
                                         </div>
                                     </div>
 
-                                    <ScrollArea className="max-h-[300px] border-t">
+                                    <ScrollArea className="max-h-125 border-t">
                                         <div className="p-2">
                                             {query.length < 3 ? (
                                                 <div className="py-12 text-center text-sm text-muted-foreground">
@@ -275,7 +272,7 @@ export default function ComponentSelector({
                                                         >
                                                             <div className="flex items-start justify-between gap-2">
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className="font-medium truncate">
+                                                                    <p className="font-medium line-clamp-1">
                                                                         {
                                                                             component.name
                                                                         }
@@ -356,8 +353,9 @@ export default function ComponentSelector({
                         </div>
                         <button
                             type="button"
+                            disabled={disabled}
                             onClick={clearSelection}
-                            className="p-1.5 rounded-md hover:bg-muted transition-colors shrink-0"
+                            className="p-1.5 rounded-md hover:bg-muted transition-colors shrink-0 disabled:opacity-50"
                             aria-label="Supprimer le composant"
                         >
                             <X className="h-4 w-4 text-muted-foreground" />

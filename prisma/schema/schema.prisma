@@ -27,8 +27,8 @@ model User {
   username        String?
   displayUsername String?
   bio             String?
-  ratingsReceived Rating[] @relation("ratee")
-  ratingsGiven    Rating[] @relation("rater")
+  ratingsReceived Rating[]        @relation("ratee")
+  ratingsGiven    Rating[]        @relation("rater")
   configurations  Configuration[]
 
   @@unique([email])
@@ -86,10 +86,11 @@ model Post {
   userId             String
   title              String              @db.VarChar(50)
   description        String?
-  location           String?
   price              Int
   componentId        String
   component          Component           @relation(fields: [componentId], references: [id])
+  locationId         String
+  location           Location            @relation(fields: [locationId], references: [id])
   Favorites          Favorite[]
   Report             Report[]
   Discussion         Discussion[]
@@ -98,6 +99,17 @@ model Post {
   ConfigurationItems ConfigurationItem[]
 
   @@map("post")
+}
+
+model Location {
+  id      String @id @default(cuid())
+  label   String
+  context String
+  x       Float
+  y       Float
+  posts   Post[]
+
+  @@map("location")
 }
 
 model Favorite {

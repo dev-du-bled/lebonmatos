@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FileText, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { trpc } from "@/trpc/client";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
     DialogClose,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface ListingCardProps {
     listing: {
@@ -59,18 +60,14 @@ export function ListingCard({ listing }: ListingCardProps) {
                     href={`/post/${listing.id}`}
                     className="relative h-40 w-full bg-secondary sm:h-auto sm:w-48 shrink-0"
                 >
-                    {listing.thumbnail ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={listing.thumbnail.image}
-                            alt={listing.thumbnail.alt ?? listing.title}
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                            <FileText className="size-8 text-muted-foreground" />
-                        </div>
-                    )}
+                    <Image
+                        src={
+                            listing.thumbnail?.image || "/images/fallback.webp"
+                        }
+                        alt={listing.thumbnail?.alt ?? listing.title}
+                        fill
+                        className="h-full w-full object-cover"
+                    />
                 </Link>
                 <div className="flex flex-1 flex-col justify-between p-4 gap-4">
                     <Link href={`/post/${listing.id}`} className="space-y-1">
@@ -78,7 +75,7 @@ export function ListingCard({ listing }: ListingCardProps) {
                             <CardTitle className="text-base line-clamp-1">
                                 {listing.title}
                             </CardTitle>
-                            <span className="text-lg font-bold text-primary shrink-0">
+                            <span className="text-lg font-bold dark:text-primary shrink-0">
                                 {listing.price.toLocaleString("fr-FR")} €
                             </span>
                         </div>

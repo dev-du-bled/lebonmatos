@@ -1,14 +1,54 @@
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 import { postCreateSchema } from "@/lib/schema/post";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { utapi } from "@/lib/utapi";
 import { ComponentType } from "@prisma/client";
+import { Components } from "@/utils/components";
+import { AddressData } from "@/utils/location";
+import { TRPCError } from "@trpc/server";
+import { prisma } from "@/lib/prisma";
+
+// return wich component to fetch based on the component type
+const getComponentIncludes = (componentType: ComponentType) => ({
+    Cpu: componentType === ComponentType.CPU,
+    Gpu: componentType === ComponentType.GPU,
+    Ram: componentType === ComponentType.RAM,
+    Motherboard: componentType === ComponentType.MOTHERBOARD,
+    Hdd: componentType === ComponentType.HDD,
+    Ssd: componentType === ComponentType.SSD,
+    Psu: componentType === ComponentType.POWER_SUPPLY,
+    Case: componentType === ComponentType.CASE,
+    CaseFan: componentType === ComponentType.CASE_FAN,
+    CpuCooler: componentType === ComponentType.CPU_COOLER,
+    WirelessNetworkCard: componentType === ComponentType.WIRELESS_NETWORK_CARD,
+    SoundCard: componentType === ComponentType.SOUND_CARD,
+});
+
+const getComponentDetails = (
+    componentType: ComponentType,
+    component: Record<string, unknown>
+): Components => {
+    const map: Record<ComponentType, string> = {
+        CPU: "Cpu",
+        GPU: "Gpu",
+        RAM: "Ram",
+        MOTHERBOARD: "Motherboard",
+        HDD: "Hdd",
+        SSD: "Ssd",
+        POWER_SUPPLY: "Psu",
+        CASE: "Case",
+        CASE_FAN: "CaseFan",
+        CPU_COOLER: "CpuCooler",
+        WIRELESS_NETWORK_CARD: "WirelessNetworkCard",
+        SOUND_CARD: "SoundCard",
+    };
+    return component[map[componentType]] as Components;
+};
 
 export const postRouter = createTRPCRouter({
     getUserListings: privateProcedure.query(async ({ ctx }) => {
         const posts = await prisma.post.findMany({
-            where: { userId: ctx.session!.user.id },
+            where: { userId: ctx.session.user.id },
             orderBy: { id: "desc" },
             include: {
                 component: true,
@@ -32,18 +72,24 @@ export const postRouter = createTRPCRouter({
     }),
 
     deletePost: privateProcedure
-        .input(z.object({ id: z.string() }))
+        .input(z.object({ id: z.cuid() }))
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.id },
             });
 
             if (!post) {
-                throw new Error("Post not found");
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
             }
 
-            if (post.userId !== ctx.session!.user.id) {
-                throw new Error("Unauthorized");
+            if (post.userId !== ctx.session.user.id) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "You are not authorized to delete this post",
+                });
             }
 
             if (post.images.length > 0) {
@@ -66,26 +112,89 @@ export const postRouter = createTRPCRouter({
         .input(postCreateSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const post = await prisma.post.create({
+                const post = await prisma.location.create({
                     data: {
-                        userId: ctx.session!.user.id,
-                        title: input.title,
-                        description: input.description,
-                        price: input.price,
-                        location: input.location,
-                        componentId: input.componentId,
-                        images: input.images || [],
+                        label: input.location.label,
+                        context: input.location.context,
+                        x: input.location.coordinates[0],
+                        y: input.location.coordinates[1],
+                        Post: {
+                            create: {
+                                userId: ctx.session!.user.id,
+                                title: input.title,
+                                description: input.description,
+                                price: input.price,
+                                componentId: input.componentId,
+                                images: input.images || [],
+                            },
+                        },
+                    },
+                    include: { posts: true },
+                });
+
+                return {
+                    postId: post.posts[0].id,
+                };
+            } catch {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Failed to create post",
+                });
+            }
+        }),
+
+    editPost: privateProcedure
+        .input(postCreateSchema.extend({ id: z.cuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const post = await prisma.post.findUnique({
+                where: { id: input.id },
+            });
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
+            }
+
+            if (post.userId !== ctx.session.user.id) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "You are not authorized to edit this post",
+                });
+            }
+
+            try {
+                await prisma.location.update({
+                    where: { id: post.locationId },
+                    data: {
+                        label: input.location.label,
+                        context: input.location.context,
+                        x: input.location.coordinates[0],
+                        y: input.location.coordinates[1],
+                        posts: {
+                            update: {
+                                where: { id: post.id },
+                                data: {
+                                    title: input.title,
+                                    description: input.description,
+                                    price: input.price,
+                                    componentId: input.componentId,
+                                    images: input.images || [],
+                                },
+                            },
+                        },
                     },
                 });
 
                 return {
                     postId: post.id,
                 };
-            } catch (error) {
-                // TODO: better error handling
-                throw new Error(
-                    error instanceof Error ? error.message : "Unknown error"
-                );
+            } catch {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Failed to update post",
+                });
             }
         }),
 
@@ -93,6 +202,7 @@ export const postRouter = createTRPCRouter({
         .input(
             z.object({
                 postId: z.cuid(),
+                sellerData: z.boolean().default(true),
             })
         )
         .query(async ({ input }) => {
@@ -101,44 +211,46 @@ export const postRouter = createTRPCRouter({
                 include: {
                     user: true,
                     component: true,
+                    location: true,
                 },
             });
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
+            }
 
             const component = await prisma.component.findUnique({
-                where: { id: post?.componentId },
+                where: { id: post.componentId },
                 include: {
-                    Cpu: post?.component.type === ComponentType.CPU,
-                    Gpu: post?.component.type === ComponentType.GPU,
-                    Ram: post?.component.type === ComponentType.RAM,
-                    Motherboard:
-                        post?.component.type === ComponentType.MOTHERBOARD,
-                    Hdd: post?.component.type === ComponentType.HDD,
-                    Ssd: post?.component.type === ComponentType.SSD,
-                    Psu: post?.component.type === ComponentType.POWER_SUPPLY,
-                    Case: post?.component.type === ComponentType.CASE,
-                    CaseFan: post?.component.type === ComponentType.CASE_FAN,
-                    CpuCooler:
-                        post?.component.type === ComponentType.CPU_COOLER,
-                    WirelessNetworkCard:
-                        post?.component.type ===
-                        ComponentType.WIRELESS_NETWORK_CARD,
+                    ...getComponentIncludes(
+                        post.component.type as ComponentType
+                    ),
                 },
             });
 
-            const rating = await prisma.rating.aggregate({
-                where: {
-                    userId: post?.userId,
-                },
-                _avg: {
-                    rating: true,
-                },
-                _count: {
-                    rating: true,
-                },
-            });
+            if (!component) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Component not found",
+                });
+            }
 
-            if (!post || !component) {
-                throw new Error("Post not found");
+            let rating = null;
+            if (input.sellerData && post.userId) {
+                rating = await prisma.rating.aggregate({
+                    where: {
+                        userId: post.userId,
+                    },
+                    _avg: {
+                        rating: true,
+                    },
+                    _count: {
+                        rating: true,
+                    },
+                });
             }
 
             return {
@@ -146,48 +258,34 @@ export const postRouter = createTRPCRouter({
                 title: post.title,
                 description: post.description,
                 price: post.price,
+                location: {
+                    label: post.location?.label,
+                    coordinates: [post.location.x, post.location.y],
+                    context: post.location?.context,
+                } satisfies AddressData,
                 images: post.images,
                 component: {
-                    type: post.component.type,
-                    details:
-                        post.component.type === ComponentType.CPU
-                            ? component?.Cpu
-                            : post.component.type === ComponentType.GPU
-                              ? component?.Gpu
-                              : post.component.type === ComponentType.RAM
-                                ? component?.Ram
-                                : post.component.type ===
-                                    ComponentType.MOTHERBOARD
-                                  ? component?.Motherboard
-                                  : post.component.type === ComponentType.HDD
-                                    ? component?.Hdd
-                                    : post.component.type === ComponentType.SSD
-                                      ? component?.Ssd
-                                      : post.component.type ===
-                                          ComponentType.POWER_SUPPLY
-                                        ? component?.Psu
-                                        : post.component.type ===
-                                            ComponentType.CASE
-                                          ? component?.Case
-                                          : post.component.type ===
-                                              ComponentType.CASE_FAN
-                                            ? component?.CaseFan
-                                            : post.component.type ===
-                                                ComponentType.CPU_COOLER
-                                              ? component?.CpuCooler
-                                              : post.component.type ===
-                                                  ComponentType.WIRELESS_NETWORK_CARD
-                                                ? component?.WirelessNetworkCard
-                                                : undefined,
+                    id: component.id,
+                    name: component.name,
+                    color: component.color,
+                    type: component.type,
+                    price: component.estimatedPrice,
+                    data: getComponentDetails(post.component.type, component),
                 },
-                seller: {
-                    id: post.user.id,
-                    name: post.user.name,
-                    rating: {
-                        avg: rating._avg.rating || 0,
-                        count: rating._count.rating || 0,
+                ...(input.sellerData && {
+                    seller: {
+                        id: post.user.id,
+                        name: post.user.name,
+                        rating: rating
+                            ? {
+                                  avg: rating._avg.rating
+                                      ? Number(rating._avg.rating.toFixed(2))
+                                      : 0,
+                                  count: rating._count.rating || 0,
+                              }
+                            : null,
                     },
-                },
+                }),
             };
         }),
 

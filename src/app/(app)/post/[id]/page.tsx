@@ -7,7 +7,7 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 import { trpc } from "@/trpc/server";
-import { Components, formatComponentData } from "@/utils/components";
+import { formatComponentData } from "@/utils/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { Star } from "lucide-react";
@@ -31,7 +31,7 @@ export async function generateMetadata({
     const post = await getPost(id);
 
     return {
-        title: `Annonce "${post.title}"`,
+        title: `Annonce "${post.title.slice(0, 15)}${post.title.length > 15 && "..."}"`,
         description: `Découvrez en détails l'annonce "${post.title}"`,
     };
 }
@@ -51,7 +51,6 @@ export default async function PostPage({
     const user = await getUser(false);
 
     const post = await getPost(id);
-
     const similarPost = await trpc.posts.getSimilarPosts({
         id: post.id,
         type: post.component.type,
@@ -118,23 +117,26 @@ export default async function PostPage({
                                 <Avatar className="inline-flex h-12 shadow-sm  w-12 select-none items-center justify-center overflow-hidden rounded-full align-middle">
                                     <AvatarImage src="" />
                                     <AvatarFallback className="bg-card">
-                                        {post.seller.name.charAt(0)}
+                                        {post.seller?.name.charAt(0)}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p>{post.seller.name}</p>
+                                    <p>{post.seller?.name}</p>
                                     {/* rating */}
-                                    {post.seller.rating.count > 0 && (
-                                        <div className="ml-auto flex items-center gap-1">
-                                            <span className="text-xs font-medium">
-                                                {post.seller.rating.avg.toFixed(
-                                                    1
-                                                )}{" "}
-                                                ({post.seller.rating.count})
-                                            </span>
-                                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                        </div>
-                                    )}
+                                    {post.seller?.rating &&
+                                        post.seller?.rating.count > 0 && (
+                                            <div className="ml-auto flex items-center gap-1">
+                                                <span className="text-xs font-medium">
+                                                    {post.seller?.rating?.avg.toFixed(
+                                                        1
+                                                    )}{" "}
+                                                    (
+                                                    {post.seller?.rating?.count}
+                                                    )
+                                                </span>
+                                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                            </div>
+                                        )}
                                 </div>
                             </div>
                             <ContactButton initialUser={user} />
@@ -147,9 +149,10 @@ export default async function PostPage({
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
+                            <h3 className="font-mono">{post.component.name}</h3>
                             {formatComponentData(
                                 post.component.type,
-                                post.component.details as Components
+                                post.component.data
                             ).map((uiString, index) => (
                                 <div
                                     key={index}
