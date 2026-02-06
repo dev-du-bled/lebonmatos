@@ -118,7 +118,7 @@ export const postRouter = createTRPCRouter({
                         context: input.location.context,
                         x: input.location.coordinates[0],
                         y: input.location.coordinates[1],
-                        Post: {
+                        posts: {
                             create: {
                                 userId: ctx.session!.user.id,
                                 title: input.title,
@@ -135,7 +135,8 @@ export const postRouter = createTRPCRouter({
                 return {
                     postId: post.posts[0].id,
                 };
-            } catch {
+            } catch (error) {
+                console.error("Error creating post:", error);
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "Failed to create post",

@@ -14,7 +14,7 @@ export const postBaseSchema = z.object({
         .max(1500, {
             message: "La description doit contenir au plus 1500 caractères",
         }),
-    price: z.number().int().min(1, {
+    price: z.number().min(1, {
         message: "Le prix doit être supérieur ou égal à 1€",
     }),
     location: z.custom<AddressData>((value) => value !== undefined, {

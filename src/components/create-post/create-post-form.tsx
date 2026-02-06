@@ -72,6 +72,18 @@ export default function CreatePostForm({ post }: PostFormProps) {
         setSelectedComponent(post?.component || undefined);
     }, [post, form]);
 
+    useEffect(() => {
+        // warn on page exit/reload if its a post edit and there are unsaved changes
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (post && form.formState.isDirty) e.preventDefault();
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [post, form.formState.isDirty]);
+
     const onSubmit = async (formData: PostFormData) => {
         let uploadResult;
         if (post) {

@@ -16,6 +16,7 @@ import { BuyButtons, ContactButton } from "@/components/post/post-buttons";
 import { getUser } from "@/utils/getUser";
 import { Metadata } from "next";
 import { cache } from "react";
+import Map from "@/components/post/post-map";
 
 type Params = {
     id: string;
@@ -177,6 +178,10 @@ export default async function PostPage({
                             ))}
                         </CardContent>
                     </Card>
+                    <Map
+                        latitude={post.location.coordinates[0]}
+                        longitude={post.location.coordinates[1]}
+                    />
                 </div>
             </div>
         </div>
