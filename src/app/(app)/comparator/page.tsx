@@ -1,4 +1,4 @@
-import { ComparatorContent } from "@/components/comparator/comparator-content";
+import ComparatorContent from "@/components/comparator/comparator-content";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function ComparatorPage() {
-    return <ComparatorContent />;
+    return (
+        <div className="wide-lock">
+            <ComparatorContent />
+        </div>
+    );
 }
