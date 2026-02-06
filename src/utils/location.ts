@@ -13,8 +13,8 @@ type RssponseCityData = {
     };
     boundingbox: [string, string, string, string];
     geojson: {
-        type: "Polygon";
-        coordinates: number[][][];
+        type: "Polygon" | "MultiPolygon";
+        coordinates: number[][][] | number[][][][];
     };
 };
 
@@ -41,18 +41,45 @@ export async function searchAddress(
 
     const data = (await response.json()) as RssponseCityData[];
 
-    return data.map((item) => ({
-        lat: parseFloat(item.lat),
-        lon: parseFloat(item.lon),
-        name: item.name,
-        displayName: item.display_name,
-        city: item.address.city || item.name,
-        state: item.address.state || "",
-        region: item.address.region || "",
-        country: item.address.country || "",
-        countryCode: item.address.country_code || "",
-        coordinates: (item.geojson?.coordinates[0].flat() as number[]) || [],
-    }));
+    return data
+        .filter((item) => {
+            if (
+                item.addresstype !== "town" &&
+                item.addresstype !== "city" &&
+                item.addresstype !== "village" &&
+                item.addresstype !== "hamlet" &&
+                item.geojson.type !== "Polygon" &&
+                item.geojson.type !== "MultiPolygon"
+            )
+                return false;
+            return true;
+        })
+        .map((item) => ({
+            lat: parseFloat(item.lat),
+            lon: parseFloat(item.lon),
+            name: item.name,
+            displayName: item.display_name,
+            city: item.address.city || item.name,
+            state: item.address.state || "",
+            region: item.address.region || "",
+            country: item.address.country || "",
+            countryCode: item.address.country_code || "",
+            coordinates: flattenCoordinates(item.geojson),
+        }));
+}
+
+function flattenCoordinates(geojson: {
+    type: "Polygon" | "MultiPolygon";
+    coordinates: number[][][] | number[][][][];
+}): number[] {
+    if (geojson.type === "Polygon") {
+        const ring = geojson.coordinates[0] as number[][];
+        return ring.flatMap((coord) => coord);
+    } else if (geojson.type === "MultiPolygon") {
+        const ring = (geojson.coordinates as number[][][][])[0][0];
+        return ring.flatMap((coord) => coord);
+    }
+    return [];
 }
 
 // we store coordinates in DB as an array of numbers [lon, lat, lon, lat...]

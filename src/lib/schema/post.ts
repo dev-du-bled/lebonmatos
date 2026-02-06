@@ -3,19 +3,21 @@ import type { ReturnedComponent } from "@/utils/components";
 import { CityData } from "@/utils/location";
 
 export const postBaseSchema = z.object({
-    title: z.string().min(3).max(50, {
-        message: "Le titre doit contenir entre 3 et 50 caractères",
+    title: z.string().min(3, {
+        error: "Le titre doit contenir entre 3 et 50 caractères",
+    }).max(50, {
+        error: "Le titre doit contenir entre 3 et 50 caractères",
     }),
     description: z
         .string()
         .min(20, {
-            message: "La description doit contenir au moins 20 caractères",
+            error: "La description doit contenir au moins 20 caractères",
         })
         .max(1500, {
-            message: "La description doit contenir au plus 1500 caractères",
+            error: "La description doit contenir au plus 1500 caractères",
         }),
     price: z.number().min(1, {
-        message: "Le prix doit être supérieur ou égal à 1€",
+        error: "Le prix doit être supérieur ou égal à 1€",
     }),
     location: z.custom<CityData>((value) => value !== undefined, {
         error: "Vous devez sélectionner une ville valide",
@@ -27,11 +29,11 @@ export const postBaseSchema = z.object({
  */
 export const postCreateSchema = postBaseSchema.extend({
     componentId: z.string().min(1, {
-        message: "Vous devez sélectionner un composant",
+        error: "Vous devez sélectionner un composant",
     }),
     images: z
         .array(z.string())
-        .max(6, { message: "Vous pouvez télécharger jusqu'à 6 images" })
+        .max(6, { error: "Vous pouvez télécharger jusqu'à 6 images" })
         .optional(),
 });
 
@@ -44,7 +46,7 @@ export const postFormSchema = postBaseSchema.extend({
     }),
     images: z
         .array(z.union([z.instanceof(File), z.string()]))
-        .max(6, { message: "Le nombre d'images est limité à 6" })
+        .max(6, { error: "Le nombre d'images est limité à 6" })
         .refine(
             (files) => {
                 return files.every(

@@ -103,6 +103,7 @@ export const postRouter = createTRPCRouter({
 
             await prisma.post.delete({
                 where: { id: input.id },
+                include: { location: true },
             });
 
             return { success: true };
@@ -112,36 +113,33 @@ export const postRouter = createTRPCRouter({
         .input(postCreateSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const post = await prisma.location.create({
+                const post = await prisma.post.create({
                     data: {
-                        name: input.location.name,
-                        displayName: input.location.displayName,
-                        city: input.location.city,
-                        state: input.location.state,
-                        region: input.location.region,
-                        country: input.location.country,
-                        countryCode: input.location.countryCode,
-                        lat: input.location.lat,
-                        lon: input.location.lon,
-                        coordinates: input.location.coordinates,
-                        posts: {
+                        title: input.title,
+                        description: input.description,
+                        price: input.price,
+                        componentId: input.componentId,
+                        images: input.images || [],
+                        userId: ctx.session.user.id,
+                        location: {
                             create: {
-                                title: input.title,
-                                description: input.description,
-                                price: input.price,
-                                componentId: input.componentId,
-                                images: input.images || [],
-                                userId: ctx.session.user.id,
+                                name: input.location.name,
+                                displayName: input.location.displayName,
+                                city: input.location.city,
+                                state: input.location.state,
+                                region: input.location.region,
+                                country: input.location.country,
+                                countryCode: input.location.countryCode,
+                                lat: input.location.lat,
+                                lon: input.location.lon,
+                                coordinates: input.location.coordinates,
                             },
                         },
-                    },
-                    include: {
-                        posts: true,
                     },
                 });
 
                 return {
-                    postId: post.posts[0].id,
+                    postId: post.id,
                 };
             } catch (error) {
                 console.error("Error creating post:", error);
@@ -174,29 +172,26 @@ export const postRouter = createTRPCRouter({
             }
 
             try {
-                await prisma.location.update({
-                    where: { id: post.locationId },
+                await prisma.post.update({
+                    where: { id: input.id },
                     data: {
-                        name: input.location.name,
-                        displayName: input.location.displayName,
-                        city: input.location.city,
-                        state: input.location.state,
-                        region: input.location.region,
-                        country: input.location.country,
-                        countryCode: input.location.countryCode,
-                        lat: input.location.lat,
-                        lon: input.location.lon,
-                        coordinates: input.location.coordinates,
-                        posts: {
+                        title: input.title,
+                        description: input.description,
+                        price: input.price,
+                        componentId: input.componentId,
+                        images: input.images || [],
+                        location: {
                             update: {
-                                where: { id: post.id },
-                                data: {
-                                    title: input.title,
-                                    description: input.description,
-                                    price: input.price,
-                                    componentId: input.componentId,
-                                    images: input.images || [],
-                                },
+                                name: input.location.name,
+                                displayName: input.location.displayName,
+                                city: input.location.city,
+                                state: input.location.state,
+                                region: input.location.region,
+                                country: input.location.country,
+                                countryCode: input.location.countryCode,
+                                lat: input.location.lat,
+                                lon: input.location.lon,
+                                coordinates: input.location.coordinates,
                             },
                         },
                     },
@@ -253,6 +248,13 @@ export const postRouter = createTRPCRouter({
                 });
             }
 
+            if (!post.location) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post location not found",
+                });
+            }
+
             let rating = null;
             if (input.sellerData && post.userId) {
                 rating = await prisma.rating.aggregate({
@@ -274,8 +276,6 @@ export const postRouter = createTRPCRouter({
                 description: post.description,
                 price: post.price,
                 location: {
-                    lat: post.location.lat,
-                    lon: post.location.lon,
                     name: post.location.name,
                     displayName: post.location.displayName,
                     city: post.location.city,
@@ -283,6 +283,8 @@ export const postRouter = createTRPCRouter({
                     region: post.location.region,
                     country: post.location.country,
                     countryCode: post.location.countryCode,
+                    lat: post.location.lat,
+                    lon: post.location.lon,
                     coordinates: post.location.coordinates,
                 } satisfies CityData,
                 images: post.images,

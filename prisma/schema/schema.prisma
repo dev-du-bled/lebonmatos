@@ -89,8 +89,7 @@ model Post {
   price              Int
   componentId        String
   component          Component           @relation(fields: [componentId], references: [id])
-  locationId         String
-  location           Location            @relation(fields: [locationId], references: [id])
+  location           Location?
   Favorites          Favorite[]
   Report             Report[]
   Discussion         Discussion[]
@@ -114,7 +113,8 @@ model Location {
   countryCode String
   coordinates Float[]
 
-  posts Post[]
+  postId String @unique
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@map("location")
 }
