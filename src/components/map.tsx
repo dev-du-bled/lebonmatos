@@ -46,7 +46,7 @@ function ResetPositionControl({
                         onClick={() => {
                             map.setView([latitude, longitude], 10.5);
                         }}
-                        title="Reset position"
+                        title="Recentrer la carte"
                     >
                         <LocateFixed />
                     </Button>
@@ -93,7 +93,7 @@ function ZoomControl() {
                             onClick={() => {
                                 map.zoomIn();
                             }}
-                            title="Zoom in"
+                            title="Zoomer"
                         >
                             <Plus />
                         </Button>
@@ -104,7 +104,7 @@ function ZoomControl() {
                             onClick={() => {
                                 map.zoomOut();
                             }}
-                            title="Zoom out"
+                            title="Dézoomer"
                         >
                             <Minus />
                         </Button>

@@ -53,7 +53,6 @@ type ProfileEditFormProps = {
 export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
     const utils = trpc.useUtils();
     const mutation = trpc.user.updatePersonalInfo.useMutation();
-    const [snapshot, setSnapshot] = useState<UserProfile>(initialData);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -96,7 +95,6 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
         try {
             const updated = await mutation.mutateAsync(values);
 
-            setSnapshot(updated);
             utils.user.getProfile.setData(undefined, updated);
             resetForm(updated);
             setSubmitSuccess(true);
@@ -139,7 +137,7 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
                 setIsPasswordDialogOpen(false);
                 setPasswordSuccess(false);
             }, 2000);
-        } catch (e) {
+        } catch {
             setPasswordError("Une erreur inattendue est survenue");
         } finally {
             setIsChangingPassword(false);
