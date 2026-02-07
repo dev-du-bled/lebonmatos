@@ -3,11 +3,14 @@ import type { ReturnedComponent } from "@/utils/components";
 import { CityData } from "@/utils/location";
 
 export const postBaseSchema = z.object({
-    title: z.string().min(3, {
-        error: "Le titre doit contenir entre 3 et 50 caractères",
-    }).max(50, {
-        error: "Le titre doit contenir entre 3 et 50 caractères",
-    }),
+    title: z
+        .string()
+        .min(3, {
+            error: "Le titre doit contenir entre 3 et 50 caractères",
+        })
+        .max(50, {
+            error: "Le titre doit contenir entre 3 et 50 caractères",
+        }),
     description: z
         .string()
         .min(20, {
@@ -20,7 +23,7 @@ export const postBaseSchema = z.object({
         error: "Le prix doit être supérieur ou égal à 1€",
     }),
     location: z.custom<CityData>((value) => value !== undefined, {
-        error: "Vous devez sélectionner une ville valide",
+        error: "Vous devez sélectionner une localisation valide",
     }),
 });
 

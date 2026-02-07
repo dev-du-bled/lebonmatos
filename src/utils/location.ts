@@ -31,12 +31,14 @@ export type CityData = {
     coordinates: number[];
 };
 
+const palceFilters = ["city", "town", "village", "hamlet", "suburb"];
+
 export async function searchAddress(
     query: string,
     limit: number
 ): Promise<CityData[]> {
     const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&featuretype=town&addressdetails=1&format=json&polygon_geojson=1&limit=${limit}`
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&addressdetails=1&format=json&polygon_geojson=1&limit=${limit}`
     );
 
     const data = (await response.json()) as ResponseCityData[];
@@ -44,12 +46,9 @@ export async function searchAddress(
     return data
         .filter((item) => {
             if (
-                item.addresstype !== "town" &&
-                item.addresstype !== "city" &&
-                item.addresstype !== "village" &&
-                item.addresstype !== "hamlet" &&
-                item.geojson.type !== "Polygon" &&
-                item.geojson.type !== "MultiPolygon"
+                !palceFilters.includes(item.addresstype) ||
+                (item.geojson.type !== "Polygon" &&
+                    item.geojson.type !== "MultiPolygon")
             )
                 return false;
             return true;
