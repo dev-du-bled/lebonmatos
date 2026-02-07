@@ -38,7 +38,7 @@ export default async function PostPreview({
                     <span className="text-md font-medium font-sans">
                         {post.title}
                     </span>
-                    <span className="text-sm font-sans">{`${post.price}€${post.location ? ` ⋅ ${post.location.displayName}` : ""}`}</span>
+                    <span className="text-sm font-sans">{`${post.price}€${post.location ? ` ⋅ ${post.location.city} - ${post.location.country}` : ""}`}</span>
                     <UserPreview user={post.user} />
                 </>
             )}
