@@ -28,16 +28,13 @@ export const signupSchema = z
         username: z
             .string()
             .min(5, {
-                error:
-                    "Le nom d'utilisateur doit contenir au moins 5 caractères.",
+                error: "Le nom d'utilisateur doit contenir au moins 5 caractères.",
             })
             .max(32, {
-                error:
-                    "Le nom d'utilisateur ne doit pas dépasser 32 caractères.",
+                error: "Le nom d'utilisateur ne doit pas dépasser 32 caractères.",
             })
             .regex(USERNAME_REGEX, {
-                error:
-                    "Le nom d'utilisateur ne peut contenir que des lettres, des chiffres et des underscores.",
+                error: "Le nom d'utilisateur ne peut contenir que des lettres, des chiffres et des underscores.",
             })
             .refine((val) => !FORBIDDEN_USERNAMES.includes(val.toLowerCase()), {
                 error: "Ce nom d'utilisateur n'est pas autorisé.",

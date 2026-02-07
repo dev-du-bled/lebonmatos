@@ -16,7 +16,6 @@ import { BuyButtons, ContactButton } from "@/components/post/post-buttons";
 import { getUser } from "@/utils/getUser";
 import { Metadata } from "next";
 import { cache } from "react";
-import Map from "@/components/post/post-map";
 import PostMap from "@/components/post/post-map";
 
 type Params = {

@@ -17,7 +17,7 @@ export default function PostMap({ location }: MapProps) {
     return (
         <Card>
             <CardHeader>
-                <h2 className="text-xl font-semibold">Location</h2>
+                <h2 className="text-xl font-semibold">Localisation</h2>
                 <span className="text-sm text-muted-foreground">
                     {location.name} - {location.state}, {location.country}
                 </span>

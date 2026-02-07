@@ -60,6 +60,9 @@ export default function CreatePostForm({ post }: PostFormProps) {
     const edit = trpc.posts.editPost.useMutation();
     const router = useRouter();
 
+    const isLoading =
+        form.formState.isSubmitting || create.isPending || edit.isPending;
+
     useEffect(() => {
         form.reset({
             component: post?.component,
@@ -116,9 +119,9 @@ export default function CreatePostForm({ post }: PostFormProps) {
 
             const images = formData.images
                 ? [
-                      ...(formData.images.filter(
+                      ...formData.images.filter(
                           (img) => typeof img === "string"
-                      ) as string[]),
+                      ),
                       ...(uploadResult
                           ? uploadResult.map((img) => img.ufsUrl)
                           : []),
@@ -257,10 +260,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                         !!form.formState.errors
                                                             .component
                                                     }
-                                                    disabled={
-                                                        form.formState
-                                                            .isSubmitting
-                                                    }
+                                                    disabled={isLoading}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -289,10 +289,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                             <FormControl>
                                                 <Input
                                                     placeholder="Ex: Carte Graphique RTX 3080 Excellent état"
-                                                    disabled={
-                                                        form.formState
-                                                            .isSubmitting
-                                                    }
+                                                    disabled={isLoading}
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -316,10 +313,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                 <Textarea
                                                     className="min-h-30 resize-y"
                                                     placeholder="Décrivez l'état du produit, la raison de la vente, etc..."
-                                                    disabled={
-                                                        form.formState
-                                                            .isSubmitting
-                                                    }
+                                                    disabled={isLoading}
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -352,10 +346,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                                 .errors.price
                                                         }
                                                         placeholder="0.00"
-                                                        disabled={
-                                                            form.formState
-                                                                .isSubmitting
-                                                        }
+                                                        disabled={isLoading}
                                                         className="pl-8"
                                                         {...field}
                                                         onChange={(e) =>
@@ -396,10 +387,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                             location
                                                         );
                                                     }}
-                                                    disabled={
-                                                        form.formState
-                                                            .isSubmitting
-                                                    }
+                                                    disabled={isLoading}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -434,8 +422,7 @@ export default function CreatePostForm({ post }: PostFormProps) {
                                                 <ImageUpload
                                                     maxImages={6}
                                                     disabled={
-                                                        form.formState
-                                                            .isSubmitting ||
+                                                        isLoading ||
                                                         (field.value?.length ??
                                                             0) >= 6
                                                     }
@@ -461,9 +448,9 @@ export default function CreatePostForm({ post }: PostFormProps) {
                             <Button
                                 type="submit"
                                 size="lg"
-                                loading={form.formState.isSubmitting}
+                                loading={isLoading}
                                 disabled={
-                                    form.formState.isSubmitting ||
+                                    isLoading ||
                                     !form.formState.isValid ||
                                     !form.formState.isDirty
                                 }
