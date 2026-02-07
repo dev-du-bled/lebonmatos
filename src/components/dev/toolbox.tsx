@@ -12,7 +12,6 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -73,12 +72,10 @@ const themeIcons = {
 export function DevToolbox() {
     const { theme, setTheme } = useTheme();
     const [position, setPosition] = React.useState<Position>("bottom-right");
-    const [mounted, setMounted] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
 
     // Charger la position depuis localStorage au montage
     React.useEffect(() => {
-        setMounted(true);
         const savedPosition = localStorage.getItem(
             "dev-toolbox-position"
         ) as Position | null;

@@ -30,4 +30,3 @@ jobs:
 
             - name: Format code
               run: bunx prettier --check .
-              continue-on-error: false
