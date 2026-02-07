@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { PublicProfileDialog } from "@/components/profile/public-profile-dialog";
+import { Metadata } from "next";
 
 type QuickAction = {
     title: string;
@@ -73,6 +74,11 @@ const QUICK_ACTIONS: QuickAction[] = [
         Icon: MessageSquare,
     },
 ];
+
+export const metadata: Metadata = {
+    title: "Mon profil",
+    description: "Gérer les paramètres de votre compte",
+};
 
 function ProfileHeaderSkeleton() {
     return (

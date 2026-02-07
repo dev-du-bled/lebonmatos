@@ -4,7 +4,7 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { utapi } from "@/lib/utapi";
 import { ComponentType } from "@prisma/client";
 import { Components } from "@/utils/components";
-import { AddressData } from "@/utils/location";
+import { CityData } from "@/utils/location";
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@/lib/prisma";
 
@@ -103,6 +103,7 @@ export const postRouter = createTRPCRouter({
 
             await prisma.post.delete({
                 where: { id: input.id },
+                include: { location: true },
             });
 
             return { success: true };
@@ -112,30 +113,36 @@ export const postRouter = createTRPCRouter({
         .input(postCreateSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const post = await prisma.location.create({
+                const post = await prisma.post.create({
                     data: {
-                        label: input.location.label,
-                        context: input.location.context,
-                        x: input.location.coordinates[0],
-                        y: input.location.coordinates[1],
-                        Post: {
+                        title: input.title,
+                        description: input.description,
+                        price: input.price,
+                        componentId: input.componentId,
+                        images: input.images || [],
+                        userId: ctx.session.user.id,
+                        location: {
                             create: {
-                                userId: ctx.session!.user.id,
-                                title: input.title,
-                                description: input.description,
-                                price: input.price,
-                                componentId: input.componentId,
-                                images: input.images || [],
+                                name: input.location.name,
+                                displayName: input.location.displayName,
+                                city: input.location.city,
+                                state: input.location.state,
+                                region: input.location.region,
+                                country: input.location.country,
+                                countryCode: input.location.countryCode,
+                                lat: input.location.lat,
+                                lon: input.location.lon,
+                                coordinates: input.location.coordinates,
                             },
                         },
                     },
-                    include: { posts: true },
                 });
 
                 return {
-                    postId: post.posts[0].id,
+                    postId: post.id,
                 };
-            } catch {
+            } catch (error) {
+                console.error("Error creating post:", error);
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "Failed to create post",
@@ -165,23 +172,26 @@ export const postRouter = createTRPCRouter({
             }
 
             try {
-                await prisma.location.update({
-                    where: { id: post.locationId },
+                await prisma.post.update({
+                    where: { id: input.id },
                     data: {
-                        label: input.location.label,
-                        context: input.location.context,
-                        x: input.location.coordinates[0],
-                        y: input.location.coordinates[1],
-                        posts: {
+                        title: input.title,
+                        description: input.description,
+                        price: input.price,
+                        componentId: input.componentId,
+                        images: input.images || [],
+                        location: {
                             update: {
-                                where: { id: post.id },
-                                data: {
-                                    title: input.title,
-                                    description: input.description,
-                                    price: input.price,
-                                    componentId: input.componentId,
-                                    images: input.images || [],
-                                },
+                                name: input.location.name,
+                                displayName: input.location.displayName,
+                                city: input.location.city,
+                                state: input.location.state,
+                                region: input.location.region,
+                                country: input.location.country,
+                                countryCode: input.location.countryCode,
+                                lat: input.location.lat,
+                                lon: input.location.lon,
+                                coordinates: input.location.coordinates,
                             },
                         },
                     },
@@ -238,6 +248,13 @@ export const postRouter = createTRPCRouter({
                 });
             }
 
+            if (!post.location) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post location not found",
+                });
+            }
+
             let rating = null;
             if (input.sellerData && post.userId) {
                 rating = await prisma.rating.aggregate({
@@ -259,10 +276,17 @@ export const postRouter = createTRPCRouter({
                 description: post.description,
                 price: post.price,
                 location: {
-                    label: post.location?.label,
-                    coordinates: [post.location.x, post.location.y],
-                    context: post.location?.context,
-                } satisfies AddressData,
+                    name: post.location.name,
+                    displayName: post.location.displayName,
+                    city: post.location.city,
+                    state: post.location.state,
+                    region: post.location.region,
+                    country: post.location.country,
+                    countryCode: post.location.countryCode,
+                    lat: post.location.lat,
+                    lon: post.location.lon,
+                    coordinates: post.location.coordinates,
+                } satisfies CityData,
                 images: post.images,
                 component: {
                     id: component.id,

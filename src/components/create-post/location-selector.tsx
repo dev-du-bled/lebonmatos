@@ -1,8 +1,9 @@
-import { AddressData, searchAddress } from "@/utils/location";
+import { CityData, searchAddress } from "@/utils/location";
 import { Dispatch, SetStateAction, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ScrollArea } from "../ui/scroll-area";
-import { XIcon } from "lucide-react";
+import { XIcon, Loader2 } from "lucide-react";
 import {
     InputGroup,
     InputGroupInput,
@@ -11,8 +12,8 @@ import {
 import { Button } from "../ui/button";
 
 interface LocationSelectorProps {
-    defaultValue?: AddressData;
-    onChange: Dispatch<SetStateAction<AddressData | undefined>>;
+    defaultValue?: CityData;
+    onChange: Dispatch<SetStateAction<CityData | undefined>>;
     disabled?: boolean;
 }
 
@@ -22,26 +23,43 @@ export default function LocationSelector({
     disabled,
     ...props
 }: LocationSelectorProps) {
-    const [addressSuggestions, setAddressSuggestions] = useState<AddressData[]>(
+    const [addressSuggestions, setAddressSuggestions] = useState<CityData[]>(
         []
     );
     const [inputValue, setInputValue] = useState(
-        defaultValue ? defaultValue.label : ""
+        defaultValue ? defaultValue.name : ""
     );
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
 
     const searchLocation = async (search: string) => {
         if (search.length < 3) {
             setAddressSuggestions([]);
+            setIsLoading(false);
+            setHasSearched(false);
             return;
         }
+        setIsLoading(true);
         const results = await searchAddress(search, 5);
         setAddressSuggestions(results);
+        setIsLoading(false);
+        setHasSearched(true);
     };
+
+    const debouncedSearch = useDebouncedCallback(searchLocation, 350);
 
     return (
         <Popover
-            open={addressSuggestions && addressSuggestions.length > 0}
-            onOpenChange={(open) => !open && setAddressSuggestions([])}
+            open={
+                inputValue.length >= 3 &&
+                (addressSuggestions.length > 0 || isLoading || hasSearched)
+            }
+            onOpenChange={(open) => {
+                if (!open) {
+                    setAddressSuggestions([]);
+                    setHasSearched(false);
+                }
+            }}
         >
             <PopoverTrigger asChild>
                 <InputGroup>
@@ -51,7 +69,7 @@ export default function LocationSelector({
                         value={inputValue}
                         onChange={(e) => {
                             setInputValue(e.target.value);
-                            searchLocation(e.target.value);
+                            debouncedSearch(e.target.value);
                         }}
                         {...props}
                     />
@@ -63,6 +81,7 @@ export default function LocationSelector({
                             onClick={() => {
                                 setInputValue("");
                                 onChange(undefined);
+                                setHasSearched(false);
                             }}
                         >
                             <XIcon className="size-4" />
@@ -74,31 +93,41 @@ export default function LocationSelector({
                 className="w-(--radix-popover-trigger-width) p-0 py-2 pl-1"
                 onOpenAutoFocus={(e) => e.preventDefault()}
             >
-                {inputValue.length > 3 && addressSuggestions.length > 0 && (
-                    <ScrollArea className="pr-3">
-                        <div className="space-y-2 max-h-40">
-                            {addressSuggestions.map((s) => (
+                <ScrollArea className="pr-3">
+                    <div className="space-y-2 max-h-40">
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-4">
+                                <Loader2 className="size-4 animate-spin opacity-50" />
+                            </div>
+                        ) : addressSuggestions.length === 0 ? (
+                            <div className="flex items-center justify-center py-4 px-3 text-sm text-muted-foreground">
+                                Aucun résultat trouvé
+                            </div>
+                        ) : (
+                            addressSuggestions.map((s, i) => (
                                 <Button
-                                    key={s.label}
+                                    key={i}
                                     variant="ghost"
                                     className="flex justify-start w-full h-auto px-3 py-1.5"
                                     onClick={() => {
                                         onChange(s);
-                                        setInputValue(s.label);
+                                        setInputValue(s.name);
                                         setAddressSuggestions([]);
+                                        setHasSearched(false);
                                     }}
                                 >
                                     <div className="text-start flex flex-col">
-                                        {s.label}
+                                        {s.name}
                                         <span className="text-xs text-muted-foreground">
-                                            {s.context}
+                                            {s.state} -{" "}
+                                            {s.countryCode.toUpperCase()}
                                         </span>
                                     </div>
                                 </Button>
-                            ))}
-                        </div>
-                    </ScrollArea>
-                )}
+                            ))
+                        )}
+                    </div>
+                </ScrollArea>
             </PopoverContent>
         </Popover>
     );

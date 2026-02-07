@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import {
     Search,
     X,
@@ -80,6 +81,10 @@ export default function ComponentSelector({
 
     const componentTypes = Object.values(ComponentType);
 
+    const debouncedSetQuery = useDebouncedCallback((value: string) => {
+        setDebouncedQuery(value);
+    }, 300);
+
     // Reset state when dialog opens
     useEffect(() => {
         if (open) {
@@ -94,14 +99,6 @@ export default function ComponentSelector({
         setQuery("");
         setDebouncedQuery("");
     }, [selectedType]);
-
-    // Debounce query
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedQuery(query);
-        }, 300);
-        return () => clearTimeout(handler);
-    }, [query]);
 
     // Fetch components
     const { data, isFetching } = trpc.components.getComponents.useQuery(
@@ -121,6 +118,12 @@ export default function ComponentSelector({
 
     const clearSelection = () => {
         setSelectedComponent(undefined);
+    };
+
+    const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setQuery(value);
+        debouncedSetQuery(value);
     };
 
     return (
@@ -212,9 +215,7 @@ export default function ComponentSelector({
                                             <Input
                                                 placeholder={`Rechercher un ${getEnumDisplay(selectedType).toLowerCase()}...`}
                                                 value={query}
-                                                onChange={(e) =>
-                                                    setQuery(e.target.value)
-                                                }
+                                                onChange={handleQueryChange}
                                                 className="pl-9 pr-9"
                                                 autoFocus
                                             />
