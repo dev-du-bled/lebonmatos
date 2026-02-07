@@ -1,4 +1,4 @@
-type RssponseCityData = {
+type ResponseCityData = {
     lat: string;
     lon: string;
     addresstype: string;
@@ -39,7 +39,7 @@ export async function searchAddress(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&featuretype=town&addressdetails=1&format=json&polygon_geojson=1&limit=${limit}`
     );
 
-    const data = (await response.json()) as RssponseCityData[];
+    const data = (await response.json()) as ResponseCityData[];
 
     return data
         .filter((item) => {
