@@ -348,6 +348,7 @@ export const postRouter = createTRPCRouter({
             take: 10,
             include: {
                 user: true,
+                location: true,
             },
             where: {
                 images: {
@@ -360,6 +361,7 @@ export const postRouter = createTRPCRouter({
             take: 10,
             include: {
                 user: true,
+                location: true,
                 component: {
                     select: {
                         type: true,
@@ -377,6 +379,7 @@ export const postRouter = createTRPCRouter({
             take: 10,
             include: {
                 user: true,
+                location: true,
                 component: {
                     select: {
                         type: true,
@@ -394,6 +397,7 @@ export const postRouter = createTRPCRouter({
             take: 10,
             include: {
                 user: true,
+                location: true,
                 component: {
                     select: {
                         type: true,

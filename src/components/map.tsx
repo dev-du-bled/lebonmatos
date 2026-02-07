@@ -1,7 +1,6 @@
 "use client";
 
 import { MapContainer, TileLayer, Polygon, useMap } from "react-leaflet";
-// @ts-expect-error leaflet's types are broken
 import "leaflet/dist/leaflet.css";
 import { formatCoordinates } from "@/utils/location";
 import L from "leaflet";
