@@ -169,19 +169,18 @@ export default async function PostPage({
                 <div className="flex-1">
                     <PostMap location={post.location} />
                 </div>
-                <Card className="gap-2">
-                    <CardHeader>
-                        <CardTitle>
-                            Plus comme &quot;{post.title}&quot;
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-200 overflow-auto">
-                        {similarPost.map((post) => (
-                            <PostCard key={post.id} {...post} />
-                        ))}
-                    </CardContent>
-                </Card>
             </div>
+
+            <Card className="gap-2">
+                <CardHeader>
+                    <CardTitle>Plus comme &quot;{post.title}&quot;</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-200 overflow-auto">
+                    {similarPost.map((post) => (
+                        <PostCard key={post.id} {...post} />
+                    ))}
+                </CardContent>
+            </Card>
         </div>
     );
 }

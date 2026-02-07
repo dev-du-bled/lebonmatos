@@ -49,32 +49,42 @@ export default function Loading() {
                     </Card>
                 </div>
 
-                <div className="flex flex-col gap-8 flex-1">
-                    <Card className="gap-0">
+                <div className="flex-1">
+                    <Card>
                         <CardHeader>
-                            <CardTitle>
-                                <Skeleton className="h-6 w-56" />
-                            </CardTitle>
+                            <Skeleton className="h-6 w-24" />
+                            <Skeleton className="h-4 w-48" />
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-200 overflow-auto">
-                                {Array.from({ length: 4 }).map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className="border rounded-lg overflow-hidden relative"
-                                    >
-                                        <Skeleton className="w-full h-48" />
-                                        <div className="p-4 space-y-2">
-                                            <Skeleton className="h-4 w-3/4" />
-                                            <Skeleton className="h-4 w-1/3" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            <Skeleton className="h-96 w-full rounded-md" />
                         </CardContent>
                     </Card>
                 </div>
             </div>
+
+            <Card className="gap-0">
+                <CardHeader>
+                    <CardTitle>
+                        <Skeleton className="h-6 w-56" />
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-200 overflow-auto">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="border rounded-lg overflow-hidden relative"
+                            >
+                                <Skeleton className="w-full h-48" />
+                                <div className="p-4 space-y-2">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-4 w-1/3" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

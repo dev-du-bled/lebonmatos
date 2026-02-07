@@ -3,7 +3,11 @@
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { CityData } from "@/utils/location";
-const MapComponent = dynamic(() => import("@/components/map"), { ssr: false });
+import { Skeleton } from "../ui/skeleton";
+const MapComponent = dynamic(() => import("@/components/map"), {
+    ssr: false,
+    loading: () => <Skeleton className="h-112 w-full rounded-md" />,
+});
 
 interface MapProps {
     location: CityData;
