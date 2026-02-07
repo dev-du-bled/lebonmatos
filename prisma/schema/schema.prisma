@@ -126,6 +126,7 @@ model Favorite {
   postId String
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
+  @@unique([postId, userId])
   @@map("favorite")
 }
 

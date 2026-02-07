@@ -17,6 +17,8 @@ import { getUser } from "@/utils/getUser";
 import { Metadata } from "next";
 import { cache } from "react";
 import PostMap from "@/components/post/post-map";
+import FavoriteButton from "./favorite-button";
+import { notFound } from "next/navigation";
 
 type Params = {
     id: string;
@@ -32,8 +34,8 @@ export async function generateMetadata({
     const post = await getPost(id);
 
     return {
-        title: `Annonce "${post.title.slice(0, 15)}${post.title.length > 15 ? "..." : ""}"`,
-        description: `Découvrez en détails l'annonce "${post.title}"`,
+        title: `Annonce "${post?.title.slice(0, 15)}${post?.title.length || 0 > 15 ? "..." : ""}"`,
+        description: `Découvrez en détails l'annonce "${post?.title}"`,
     };
 }
 
@@ -52,6 +54,9 @@ export default async function PostPage({
     const user = await getUser(false);
 
     const post = await getPost(id);
+
+    if (!post) notFound();
+
     const similarPost = await trpc.posts.getSimilarPosts({
         id: post.id,
         type: post.component.type,
@@ -62,7 +67,14 @@ export default async function PostPage({
             {/* Carousel + title, description, price */}
             <div className="flex flex-col lg:flex-row gap-8">
                 <div className="flex flex-col flex-1">
-                    <Carousel className="w-full">
+                    <Carousel className="w-full relative">
+                        {user && user.id !== post.seller?.id && (
+                            <FavoriteButton
+                                postId={post.id}
+                                isFavorited={post.isFavorited}
+                                className="absolute top-2 right-2 z-10"
+                            />
+                        )}
                         <CarouselContent className="ml-0">
                             {post.images.length > 0 ? (
                                 post.images.map((image, index) => (

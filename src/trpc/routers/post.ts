@@ -208,21 +208,12 @@ export const postRouter = createTRPCRouter({
             }
         }),
 
-    getPost: publicProcedure
-        .input(
-            z.object({
-                postId: z.cuid(),
-                sellerData: z.boolean().default(true),
-            })
-        )
-        .query(async ({ input }) => {
+    favoritePost: privateProcedure
+        .input(z.object({ postId: z.cuid() }))
+        .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.postId },
-                include: {
-                    user: true,
-                    component: true,
-                    location: true,
-                },
+                select: { userId: true },
             });
 
             if (!post) {
@@ -231,6 +222,71 @@ export const postRouter = createTRPCRouter({
                     message: "Post not found",
                 });
             }
+
+            if (post.userId === ctx.session.user.id) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "You cant favorite your own post",
+                });
+            }
+
+            const favorite = await prisma.favorite.findUnique({
+                where: {
+                    postId_userId: {
+                        postId: input.postId,
+                        userId: ctx.session.user.id,
+                    },
+                },
+            });
+
+            if (favorite) {
+                await prisma.favorite.delete({
+                    where: {
+                        postId_userId: {
+                            postId: input.postId,
+                            userId: ctx.session.user.id,
+                        },
+                    },
+                });
+
+                return { favorited: false };
+            } else {
+                await prisma.favorite.create({
+                    data: {
+                        postId: input.postId,
+                        userId: ctx.session.user.id,
+                    },
+                });
+
+                return { favorited: true };
+            }
+        }),
+
+    getPost: publicProcedure
+        .input(
+            z.object({
+                postId: z.cuid(),
+                sellerData: z.boolean().default(true),
+            })
+        )
+        .query(async ({ ctx, input }) => {
+            const post = await prisma.post.findUnique({
+                where: { id: input.postId },
+                include: {
+                    user: true,
+                    component: true,
+                    location: true,
+                    Favorites: ctx.session?.user
+                        ? {
+                              where: {
+                                  userId: ctx.session.user.id,
+                              },
+                          }
+                        : false,
+                },
+            });
+
+            if (!post) return null;
 
             const component = await prisma.component.findUnique({
                 where: { id: post.componentId },
@@ -275,6 +331,7 @@ export const postRouter = createTRPCRouter({
                 title: post.title,
                 description: post.description,
                 price: post.price,
+                isFavorited: post.Favorites.length > 0,
                 location: {
                     name: post.location.name,
                     displayName: post.location.displayName,
