@@ -1,11 +1,11 @@
-import { Post, User } from "@prisma/client";
 import Image from "next/image";
 import UserPreview from "./user-preview";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { trpc } from "@/trpc/server";
 
 interface PostPreviewProps {
-    post: Post & { user: User };
+    post: Awaited<ReturnType<typeof trpc.posts.getHomePage>>["posts"][number];
     fullHeight: boolean;
 }
 
@@ -38,7 +38,7 @@ export default async function PostPreview({
                     <span className="text-md font-medium font-sans">
                         {post.title}
                     </span>
-                    <span className="text-sm font-sans">{`${post.price}€${post.location ? ` ⋅ ${post.location}` : ""}`}</span>
+                    <span className="text-sm font-sans">{`${post.price}€${post.location ? ` ⋅ ${post.location.displayName}` : ""}`}</span>
                     <UserPreview user={post.user} />
                 </>
             )}

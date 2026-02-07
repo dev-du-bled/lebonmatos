@@ -67,7 +67,23 @@ async function main() {
                 component: {
                     connect: { id: component.id },
                 },
-                location: `${faker.location.city().replace(" ", "-")} ${faker.location.zipCode()}`,
+                location: {
+                    create: {
+                        lat: faker.location.latitude(),
+                        lon: faker.location.longitude(),
+                        name: faker.location.city(),
+                        displayName: faker.location.city(),
+                        city: faker.location.city(),
+                        state: faker.location.state(),
+                        region: faker.location.state(),
+                        country: faker.location.country(),
+                        countryCode: faker.location.countryCode(),
+                        coordinates: [
+                            faker.location.longitude(),
+                            faker.location.latitude(),
+                        ],
+                    },
+                },
                 images:
                     Math.random() < 0.8
                         ? [

@@ -1,4 +1,3 @@
-import { Post, User } from "@prisma/client";
 import {
     Carousel,
     CarouselContent,
@@ -7,10 +6,11 @@ import {
     CarouselPrevious,
 } from "../ui/carousel";
 import PostPreview from "./post-preview";
+import { trpc } from "@/trpc/server";
 
 interface PostCarouselProps {
     headerText: string;
-    posts: (Post & { user: User })[];
+    posts: Awaited<ReturnType<typeof trpc.posts.getHomePage>>["posts"];
     fullHeight?: boolean;
 }
 
