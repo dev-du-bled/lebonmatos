@@ -71,6 +71,35 @@ export const postRouter = createTRPCRouter({
         }));
     }),
 
+    getUserFavorites: privateProcedure.query(async ({ ctx }) => {
+        const favorites = await prisma.favorite.findMany({
+            where: { userId: ctx.session.user.id },
+            include: {
+                post: {
+                    include: {
+                        component: true,
+                    },
+                },
+            },
+            orderBy: { id: "desc" },
+        });
+
+        return favorites.map((fav) => ({
+            id: fav.post.id,
+            title: fav.post.title,
+            description: fav.post.description,
+            price: fav.post.price,
+            component: {
+                id: fav.post.component.id,
+                name: fav.post.component.name,
+                type: fav.post.component.type,
+            },
+            thumbnail: fav.post.images[0]
+                ? { image: fav.post.images[0], alt: null }
+                : null,
+        }));
+    }),
+
     deletePost: privateProcedure
         .input(z.object({ id: z.cuid() }))
         .mutation(async ({ ctx, input }) => {
