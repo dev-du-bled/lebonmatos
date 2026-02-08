@@ -77,7 +77,15 @@ async function main() {
                         state: faker.location.state(),
                         region: faker.location.state(),
                         country: faker.location.country(),
-                        countryCode: faker.location.countryCode(),
+                        countryCode: faker.helpers.arrayElement([
+                            "FR",
+                            "US",
+                            "GB",
+                            "DE",
+                            "ES",
+                            "IT",
+                            "CA",
+                        ]),
                         coordinates: [
                             faker.location.longitude(),
                             faker.location.latitude(),
