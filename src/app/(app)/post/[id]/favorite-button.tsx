@@ -9,6 +9,7 @@ import { toast } from "sonner";
 interface FavoritePostProps {
     postId: string;
     isFavorited: boolean;
+    isLoading?: boolean;
     className?: string;
 }
 
@@ -38,6 +39,7 @@ export default function FavoriteButton({
             size="icon-sm"
             onClick={toggleFavorite}
             className={className}
+            loading={favMutation.isPending}
             disabled={favMutation.isPending}
         >
             <Heart fill={isFavorite ? "black" : "none"} />
