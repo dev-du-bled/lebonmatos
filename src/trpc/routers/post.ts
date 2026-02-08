@@ -360,7 +360,9 @@ export const postRouter = createTRPCRouter({
                 title: post.title,
                 description: post.description,
                 price: post.price,
-                isFavorited: post.Favorites.length > 0,
+                ...(ctx.session?.user && {
+                    isFavorited: post.Favorites.length > 0,
+                }),
                 location: {
                     name: post.location.name,
                     displayName: post.location.displayName,
