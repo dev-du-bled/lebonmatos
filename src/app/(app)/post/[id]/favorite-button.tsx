@@ -9,7 +9,6 @@ import { toast } from "sonner";
 interface FavoritePostProps {
     postId: string;
     isFavorited: boolean;
-    isLoading?: boolean;
     className?: string;
 }
 
