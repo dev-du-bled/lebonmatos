@@ -4,7 +4,10 @@ import { wrappMeiliTask } from "./utils";
 const meilisearch_host = process.env["MEILI_HOST"];
 const meilisearch_api_key = process.env["MEILI_MASTER_KEY"];
 
-if (!meilisearch_host) throw Error("FATAL: No Meilisearch host was provided, unable to start sync process");
+if (!meilisearch_host)
+    throw Error(
+        "FATAL: No Meilisearch host was provided, unable to start sync process"
+    );
 const meilisearch = new MeiliSearch({
     host: meilisearch_host,
     apiKey: meilisearch_api_key,
@@ -39,7 +42,11 @@ try {
 
         // Make posts filterable by their component type
         if (index === "posts") {
-            await wrappMeiliTask(meilisearch.index(index).updateFilterableAttributes(["componentType"]));
+            await wrappMeiliTask(
+                meilisearch
+                    .index(index)
+                    .updateFilterableAttributes(["componentType"])
+            );
         }
 
         console.log(`Reset index: ${index}`);
