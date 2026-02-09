@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 import { UserMenu } from "./user-menu";
 
-export function MobileHeader({ initialSession }: { initialSession?: unknown }) {
+export function MobileHeader() {
     const [open, setOpen] = useState(false);
 
     return (
@@ -71,7 +71,7 @@ export function MobileHeader({ initialSession }: { initialSession?: unknown }) {
                     </Link>
                 </div>
 
-                <UserMenu initialSession={initialSession} />
+                <UserMenu />
             </div>
         </header>
     );

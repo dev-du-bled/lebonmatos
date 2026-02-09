@@ -11,10 +11,8 @@ import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
 
 export default function Header({
-    initialSession,
     className,
 }: {
-    initialSession?: unknown;
     className?: string;
 }) {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -38,7 +36,7 @@ export default function Header({
     return (
         <>
             <div className={cn("md:hidden", className)}>
-                <MobileHeader initialSession={initialSession} />
+                <MobileHeader />
             </div>
             <header
                 className={cn(
@@ -66,7 +64,7 @@ export default function Header({
                                 <Kbd className="border">{modifierKey}+K</Kbd>
                             )}
                         </button>
-                        <UserMenu initialSession={initialSession} />
+                        <UserMenu />
                     </div>
                 </div>
             </header>
