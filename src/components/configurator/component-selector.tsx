@@ -17,6 +17,7 @@ import { trpc } from "@/trpc/client";
 import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
 import { Search, Heart, Plus } from "lucide-react";
 import Image from "next/image";
+import { useDebouncedCallback } from "use-debounce";
 
 export type SelectedPost = {
     id: string;
@@ -62,13 +63,9 @@ export function ComponentSelector({
         "search"
     );
 
-    // Debounce search query
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedQuery(searchQuery);
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
+    const debouncedSetQuery = useDebouncedCallback((value: string) => {
+        setDebouncedQuery(value);
+    }, 300);
 
     // Reset on open
     useEffect(() => {
@@ -104,7 +101,7 @@ export function ComponentSelector({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-full max-w-[95vw] sm:max-w-[600px] max-h-[85vh]">
+            <DialogContent className="w-full max-w-[95vw] sm:max-w-150 max-h-[85vh]">
                 <DialogHeader>
                     <DialogTitle>
                         Sélectionner un{" "}
@@ -147,11 +144,14 @@ export function ComponentSelector({
                             <Input
                                 placeholder={`Rechercher un ${COMPONENT_TYPE_LABELS[componentType].toLowerCase()}...`}
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    debouncedSetQuery(e.target.value);
+                                }}
                                 className="w-full"
                             />
 
-                            <ScrollArea className="h-[400px] -mr-4 pr-2">
+                            <ScrollArea className="h-100 -mr-4 pr-2">
                                 <div className="w-full pr-2">
                                     {searchQuery$.isLoading ? (
                                         <div className="space-y-2 w-full">
@@ -185,7 +185,7 @@ export function ComponentSelector({
                     </TabsContent>
 
                     <TabsContent value="favorites" className="mt-4">
-                        <ScrollArea className="h-[400px] -mr-4 pr-4">
+                        <ScrollArea className="h-100 -mr-4 pr-4">
                             {!isAuthenticated ? (
                                 <div className="text-center text-muted-foreground py-8">
                                     Connectez-vous pour voir vos favoris
@@ -234,18 +234,12 @@ function PostCard({
     return (
         <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors w-full box-border min-w-0">
             <div className="relative size-16 shrink-0 bg-muted rounded-md overflow-hidden">
-                {imageUrl ? (
-                    <Image
-                        src={imageUrl}
-                        alt={post.title}
-                        fill
-                        className="object-cover"
-                    />
-                ) : (
-                    <div className="size-full flex items-center justify-center text-muted-foreground text-xs">
-                        Pas d&apos;image
-                    </div>
-                )}
+                <Image
+                    src={imageUrl || "/images/fallback.webp"}
+                    alt={post.title}
+                    fill
+                    className="object-cover"
+                />
             </div>
 
             <div className="flex-1 min-w-0 overflow-hidden">
