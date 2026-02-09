@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/client";
 import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
-import { Search, Heart, Plus } from "lucide-react";
+import { Search, Heart, Plus, Loader2 } from "lucide-react";
 import Image from "next/image";
 
 export type SelectedPost = {
@@ -201,12 +201,22 @@ export function ComponentSelector({
 
                     <TabsContent value="search" className="mt-4">
                         <div className="space-y-4 w-full">
-                            <Input
-                                placeholder={`Rechercher un ${COMPONENT_TYPE_LABELS[componentType].toLowerCase()}...`}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full"
-                            />
+                            <div className="relative">
+                                <Input
+                                    placeholder={`Rechercher un ${COMPONENT_TYPE_LABELS[componentType].toLowerCase()}...`}
+                                    value={searchQuery}
+                                    onChange={(e) =>
+                                        setSearchQuery(e.target.value)
+                                    }
+                                    className="w-full pr-10"
+                                />
+                                {(searchQuery$.isLoading ||
+                                    searchQuery !== debouncedQuery) && (
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                        <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                                    </div>
+                                )}
+                            </div>
 
                             <ScrollArea className="h-100 -mr-4 pr-2">
                                 <div className="w-full pr-2">
