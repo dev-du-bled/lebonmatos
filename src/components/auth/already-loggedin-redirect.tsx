@@ -6,9 +6,9 @@
 
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "./session-provider";
 
 export default function AlreadyLoggedInRedirect({
     children,
@@ -16,10 +16,10 @@ export default function AlreadyLoggedInRedirect({
     children?: React.ReactNode | null;
 }) {
     const router = useRouter();
-    const { data, isPending } = authClient.useSession();
+    const { session, isPending } = useSession();
     const searchParams = useSearchParams();
     const redirect = searchParams.get("redirect");
-    if (!isPending && data?.user) {
+    if (!isPending && session?.user) {
         router.push(redirect || "/");
     }
     return children;

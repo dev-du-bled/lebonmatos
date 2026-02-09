@@ -3,15 +3,16 @@
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import { useSession } from "../auth/session-provider";
 
 interface ButtonsProps {
     initialUser?: typeof authClient.$Infer.Session.user | null;
 }
 
-export function BuyButtons({ initialUser }: ButtonsProps) {
-    const { data, isPending } = authClient.useSession();
+export function BuyButtons({ initialUser: _initialUser }: ButtonsProps) {
+    const { session } = useSession();
 
-    const user = isPending ? initialUser : data?.user;
+    const user = session?.user;
 
     return (
         <>
@@ -29,10 +30,10 @@ export function BuyButtons({ initialUser }: ButtonsProps) {
     );
 }
 
-export function ContactButton({ initialUser }: ButtonsProps) {
-    const { data, isPending } = authClient.useSession();
+export function ContactButton({ initialUser: _initialUser }: ButtonsProps) {
+    const { session } = useSession();
 
-    const user = isPending ? initialUser : data?.user;
+    const user = session?.user;
 
     if (user) {
         return (

@@ -3,27 +3,41 @@
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/trpc/client";
 import { Heart } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/components/auth/session-provider";
 
 interface FavoritePostProps {
-    postId: string;
-    isFavorited: boolean;
+    post: {
+        id: string;
+        isFavorited?: boolean;
+    };
     className?: string;
 }
 
-export default function FavoriteButton({
-    postId,
-    isFavorited,
-    className,
-}: FavoritePostProps) {
-    const [isFavorite, setIsFavorite] = useState(isFavorited);
+export default function FavoriteButton({ post, className }: FavoritePostProps) {
+    const { session, isPending } = useSession();
+    const router = useRouter();
+    const [isFavorite, setIsFavorite] = useState(post.isFavorited ?? false);
     const favMutation = trpc.posts.favoritePost.useMutation();
 
+    useEffect(() => {
+        if (!isPending && !session) {
+            setIsFavorite(false);
+        }
+    }, [session, isPending]);
+
     const toggleFavorite = async () => {
+        if (!session) {
+            toast.error("Vous devez être connecté pour ajouter aux favoris");
+            router.push("/login");
+            return;
+        }
+
         try {
             const { favorited } = await favMutation.mutateAsync({
-                postId: postId,
+                postId: post.id,
             });
             setIsFavorite(favorited);
         } catch {
@@ -32,6 +46,8 @@ export default function FavoriteButton({
             );
         }
     };
+
+    if (!session) return null;
 
     return (
         <Button

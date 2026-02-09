@@ -24,7 +24,7 @@ import {
     type ConfigurationSlot,
 } from "@/lib/compatibility";
 import { trpc } from "@/trpc/client";
-import { authClient } from "@/lib/auth-client";
+import { useSession } from "../auth/session-provider";
 import { Trash2, Pencil, Check, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,7 +47,7 @@ export function ConfiguratorContent() {
     const searchParams = useSearchParams();
     const configId = searchParams.get("id");
 
-    const { data: session } = authClient.useSession();
+    const { session } = useSession();
     const isAuthenticated = !!session?.user;
 
     const [config, setConfig] = useState<ConfigurationState>({

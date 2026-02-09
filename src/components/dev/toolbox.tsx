@@ -95,8 +95,8 @@ export function DevToolbox() {
         const { error } = await authClient.signUp.email({
             email: defaultUser.email,
             password: defaultUser.password,
-            username: defaultUser.username,
             name: defaultUser.name,
+            username: defaultUser.username,
         });
 
         if (error) {
@@ -121,7 +121,7 @@ export function DevToolbox() {
             toast.error(error.message || "Erreur lors de la connexion");
         } else {
             toast.success("Connecté en tant que " + defaultUser.email);
-            window.location.reload();
+            // window.location.reload();
         }
         setIsLoading(false);
     };
