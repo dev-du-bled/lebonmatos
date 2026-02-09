@@ -18,8 +18,39 @@ async function syncPost(id: string) {
     ]);
 
     if (rows.length > 0) {
+        const post = rows[0];
+
+        // Extract first image if available
+        const firstImage =
+            post.images && post.images.length > 0 ? post.images[0] : null;
+        let enrichedPost = { ...post, firstImage };
+
+        // Enrich with component-specific data if post has a component
+        if (post.componentId && post.componentType) {
+            const tableName = TYPE_TO_TABLE[post.componentType];
+            if (tableName && COMPONENT_QUERIES_BASE[tableName]) {
+                const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
+                const { rows: componentData } = await client.query(
+                    componentQuery,
+                    [post.componentId]
+                );
+
+                if (componentData.length > 0) {
+                    const { estimatedPrice, color, ...componentFields } =
+                        componentData[0];
+                    enrichedPost = {
+                        ...post,
+                        firstImage,
+                        componentEstimatedPrice: estimatedPrice,
+                        componentColor: color,
+                        ...componentFields,
+                    };
+                }
+            }
+        }
+
         const task = await wrappMeiliTask(
-            meilisearch.index("posts").addDocuments(rows)
+            meilisearch.index("posts").addDocuments([enrichedPost])
         );
         console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
     } else {
