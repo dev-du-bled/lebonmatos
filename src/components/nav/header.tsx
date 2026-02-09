@@ -10,11 +10,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
 
-export default function Header({
-    className,
-}: {
-    className?: string;
-}) {
+export default function Header({ className }: { className?: string }) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [modifierKey, setModifierKey] = useState<string | null>(null);
 

@@ -15,6 +15,7 @@ const globalForAuth = globalThis as unknown as {
 export const authClient: AuthClient =
     globalForAuth.authClient || createClient();
 
-if (process.env.NODE_ENV !== "production") globalForAuth.authClient = authClient;
+if (process.env.NODE_ENV !== "production")
+    globalForAuth.authClient = authClient;
 
 export const { useSession, signIn, signOut } = authClient;

@@ -21,7 +21,12 @@ export function SessionProvider({
     children: ReactNode;
     initialSession?: Session | null;
 }) {
-    const { data: session, isPending, error, refetch } = authClient.useSession();
+    const {
+        data: session,
+        isPending,
+        error,
+        refetch,
+    } = authClient.useSession();
 
     return (
         <SessionContext.Provider
@@ -41,7 +46,12 @@ export function useSession() {
     const context = useContext(SessionContext);
     if (context === undefined) {
         // Fallback to the direct hook if not wrapped in provider
-        const { data: session, isPending, error, refetch } = authClient.useSession();
+        const {
+            data: session,
+            isPending,
+            error,
+            refetch,
+        } = authClient.useSession();
         return { session, isPending, error, refetch };
     }
     return context;
