@@ -14,32 +14,21 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/client";
-import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
-import { Search, Heart, Plus } from "lucide-react";
+import {
+    COMPONENT_TYPE_LABELS,
+    ComponentWithDetails,
+} from "@/lib/compatibility";
+import { Search, Heart, Plus, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { useDebouncedCallback } from "use-debounce";
+import Link from "next/link";
 
 export type SelectedPost = {
     id: string;
     title: string;
     price: number;
     images: string[];
-    component: {
-        id: string;
-        name: string;
-        type: ComponentType;
-        Cpu?: { microarch: string } | null;
-        Motherboard?: {
-            socket: string;
-            formFactor: string;
-            memorySlots: number;
-            maxMemory: number;
-        } | null;
-        Ram?: { type: string | null; modules: number; size: number } | null;
-        Case?: { type: string } | null;
-        Psu?: { wattage: number } | null;
-        Gpu?: { length: number | null } | null;
-    };
+    component: ComponentWithDetails;
 };
 
 type ComponentSelectorProps = {
@@ -233,37 +222,82 @@ function PostCard({
 
     return (
         <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors w-full box-border min-w-0">
-            <div className="relative size-16 shrink-0 bg-muted rounded-md overflow-hidden">
+            <Link
+                href={`/post/${post.id}`}
+                target="blank"
+                className="relative size-16 shrink-0 bg-muted rounded-md overflow-hidden group"
+            >
                 <Image
                     src={imageUrl || "/images/fallback.webp"}
                     alt={post.title}
                     fill
-                    className="object-cover"
+                    className="object-cover group-hover:scale-110 transition-transform"
                 />
-            </div>
+            </Link>
 
-            <div className="flex-1 min-w-0 overflow-hidden">
-                <h4 className="font-medium truncate w-full block">
-                    {post.title}
-                </h4>
-                <p className="text-sm text-muted-foreground truncate w-full block">
+            <div className="flex-1 min-w-0 overflow-hidden max-w-83.5">
+                <Link
+                    href={`/post/${post.id}`}
+                    target="blank"
+                    className="group flex gap-px items-center"
+                >
+                    <h4 className="font-medium truncate group-hover:underline">
+                        {post.title}
+                    </h4>
+                    <ArrowUpRight className="size-4 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+                <p className="text-sm text-muted-foreground whitespace-break-spaces">
                     {post.component.name}
                 </p>
                 {post.component.Motherboard && (
                     <p className="text-xs text-muted-foreground truncate">
-                        Socket: {post.component.Motherboard.socket} |{" "}
-                        {post.component.Motherboard.formFactor}
+                        {post.component.Motherboard.socket} |{" "}
+                        {post.component.Motherboard.formFactor} |{" "}
+                        {post.component.Motherboard.memorySlots} slots |{" "}
+                        {post.component.Motherboard.maxMemory} Go
                     </p>
                 )}
                 {post.component.Cpu && (
                     <p className="text-xs text-muted-foreground truncate">
                         {post.component.Cpu.microarch}
+                        {post.component.Cpu.coreCount &&
+                            ` | ${post.component.Cpu.coreCount} cœurs`}
+                        {post.component.Cpu.coreClock &&
+                            ` | ${post.component.Cpu.coreClock} GHz`}
                     </p>
                 )}
                 {post.component.Ram && (
                     <p className="text-xs text-muted-foreground truncate">
                         {post.component.Ram.type} | {post.component.Ram.modules}
-                        x{post.component.Ram.size}Go
+                        x{post.component.Ram.size}Go |{" "}
+                        {post.component.Ram.speed &&
+                            `${post.component.Ram.speed} MHz`}{" "}
+                        |{" "}
+                    </p>
+                )}
+                {post.component.Gpu && (
+                    <p className="text-xs text-muted-foreground truncate">
+                        {post.component.Gpu.chipset} |{" "}
+                        {post.component.Gpu.memory} Go | `$
+                        {post.component.Gpu.coreClock} MHz` |{" "}
+                        {post.component.Gpu.boostClock} MHz
+                    </p>
+                )}
+                {post.component.Psu && (
+                    <p className="text-xs text-muted-foreground truncate">
+                        {post.component.Psu.wattage} W | Efficacité:{" "}
+                        {post.component.Psu.efficiency || "N/A"} | Modulaire:{" "}
+                        {post.component.Psu.modular || "N/A"}
+                    </p>
+                )}
+                {post.component.Case && (
+                    <p className="text-xs text-muted-foreground whitespace-break-spaces">
+                        {post.component.Case.type} |{" "}
+                        {post.component.Case.sidePanel || "N/A"} |{" "}
+                        {post.component.Case.volume
+                            ? `${post.component.Case.volume} L`
+                            : "N/A"}
+                        | {post.component.Case.bays3_5} Baies 3.5&quot;
                     </p>
                 )}
             </div>
@@ -273,7 +307,10 @@ function PostCard({
                 <Button
                     size="sm"
                     className="mt-1"
-                    onClick={() => onSelect(post)}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onSelect(post);
+                    }}
                 >
                     <Plus className="size-4 mr-1" />
                     Ajouter

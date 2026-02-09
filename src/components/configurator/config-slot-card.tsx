@@ -120,18 +120,12 @@ export function ConfigSlotCard({
                 {post ? (
                     <div className="flex items-center gap-4">
                         <div className="relative size-20 shrink-0 bg-muted rounded-lg overflow-hidden border">
-                            {post.images?.[0] ? (
-                                <Image
-                                    src={post.images[0]}
-                                    alt={post.title}
-                                    fill
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <div className="size-full flex items-center justify-center text-muted-foreground text-xs">
-                                    N/A
-                                </div>
-                            )}
+                            <Image
+                                src={post.images[0] || "/images/fallback.webp"}
+                                alt={post.title}
+                                fill
+                                className="object-cover"
+                            />
                         </div>
                         <div className="flex-1 min-w-0 space-y-1">
                             <p className="font-medium truncate text-base">

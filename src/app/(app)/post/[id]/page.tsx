@@ -19,6 +19,7 @@ import { cache } from "react";
 import PostMap from "@/components/post/post-map";
 import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
+import z from "zod";
 
 type Params = {
     id: string;
@@ -51,6 +52,8 @@ export default async function PostPage({
 }) {
     const { id } = await params;
 
+    if (!z.cuid().safeParse(id).success) notFound();
+
     const user = await getUser(false);
 
     const post = await getPost(id);
@@ -68,13 +71,15 @@ export default async function PostPage({
             <div className="flex flex-col lg:flex-row gap-8">
                 <div className="flex flex-col flex-1">
                     <Carousel className="w-full relative">
-                        {user && user.id !== post.seller?.id && (
-                            <FavoriteButton
-                                postId={post.id}
-                                isFavorited={post.isFavorited}
-                                className="absolute top-2 right-2 z-10"
-                            />
-                        )}
+                        {user &&
+                            post.isFavorited &&
+                            user.id !== post.seller?.id && (
+                                <FavoriteButton
+                                    postId={post.id}
+                                    isFavorited={post.isFavorited}
+                                    className="absolute top-2 right-2 z-10"
+                                />
+                            )}
                         <CarouselContent className="ml-0">
                             {post.images.length > 0 ? (
                                 post.images.map((image, index) => (

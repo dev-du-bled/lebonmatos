@@ -31,17 +31,41 @@ export type ComponentWithDetails = {
     id: string;
     type: ComponentType;
     name: string;
-    Cpu?: { microarch: string } | null;
+    Cpu?: {
+        microarch: string;
+        coreClock: number;
+        coreCount: number;
+    } | null;
     Motherboard?: {
         socket: string;
         formFactor: string;
         memorySlots: number;
         maxMemory: number;
     } | null;
-    Ram?: { type: string | null; modules: number; size: number } | null;
-    Case?: { type: string } | null;
-    Psu?: { wattage: number } | null;
-    Gpu?: { length: number | null } | null;
+    Ram?: {
+        type: string | null;
+        modules: number;
+        size: number;
+        speed: number | null;
+    } | null;
+    Case?: {
+        type: string;
+        sidePanel: string | null;
+        volume: number | null;
+        bays3_5: number;
+    } | null;
+    Psu?: {
+        wattage: number;
+        efficiency: string | null;
+        modular: string | null;
+    } | null;
+    Gpu?: {
+        coreClock: number | null;
+        boostClock: number | null;
+        chipset: string;
+        memory: number;
+        length: number | null;
+    } | null;
 };
 
 export type ConfigurationSlot = {
