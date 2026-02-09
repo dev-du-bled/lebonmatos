@@ -9,10 +9,12 @@ import { UserMenu } from "./user-menu";
 import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
+import { SearchModal } from "./search-modal";
 
 export default function Header({ className }: { className?: string }) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [modifierKey, setModifierKey] = useState<string | null>(null);
+    const [searchOpen, setSearchOpen] = useState(false);
 
     useEffect(() => {
         setModifierKey(
@@ -29,6 +31,22 @@ export default function Header({ className }: { className?: string }) {
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    useEffect(() => {
+        const down = (e: KeyboardEvent) => {
+            if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                setSearchOpen((open) => !open);
+            }
+            if (e.key === "Escape") {
+                setSearchOpen(false);
+            }
+        };
+
+        document.addEventListener("keydown", down);
+        return () => document.removeEventListener("keydown", down);
+    }, []);
+
     return (
         <>
             <div className={cn("md:hidden", className)}>
@@ -51,7 +69,10 @@ export default function Header({ className }: { className?: string }) {
                                 Publier
                             </Button>
                         </Link>
-                        <button className="flex h-9 w-full max-w-50 items-center justify-between rounded-md bg-secondary px-3 text-sm text-muted-foreground">
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            className="flex cursor-text h-9 w-full max-w-50 items-center justify-between rounded-md bg-secondary px-3 text-sm text-muted-foreground"
+                        >
                             <div className="flex items-center gap-2">
                                 <SearchIcon className="size-4 shrink-0 opacity-50" />
                                 <span>Rechercher</span>
@@ -64,6 +85,8 @@ export default function Header({ className }: { className?: string }) {
                     </div>
                 </div>
             </header>
+
+            <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
         </>
     );
 }

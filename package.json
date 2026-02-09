@@ -17,7 +17,7 @@
         "prisma:reset": "prisma migrate reset",
         "sync:start": "bun sync/index.ts",
         "sync:reset": "bun sync/resetMeili.ts",
-        "sync:all": "bun sync/syncAll.ts",
+        "sync:all": "bun run sync:reset && bun sync/syncAll.ts",
         "postinstall": "bun run prisma:generate"
     },
     "dependencies": {
@@ -57,6 +57,7 @@
         "next-themes": "^0.4.6",
         "pg": "^8.18.0",
         "prisma": "^7.3.0",
+        "radix-ui": "^1.4.3",
         "react": "19.1.0",
         "react-dom": "19.1.0",
         "react-google-recaptcha-v3": "^1.11.0",
