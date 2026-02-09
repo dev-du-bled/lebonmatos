@@ -19,6 +19,7 @@ export const POST_QUERY_BASE = `
         p.price,
         p."userId",
         p."componentId",
+        p.images,
         c.name as "componentName",
         c.type as "componentType",
         u.name as "userName"
