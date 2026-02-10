@@ -7,6 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ConfigurationCard } from "@/components/profile/configuration-card";
 import { Card, CardContent } from "@/components/ui/card";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Mes configurations",
+    description: "Gérez vos configurations PC enregistrées",
+};
 
 function ConfigurationCardSkeleton() {
     return (

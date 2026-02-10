@@ -34,6 +34,7 @@ export type ComponentWithDetails = {
     Cpu?: {
         microarch: string;
         coreClock: number;
+        boostClock: number | null;
         coreCount: number;
     } | null;
     Motherboard?: {

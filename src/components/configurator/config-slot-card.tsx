@@ -20,6 +20,7 @@ import {
 import { Plus, Trash2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import type { SelectedPost } from "./component-selector";
+import { formatComponentDetails } from "@/lib/utils";
 
 type ConfigSlotCardProps = {
     componentType: ComponentType;
@@ -133,6 +134,9 @@ export function ConfigSlotCard({
                             </p>
                             <p className="text-sm text-muted-foreground truncate">
                                 {post.component.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground truncate">
+                                {formatComponentDetails(post.component)}
                             </p>
                         </div>
                         {isMulti && (

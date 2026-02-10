@@ -79,6 +79,7 @@
         "@types/pg": "^8.16.0",
         "@types/react": "^19.2.10",
         "@types/react-dom": "^19.2.3",
+        "babel-plugin-react-compiler": "^1.0.0",
         "eslint": "^9.39.2",
         "eslint-config-next": "15.5.2",
         "shadcn": "^3.8.2",
