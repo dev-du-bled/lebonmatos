@@ -128,14 +128,14 @@ export function ConfigSlotCard({
                                 className="object-cover"
                             />
                         </div>
-                        <div className="flex-1 min-w-0 space-y-1">
-                            <p className="font-medium truncate text-base">
+                        <div className="flex-1 space-y-1">
+                            <p className="font-medium wrap-anywhere line-clamp-2 text-base">
                                 {post.title}
                             </p>
-                            <p className="text-sm text-muted-foreground truncate">
+                            <p className="text-sm text-muted-foreground wrap-break-word">
                                 {post.component.name}
                             </p>
-                            <p className="text-sm text-muted-foreground truncate">
+                            <p className="text-sm text-muted-foreground wrap-break-word">
                                 {formatComponentDetails(post.component)}
                             </p>
                         </div>
@@ -159,7 +159,7 @@ export function ConfigSlotCard({
                                 />
                             </div>
                         )}
-                        <div className="text-right shrink-0 min-w-[80px]">
+                        <div className="text-right shrink-0 min-w-20">
                             <p className="font-semibold text-lg">
                                 {post.price * quantity} €
                             </p>

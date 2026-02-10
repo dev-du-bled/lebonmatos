@@ -244,7 +244,7 @@ function PostCard({
                         target="blank"
                         className="group flex gap-1 items-start"
                     >
-                        <h4 className="font-medium group-hover:underline text-sm xs:text-base wrap-anywhere">
+                        <h4 className="font-medium group-hover:underline text-sm xs:text-base wrap-anywhere line-clamp-2">
                             {post.title}
                         </h4>
                         <ArrowUpRight className="size-4 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-0.5" />
