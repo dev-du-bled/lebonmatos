@@ -164,7 +164,7 @@ export function ConfigSlotCard({
                                 <p className="font-semibold text-lg">
                                     {post.price * quantity} €
                                 </p>
-                                {isMulti && quantity > 1 && (
+                                {isMulti && (
                                     <p className="text-xs text-muted-foreground">
                                         {post.price} € / unité
                                     </p>
