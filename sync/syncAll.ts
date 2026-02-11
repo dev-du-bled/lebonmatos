@@ -4,6 +4,7 @@ import {
     wrappMeiliTask,
     POST_QUERY_BASE,
     COMPONENT_QUERIES_BASE,
+    TYPE_TO_TABLE,
 } from "./utils";
 
 const pg_url = process.env["DATABASE_URL"];
@@ -32,10 +33,73 @@ async function syncAll() {
     try {
         console.log("Fetching all posts...");
         const { rows: posts } = await client.query(POST_QUERY_BASE);
+
         if (posts.length > 0) {
-            console.log(`Pushing ${posts.length} posts to Meilisearch...`);
+            console.log(
+                `Enriching ${posts.length} posts with component data...`
+            );
+
+            // Enrich each post with its component-specific data
+            const enrichedPosts = await Promise.all(
+                posts.map(async (post) => {
+                    // Extract first image if available
+                    const firstImage =
+                        post.images && post.images.length > 0
+                            ? post.images[0]
+                            : null;
+
+                    // If post has no component, return as-is with first image
+                    if (!post.componentId || !post.componentType) {
+                        return {
+                            ...post,
+                            firstImage,
+                        };
+                    }
+
+                    // Get the table name for this component type
+                    const tableName = TYPE_TO_TABLE[post.componentType];
+                    if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
+                        console.warn(
+                            `No query found for component type: ${post.componentType}`
+                        );
+                        return {
+                            ...post,
+                            firstImage,
+                        };
+                    }
+
+                    // Fetch the specific component data
+                    const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
+                    const { rows: componentData } = await client.query(
+                        componentQuery,
+                        [post.componentId]
+                    );
+
+                    // Merge post data with component data
+                    if (componentData.length > 0) {
+                        const { estimatedPrice, color, ...componentFields } =
+                            componentData[0];
+                        return {
+                            ...post,
+                            firstImage,
+                            componentEstimatedPrice: estimatedPrice,
+                            componentColor: color,
+                            ...componentFields,
+                        };
+                    }
+
+                    return {
+                        ...post,
+                        firstImage,
+                    };
+                })
+            );
+
+            console.log(
+                `Pushing ${enrichedPosts.length} enriched posts to Meilisearch...`
+            );
             const task = await wrappMeiliTask(
-                meilisearch.index("posts").addDocuments(posts)
+                meilisearch.index("posts").addDocuments(enrichedPosts)
             );
             console.log(`Synced posts at ${task.finishedAt}`);
         } else {

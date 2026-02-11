@@ -37,6 +37,13 @@ export type ComponentWithDetails = {
         boostClock: number | null;
         coreCount: number;
     } | null;
+    Gpu?: {
+        coreClock: number | null;
+        boostClock: number | null;
+        chipset: string;
+        memory: number;
+        length: number | null;
+    } | null;
     Motherboard?: {
         socket: string;
         formFactor: string;
@@ -49,23 +56,55 @@ export type ComponentWithDetails = {
         size: number;
         speed: number | null;
     } | null;
-    Case?: {
-        type: string;
-        sidePanel: string | null;
-        volume: number | null;
-        bays3_5: number;
+    Ssd?: {
+        capacity: number;
+        cache: number | null;
+        interface: string;
+        formFactor: string;
+    } | null;
+    Hdd?: {
+        capacity: number;
+        rpm: number;
+        cache: number | null;
+        formFactor: string;
     } | null;
     Psu?: {
         wattage: number;
         efficiency: string | null;
         modular: string | null;
     } | null;
-    Gpu?: {
-        coreClock: number | null;
-        boostClock: number | null;
-        chipset: string;
-        memory: number;
-        length: number | null;
+    CpuCooler?: {
+        rpmIdle: number | null;
+        rpmMax: number | null;
+        noiseIdle: number | null;
+        noiseMax: number | null;
+        size: number | null;
+    } | null;
+    Case?: {
+        type: string;
+        sidePanel: string | null;
+        volume: number | null;
+        bays3_5: number;
+    } | null;
+    CaseFan?: {
+        size: number;
+        rpmIdle: number | null;
+        rpmMax: number | null;
+        noiseIdle: number | null;
+        noiseMax: number | null;
+        airFlowIdle: number | null;
+        airFlowMax: number | null;
+        pwm: boolean;
+    } | null;
+    SoundCard?: {
+        channels: number;
+        sampleRate: number | null;
+        chipset: string | null;
+        interface: string;
+    } | null;
+    WirelessNetworkCard?: {
+        interface: string;
+        protocol: string;
     } | null;
 };
 

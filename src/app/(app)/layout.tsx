@@ -2,6 +2,8 @@ import Header from "@/components/nav/header";
 import Footer from "@/components/nav/footer";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { SessionProvider } from "@/components/auth/session-provider";
+import "../globals.css";
 
 export default async function AppLayout({
     children,
@@ -13,10 +15,12 @@ export default async function AppLayout({
     });
 
     return (
-        <main className="flex min-h-svh flex-col">
-            <Header initialSession={session} />
-            <div className="flex-1">{children}</div>
-            <Footer />
-        </main>
+        <SessionProvider initialSession={session}>
+            <main className="flex min-h-svh flex-col">
+                <Header />
+                <div className="flex-1">{children}</div>
+                <Footer />
+            </main>
+        </SessionProvider>
     );
 }

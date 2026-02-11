@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { meilisearch } from "@/lib/meilisearch";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { ComponentType } from "@prisma/client";
@@ -296,7 +297,6 @@ export const configurationRouter = createTRPCRouter({
             return clone;
         }),
 
-    // Search posts by component type (for the component selector)
     searchPosts: publicProcedure
         .input(
             z.object({
@@ -306,50 +306,16 @@ export const configurationRouter = createTRPCRouter({
             })
         )
         .query(async ({ input }) => {
-            const posts = await prisma.post.findMany({
-                where: {
-                    component: {
-                        type: input.componentType,
-                        ...(input.query && input.query.length >= 2
-                            ? {
-                                  name: {
-                                      contains: input.query,
-                                      mode: "insensitive",
-                                  },
-                              }
-                            : {}),
-                    },
-                },
-                include: {
-                    component: {
-                        include: {
-                            Cpu: true,
-                            Gpu: true,
-                            Motherboard: true,
-                            Ram: true,
-                            Ssd: true,
-                            Hdd: true,
-                            Psu: true,
-                            CpuCooler: true,
-                            Case: true,
-                            CaseFan: true,
-                            SoundCard: true,
-                            WirelessNetworkCard: true,
-                        },
-                    },
-                    user: {
-                        select: {
-                            id: true,
-                            name: true,
-                            displayUsername: true,
-                        },
-                    },
-                },
-                orderBy: { price: "asc" },
-                take: input.limit,
-            });
+            const index = meilisearch.index("posts");
 
-            return posts;
+            const searchParams = {
+                limit: input.limit,
+                filter: `componentType = ${input.componentType}`,
+            };
+
+            const results = await index.search(input.query || "", searchParams);
+
+            return results.hits;
         }),
 
     // Get user's favorite posts for a component type
@@ -374,22 +340,7 @@ export const configurationRouter = createTRPCRouter({
                 include: {
                     post: {
                         include: {
-                            component: {
-                                include: {
-                                    Cpu: true,
-                                    Gpu: true,
-                                    Motherboard: true,
-                                    Ram: true,
-                                    Ssd: true,
-                                    Hdd: true,
-                                    Psu: true,
-                                    CpuCooler: true,
-                                    Case: true,
-                                    CaseFan: true,
-                                    SoundCard: true,
-                                    WirelessNetworkCard: true,
-                                },
-                            },
+                            ...postWithComponentInclude,
                             user: {
                                 select: {
                                     id: true,

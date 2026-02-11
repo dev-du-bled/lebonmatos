@@ -7,9 +7,9 @@
 
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
+import { useSession } from "./auth/session-provider";
 
 export default function RequiredLoginClient({
     children,
@@ -19,10 +19,10 @@ export default function RequiredLoginClient({
     const router = useRouter();
     const pathname = usePathname();
 
-    const { data, isPending } = authClient.useSession();
+    const { session, isPending } = useSession();
 
     // Redirect to login if session is loaded and user is not authenticated
-    if (!isPending && !data?.user) {
+    if (!isPending && !session?.user) {
         router.push("/login?redirect=" + pathname);
         return null;
     }

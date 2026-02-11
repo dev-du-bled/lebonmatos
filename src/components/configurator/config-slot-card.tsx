@@ -72,9 +72,7 @@ export function ConfigSlotCard({
 
     return (
         <Card
-            className={`transition-all hover:shadow-md p-0 gap-0 ${
-                hasError ? "border-destructive border-2" : ""
-            }`}
+            className={`transition-all hover:shadow-md p-0 gap-0 ${hasError ? "border-destructive border-2" : ""}`}
         >
             <CardHeader className="py-3 px-4 gap-0">
                 <div className="flex items-center justify-between">

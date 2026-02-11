@@ -12,16 +12,11 @@ import {
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
-import { auth } from "@/lib/auth";
 import Link from "next/link";
+import { useSession } from "../auth/session-provider";
 
-export function UserMenu({ initialSession }: { initialSession?: unknown }) {
-    const { data, isPending } = authClient.useSession();
-
-    const session = (isPending ? initialSession : data) as
-        | Awaited<ReturnType<typeof auth.api.getSession>>
-        | null
-        | undefined;
+export function UserMenu() {
+    const { session } = useSession();
 
     if (!session?.user?.name)
         return (

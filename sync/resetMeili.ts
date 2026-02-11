@@ -39,6 +39,16 @@ try {
                 primaryKey: "id",
             })
         );
+
+        // Make posts filterable by their component type
+        if (index === "posts") {
+            await wrappMeiliTask(
+                meilisearch
+                    .index(index)
+                    .updateFilterableAttributes(["componentType"])
+            );
+        }
+
         console.log(`Reset index: ${index}`);
     }
 } catch (err) {
