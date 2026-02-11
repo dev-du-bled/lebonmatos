@@ -39,34 +39,12 @@ async function syncAll() {
                 `Enriching ${posts.length} posts with component data...`
             );
 
-            // Enrich each post with its component-specific data
+            // Flatten the post and the relevant component data
             const enrichedPosts = await Promise.all(
                 posts.map(async (post) => {
-                    // Extract first image if available
-                    const firstImage =
-                        post.images && post.images.length > 0
-                            ? post.images[0]
-                            : null;
-
-                    // If post has no component, return as-is with first image
-                    if (!post.componentId || !post.componentType) {
-                        return {
-                            ...post,
-                            firstImage,
-                        };
-                    }
-
-                    // Get the table name for this component type
                     const tableName = TYPE_TO_TABLE[post.componentType];
-                    if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
-                        console.warn(
-                            `No query found for component type: ${post.componentType}`
-                        );
-                        return {
-                            ...post,
-                            firstImage,
-                        };
-                    }
+                    if (!tableName || !COMPONENT_QUERIES_BASE[tableName])
+                        return;
 
                     // Fetch the specific component data
                     const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
@@ -76,21 +54,16 @@ async function syncAll() {
                     );
 
                     // Merge post data with component data
-                    if (componentData.length > 0) {
-                        const { estimatedPrice, color, ...componentFields } =
-                            componentData[0];
-                        return {
-                            ...post,
-                            firstImage,
-                            componentEstimatedPrice: estimatedPrice,
-                            componentColor: color,
-                            ...componentFields,
-                        };
-                    }
-
+                    // Disabling eslint since id isn't explicetly used, but having it there removes it from componentData,
+                    // so it doesn't overide the post's id
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { id, estimatedPrice, color, ...componentFields } =
+                        componentData[0];
                     return {
                         ...post,
-                        firstImage,
+                        componentEstimatedPrice: estimatedPrice,
+                        componentColor: color,
+                        ...componentFields,
                     };
                 })
             );
