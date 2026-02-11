@@ -1,19 +1,17 @@
 "use client";
 
-import { useEffect, useState, memo } from "react";
+import { useState, memo } from "react";
 import { useRouter } from "next/navigation";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
+import { Command, CommandInput } from "@/components/ui/command";
 import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/ui/command";
-import { Dialog, DialogOverlay, DialogPortal } from "@/components/ui/dialog";
+    Dialog,
+    DialogOverlay,
+    DialogPortal,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { trpc } from "@/trpc/client";
 import { PostCard, SelectedPost } from "@/components/post-card";
 
@@ -76,41 +74,43 @@ const SearchResults = memo(
 
         return (
             <div className="rounded-lg border bg-background shadow-lg">
-                <Command
-                    className="border-none **:focus:outline-none"
-                    shouldFilter={false}
-                >
-                    <CommandList>
-                        <CommandEmpty className="py-6">
-                            {isLoading
-                                ? "Recherche..."
-                                : "Aucun résultat trouvé."}
-                        </CommandEmpty>
+                <div className="bg-popover text-popover-foreground flex flex-col overflow-hidden rounded-md border-none">
+                    <div className="max-h-75 scroll-py-1 overflow-x-hidden overflow-y-auto">
+                        {(!posts || posts.length === 0) && (
+                            <div className="py-6 text-center text-sm">
+                                {isLoading
+                                    ? "Recherche..."
+                                    : "Aucun résultat trouvé."}
+                            </div>
+                        )}
                         {posts && posts.length > 0 && (
-                            <CommandGroup heading="Annonces">
+                            <div className="text-foreground overflow-hidden p-1">
+                                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                                    Annonces
+                                </div>
                                 {posts.map((post) => (
-                                    <CommandItem
+                                    <div
                                         key={post.id}
-                                        onSelect={() => {
+                                        onClick={() => {
                                             router.push(`/post/${post.id}`);
                                             onSelect();
                                         }}
-                                        className="p-1"
+                                        className="cursor-pointer select-none p-1"
                                     >
                                         <PostCard post={post as SelectedPost} />
-                                    </CommandItem>
+                                    </div>
                                 ))}
-                            </CommandGroup>
+                            </div>
                         )}
-                    </CommandList>
-                </Command>
-                <Command className="p-3 text-xs border-t rounded-t-none">
+                    </div>
+                </div>
+                <div className="p-3 text-xs border-t rounded-t-none">
                     <span>
                         Appuyez sur <b>Entrée</b> pour rechercher toutes les
                         annonces avec le terme{" "}
                         <b>&ldquo;{searchValue}&rdquo;</b> dans le nom
                     </span>
-                </Command>
+                </div>
             </div>
         );
     }
@@ -119,18 +119,6 @@ SearchResults.displayName = "SearchResults";
 
 export function SearchModal({ open, onOpenChange }: SearchModalProps) {
     const [searchValue, setSearchValue] = useState("");
-
-    useEffect(() => {
-        // Hack to maintain focus on input when results appear/disappear and when the dialog opens
-        if (open) {
-            const input = document.querySelector(
-                '[data-slot="command-input"]'
-            ) as HTMLInputElement;
-            if (input && document.activeElement !== input) {
-                input.focus();
-            }
-        }
-    }, [searchValue, open]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -146,6 +134,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
                     }}
                     className="fixed top-[20%] left-[50%] -translate-x-1/2 z-50 w-full max-w-2xl outline-none"
                 >
+                    <DialogTitle className="sr-only">Recherche</DialogTitle>
                     <SearchInputBox
                         value={searchValue}
                         onValueChange={setSearchValue}
