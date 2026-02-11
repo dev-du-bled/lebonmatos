@@ -119,8 +119,8 @@ export function ConfigSlotCard({
             <Separator />
             <CardContent className="p-4">
                 {post ? (
-                    <div className="flex items-center gap-4">
-                        <div className="relative size-20 shrink-0 bg-muted rounded-lg overflow-hidden border">
+                    <div className="flex flex-col xs:flex-row xs:items-center gap-4">
+                        <div className="relative h-35 xs:size-20 w-full shrink-0 bg-muted rounded-lg overflow-hidden border">
                             <Image
                                 src={post.images[0] || "/images/fallback.webp"}
                                 alt={post.title}
@@ -139,44 +139,46 @@ export function ConfigSlotCard({
                                 {formatComponentDetails(post.component)}
                             </p>
                         </div>
-                        {isMulti && (
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">
-                                    x
-                                </span>
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    max={10}
-                                    value={quantity}
-                                    onChange={(e) =>
-                                        onQuantityChange(
-                                            componentType,
-                                            parseInt(e.target.value)
-                                        )
-                                    }
-                                    className="w-16 text-center"
-                                />
-                            </div>
-                        )}
-                        <div className="text-right shrink-0 min-w-20">
-                            <p className="font-semibold text-lg">
-                                {post.price * quantity} €
-                            </p>
-                            {isMulti && quantity > 1 && (
-                                <p className="text-xs text-muted-foreground">
-                                    {post.price} € / unité
-                                </p>
+                        <div className="flex items-center justify-end gap-4">
+                            {isMulti && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-muted-foreground">
+                                        x
+                                    </span>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        max={10}
+                                        value={quantity}
+                                        onChange={(e) =>
+                                            onQuantityChange(
+                                                componentType,
+                                                parseInt(e.target.value)
+                                            )
+                                        }
+                                        className="w-16 text-center"
+                                    />
+                                </div>
                             )}
+                            <div className="text-right shrink-0">
+                                <p className="font-semibold text-lg">
+                                    {post.price * quantity} €
+                                </p>
+                                {isMulti && quantity > 1 && (
+                                    <p className="text-xs text-muted-foreground">
+                                        {post.price} € / unité
+                                    </p>
+                                )}
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-destructive transition-colors"
+                                onClick={() => onRemove(componentType)}
+                            >
+                                <Trash2 className="size-4" />
+                            </Button>
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-destructive transition-colors"
-                            onClick={() => onRemove(componentType)}
-                        >
-                            <Trash2 className="size-4" />
-                        </Button>
                     </div>
                 ) : (
                     <button
