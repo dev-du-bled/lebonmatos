@@ -11,12 +11,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/client";
 import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
-import { Search, Heart, Plus, Loader2 } from "lucide-react";
-import Image from "next/image";
+import { Search, Heart, Loader2 } from "lucide-react";
 
 import { PostCard, SelectedPost } from "@/components/post-card";
 
