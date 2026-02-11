@@ -8,6 +8,8 @@ import dynamic from "next/dynamic";
 import Script from "next/script";
 import { extractRouterConfig } from "uploadthing/server";
 import { lbmFileRouter } from "./api/uploadthing/core";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const DevToolbox = dynamic(() =>
     import("@/components/dev/toolbox").then((mod) => mod.DevToolbox)
@@ -31,8 +33,6 @@ export const metadata: Metadata = {
     description:
         "La plateforme experte en seconde main de matériel informatique",
 };
-
-import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
     children,
@@ -68,7 +68,9 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    <TRPCProvider>{children}</TRPCProvider>
+                    <TRPCProvider>
+                        <TooltipProvider>{children}</TooltipProvider>
+                    </TRPCProvider>
                     <Toaster />
                     {process.env.NODE_ENV === "development" && <DevToolbox />}
                 </ThemeProvider>

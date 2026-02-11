@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
@@ -79,30 +78,28 @@ export function ConfigSlotCard({
         >
             <CardHeader className="py-3 px-4 gap-0">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex">
+                    <CardTitle className="text-lg flex gap-2 items-center">
                         {COMPONENT_TYPE_LABELS[componentType]}
                         {hasError && (
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div className="cursor-help inline-flex items-center justify-center rounded-full bg-destructive/10 p-1 text-destructive">
-                                            <AlertCircle className="size-4" />
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <div className="text-sm font-normal max-w-xs">
-                                            {issues.map((issue, i) => (
-                                                <p
-                                                    key={i}
-                                                    className="mb-1 last:mb-0"
-                                                >
-                                                    {issue.message}
-                                                </p>
-                                            ))}
-                                        </div>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="cursor-help inline-flex items-center justify-center rounded-full bg-destructive/10 p-1 text-destructive">
+                                        <AlertCircle className="size-4" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <div className="text-sm font-normal max-w-xs">
+                                        {issues.map((issue, i) => (
+                                            <p
+                                                key={i}
+                                                className="mb-1 last:mb-0"
+                                            >
+                                                {issue.message}
+                                            </p>
+                                        ))}
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
                         )}
                     </CardTitle>
                     {(!post || isMulti) && (
