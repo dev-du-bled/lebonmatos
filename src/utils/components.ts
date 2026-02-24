@@ -266,7 +266,7 @@ export function getComponentSpecs(
                 { label: "Type", value: `${c.type}` },
                 { label: "Panneau latéral", value: `${c.sidePanel}` },
                 { label: "Volume", value: `${c.volume}` },
-                { label: "Baies 3.5\"", value: `${c.bays3_5}` },
+                { label: 'Baies 3.5"', value: `${c.bays3_5}` },
             ];
         },
         CASE_FAN: (d) => {
