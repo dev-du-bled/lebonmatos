@@ -18,6 +18,9 @@ interface FavoritePostProps {
     post: {
         id: string;
         isFavorited?: boolean;
+        seller?: {
+            id: string;
+        };
     };
     className?: string;
 }
@@ -54,6 +57,7 @@ export default function FavoriteButton({ post, className }: FavoritePostProps) {
     };
 
     if (!session) return null;
+    if (post.seller?.id === session?.user?.id) return null;
 
     return (
         <TooltipProvider>
