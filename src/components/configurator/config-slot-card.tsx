@@ -136,7 +136,7 @@ export function ConfigSlotCard({
                                 {post.title}
                             </p>
                             <p className="text-sm text-muted-foreground truncate">
-                                {post.componentName}
+                                {post.component.name}
                             </p>
                         </div>
                         {isMulti && (

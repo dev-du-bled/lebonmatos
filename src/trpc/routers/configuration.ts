@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { ComponentType } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import type { SelectedPost } from "@/components/configurator/component-selector";
 
 const configurationItemSchema = z.object({
     componentType: z.enum(ComponentType),
@@ -368,6 +369,6 @@ export const configurationRouter = createTRPCRouter({
                 },
             });
 
-            return favorites.map((fav) => fav.post);
+            return favorites.map((fav) => fav.post) as SelectedPost[];
         }),
 });

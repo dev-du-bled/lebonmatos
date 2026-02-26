@@ -47,18 +47,18 @@ export type ComponentWithDetails = {
     id: string;
     type: ComponentType;
     name: string;
-    Cpu?: CompDetails<Cpu>;
-    Gpu?: CompDetails<Gpu>;
-    Motherboard?: CompDetails<Motherboard>;
-    Ram?: CompDetails<Ram>;
-    Ssd?: CompDetails<Ssd>;
-    Hdd?: CompDetails<Hdd>;
-    Psu?: CompDetails<Psu>;
-    CpuCooler?: CompDetails<CpuCooler>;
-    Case?: CompDetails<Case>;
-    CaseFan?: CompDetails<CaseFan>;
-    SoundCard?: CompDetails<SoundCard>;
-    WirelessNetworkCard?: CompDetails<WirelessNetworkCard>;
+    Cpu?: CompDetails<Cpu> | null;
+    Gpu?: CompDetails<Gpu> | null;
+    Motherboard?: CompDetails<Motherboard> | null;
+    Ram?: CompDetails<Ram> | null;
+    Ssd?: CompDetails<Ssd> | null;
+    Hdd?: CompDetails<Hdd> | null;
+    Psu?: CompDetails<Psu> | null;
+    CpuCooler?: CompDetails<CpuCooler> | null;
+    Case?: CompDetails<Case> | null;
+    CaseFan?: CompDetails<CaseFan> | null;
+    SoundCard?: CompDetails<SoundCard> | null;
+    WirelessNetworkCard?: CompDetails<WirelessNetworkCard> | null;
 };
 
 export type ConfigurationSlot = {
