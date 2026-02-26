@@ -1,3 +1,4 @@
+import { ComponentWithDetails } from "@/lib/compatibility";
 import {
     Cpu,
     Gpu,
@@ -167,6 +168,152 @@ const displayWirelessNetworkCard = (data: WirelessNetworkCard) => ({
     protocol: `Protocole: ${data.protocol}`,
 });
 
+// Returns structured label/value pairs for table display
+export function getComponentSpecs(
+    type: ComponentType,
+    data: Components
+): { label: string; value: string }[] {
+    const specMapping: Record<
+        ComponentType,
+        (data: Components) => { label: string; value: string }[]
+    > = {
+        CPU: (d) => {
+            const cpu = d as Cpu;
+            return [
+                { label: "Coeurs", value: `${cpu.coreCount}` },
+                { label: "Fréquence de base", value: `${cpu.coreClock} GHz` },
+                { label: "Fréquence turbo", value: `${cpu.boostClock} GHz` },
+                { label: "Architecture", value: `${cpu.microarch}` },
+                { label: "TDP", value: `${cpu.tdp} W` },
+                {
+                    label: "iGPU",
+                    value: cpu.graphics || "Aucun",
+                },
+            ];
+        },
+        GPU: (d) => {
+            const gpu = d as Gpu;
+            return [
+                { label: "Chipset", value: `${gpu.chipset}` },
+                { label: "Mémoire", value: `${gpu.memory} Go` },
+                { label: "Fréquence de base", value: `${gpu.coreClock} MHz` },
+                { label: "Fréquence turbo", value: `${gpu.boostClock} MHz` },
+                { label: "Longueur", value: `${gpu.length} mm` },
+            ];
+        },
+        MOTHERBOARD: (d) => {
+            const mb = d as Motherboard;
+            return [
+                { label: "Socket", value: `${mb.socket}` },
+                { label: "Format", value: `${mb.formFactor}` },
+                { label: "Mémoire max", value: `${mb.maxMemory} Go` },
+                { label: "Slots mémoire", value: `${mb.memorySlots}` },
+            ];
+        },
+        RAM: (d) => {
+            const ram = d as Ram;
+            return [
+                { label: "Type", value: `${ram.type}` },
+                { label: "Vitesse", value: `${ram.speed} MHz` },
+                { label: "Modules", value: `${ram.modules}x` },
+                { label: "Taille", value: `${ram.size} Go` },
+                { label: "Latence CAS", value: `CL${ram.casLatency}` },
+            ];
+        },
+        SSD: (d) => {
+            const ssd = d as Ssd;
+            return [
+                { label: "Capacité", value: `${ssd.capacity} Go` },
+                { label: "Cache", value: `${ssd.cache} Mo` },
+                { label: "Interface", value: `${ssd.interface}` },
+                { label: "Format", value: `${ssd.formFactor}` },
+            ];
+        },
+        HDD: (d) => {
+            const hdd = d as Hdd;
+            return [
+                { label: "Capacité", value: `${hdd.capacity} Go` },
+                { label: "Cache", value: `${hdd.cache} Mo` },
+                { label: "Format", value: `${hdd.formFactor}` },
+                { label: "Interface", value: `${hdd.interface}` },
+            ];
+        },
+        POWER_SUPPLY: (d) => {
+            const psu = d as Psu;
+            return [
+                { label: "Type", value: `${psu.type}` },
+                { label: "Puissance", value: `${psu.wattage} W` },
+                { label: "Efficacité", value: `${psu.efficiency}` },
+                { label: "Modulaire", value: `${psu.modular}` },
+            ];
+        },
+        CPU_COOLER: (d) => {
+            const cooler = d as CpuCooler;
+            return [
+                {
+                    label: "RPM",
+                    value: `${cooler.rpmIdle} - ${cooler.rpmMax}`,
+                },
+                {
+                    label: "Bruit",
+                    value: `${cooler.noiseIdle} - ${cooler.noiseMax} dB`,
+                },
+                { label: "Taille", value: `${cooler.size}` },
+            ];
+        },
+        CASE: (d) => {
+            const c = d as Case;
+            return [
+                { label: "Type", value: `${c.type}` },
+                { label: "Panneau latéral", value: `${c.sidePanel}` },
+                { label: "Volume", value: `${c.volume}` },
+                { label: 'Baies 3.5"', value: `${c.bays3_5}` },
+            ];
+        },
+        CASE_FAN: (d) => {
+            const fan = d as CaseFan;
+            return [
+                { label: "Taille", value: `${fan.size} mm` },
+                { label: "RPM", value: `${fan.rpmIdle} - ${fan.rpmMax}` },
+                {
+                    label: "Bruit",
+                    value: `${fan.noiseIdle} - ${fan.noiseMax} dB`,
+                },
+                {
+                    label: "Débit",
+                    value: `${fan.airflowIdle} - ${fan.airflowMax} CFM`,
+                },
+                { label: "PWM", value: fan.pwm ? "Oui" : "Non" },
+            ];
+        },
+        SOUND_CARD: (d) => {
+            const sc = d as SoundCard;
+            return [
+                { label: "Canaux", value: `${sc.channels}` },
+                { label: "Audio numérique", value: `${sc.digitalAudio}` },
+                { label: "SNR", value: `${sc.snr}` },
+                { label: "Échantillonnage", value: `${sc.sampleRate}` },
+                { label: "Chipset", value: `${sc.chipset}` },
+                { label: "Interface", value: `${sc.interface}` },
+            ];
+        },
+        WIRELESS_NETWORK_CARD: (d) => {
+            const wnc = d as WirelessNetworkCard;
+            return [
+                { label: "Interface", value: `${wnc.interface}` },
+                { label: "Protocole", value: `${wnc.protocol}` },
+            ];
+        },
+    };
+
+    return specMapping[type](data).filter(
+        (spec) =>
+            spec.value !== "null" &&
+            spec.value !== "undefined" &&
+            spec.value !== ""
+    );
+}
+
 export function getEnumDisplay(type: ComponentType) {
     return enumDisplayMapping[type];
 }
@@ -185,3 +332,127 @@ const enumDisplayMapping: Record<ComponentType, string> = {
     SOUND_CARD: "Carte Son",
     WIRELESS_NETWORK_CARD: "Carte Wifi",
 };
+
+/**
+ * Build the object for the configurator based on component data
+ * @param data component data
+ * @returns the data with the returned component
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildComponentDetails(data: any): ComponentWithDetails {
+    const details: ComponentWithDetails = {
+        id: data.id,
+        name: data.name,
+        type: data.type,
+    };
+
+    switch (data.componentType as ComponentType) {
+        case "CPU":
+            details.Cpu = {
+                microarch: data.microarch,
+                coreCount: data.coreCount,
+                coreClock: data.coreClock,
+                boostClock: data.boostClock,
+                tdp: data.tdp,
+                graphics: data.graphics,
+            };
+            break;
+        case "GPU":
+            details.Gpu = {
+                chipset: data.chipset,
+                memory: data.memory,
+                coreClock: data.coreClock,
+                boostClock: data.boostClock,
+                length: data.length,
+            };
+            break;
+        case "MOTHERBOARD":
+            details.Motherboard = {
+                socket: data.socket,
+                formFactor: data.formFactor,
+                maxMemory: data.maxMemory,
+                memorySlots: data.memorySlots,
+            };
+            break;
+        case "RAM":
+            details.Ram = {
+                type: data.type ?? data.ramType,
+                speed: data.speed,
+                modules: data.modules,
+                size: data.size,
+                casLatency: data.casLatency,
+            };
+            break;
+        case "SSD":
+            details.Ssd = {
+                capacity: data.capacity,
+                cache: data.cache,
+                interface: data.interface,
+                formFactor: data.formFactor,
+            };
+            break;
+        case "HDD":
+            details.Hdd = {
+                capacity: data.capacity,
+                cache: data.cache,
+                formFactor: data.formFactor,
+                interface: data.interface,
+            };
+            break;
+        case "POWER_SUPPLY":
+            details.Psu = {
+                type: data.type ?? data.psuType,
+                wattage: data.wattage,
+                efficiency: data.efficiency,
+                modular: data.modular,
+            };
+            break;
+        case "CASE":
+            details.Case = {
+                type: data.type ?? data.caseType,
+                sidePanel: data.sidePanel,
+                volume: data.volume,
+                bays3_5: data.bays3_5,
+            };
+            break;
+        case "CASE_FAN":
+            details.CaseFan = {
+                size: data.size,
+                rpmIdle: data.rpmIdle,
+                rpmMax: data.rpmMax,
+                noiseIdle: data.noiseIdle,
+                noiseMax: data.noiseMax,
+                airflowIdle: data.airflowIdle,
+                airflowMax: data.airflowMax,
+                pwm: data.pwm,
+            };
+            break;
+        case "CPU_COOLER":
+            details.CpuCooler = {
+                rpmIdle: data.rpmIdle,
+                rpmMax: data.rpmMax,
+                noiseIdle: data.noiseIdle,
+                noiseMax: data.noiseMax,
+                size: data.size,
+            };
+            break;
+        case "SOUND_CARD":
+            details.SoundCard = {
+                channels: data.channels,
+                digitalAudio: data.digitalAudio,
+                snr: data.snr,
+                sampleRate: data.sampleRate,
+                chipset: data.chipset,
+                interface: data.interface,
+            };
+            break;
+        case "WIRELESS_NETWORK_CARD":
+            details.WirelessNetworkCard = {
+                interface: data.interface,
+                protocol: data.protocol,
+            };
+            break;
+    }
+
+    return details;
+}

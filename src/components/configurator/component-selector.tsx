@@ -22,7 +22,7 @@ import { Search, Heart, Plus, ArrowUpRight, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useDebouncedCallback } from "use-debounce";
 import Link from "next/link";
-import { formatComponentDetails, mapHitToSelectedPost } from "@/lib/utils";
+import { formatComponentDetails } from "@/lib/utils";
 
 export type SelectedPost = {
     id: string;
@@ -73,8 +73,7 @@ export function ComponentSelector({
             limit: 20,
         },
         {
-            enabled: open && activeTab === "search",
-            select: (data) => data.map(mapHitToSelectedPost),
+            enabled: open && activeTab === "search"
         }
     );
 

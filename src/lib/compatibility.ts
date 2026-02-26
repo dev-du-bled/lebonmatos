@@ -1,4 +1,18 @@
-import { ComponentType } from "@prisma/client";
+import {
+    Case,
+    CaseFan,
+    ComponentType,
+    Cpu,
+    CpuCooler,
+    Gpu,
+    Hdd,
+    Motherboard,
+    Psu,
+    Ram,
+    SoundCard,
+    Ssd,
+    WirelessNetworkCard,
+} from "@prisma/client";
 
 // Map CPU microarchitecture to socket
 const MICROARCH_TO_SOCKET: Record<string, string> = {
@@ -27,85 +41,24 @@ const RAM_TYPE_COMPATIBILITY: Record<string, string[]> = {
     DDR3: ["LGA1151", "AM3+"],
 };
 
+type CompDetails<T> = Omit<T, "id" | "componentId">;
+
 export type ComponentWithDetails = {
     id: string;
     type: ComponentType;
     name: string;
-    Cpu?: {
-        microarch: string;
-        coreClock: number;
-        boostClock: number | null;
-        coreCount: number;
-    } | null;
-    Gpu?: {
-        coreClock: number | null;
-        boostClock: number | null;
-        chipset: string;
-        memory: number;
-        length: number | null;
-    } | null;
-    Motherboard?: {
-        socket: string;
-        formFactor: string;
-        memorySlots: number;
-        maxMemory: number;
-    } | null;
-    Ram?: {
-        type: string | null;
-        modules: number;
-        size: number;
-        speed: number | null;
-    } | null;
-    Ssd?: {
-        capacity: number;
-        cache: number | null;
-        interface: string;
-        formFactor: string;
-    } | null;
-    Hdd?: {
-        capacity: number;
-        rpm: number;
-        cache: number | null;
-        formFactor: string;
-    } | null;
-    Psu?: {
-        wattage: number;
-        efficiency: string | null;
-        modular: string | null;
-    } | null;
-    CpuCooler?: {
-        rpmIdle: number | null;
-        rpmMax: number | null;
-        noiseIdle: number | null;
-        noiseMax: number | null;
-        size: number | null;
-    } | null;
-    Case?: {
-        type: string;
-        sidePanel: string | null;
-        volume: number | null;
-        bays3_5: number;
-    } | null;
-    CaseFan?: {
-        size: number;
-        rpmIdle: number | null;
-        rpmMax: number | null;
-        noiseIdle: number | null;
-        noiseMax: number | null;
-        airFlowIdle: number | null;
-        airFlowMax: number | null;
-        pwm: boolean;
-    } | null;
-    SoundCard?: {
-        channels: number;
-        sampleRate: number | null;
-        chipset: string | null;
-        interface: string;
-    } | null;
-    WirelessNetworkCard?: {
-        interface: string;
-        protocol: string;
-    } | null;
+    Cpu?: CompDetails<Cpu> | null;
+    Gpu?: CompDetails<Gpu> | null;
+    Motherboard?: CompDetails<Motherboard> | null;
+    Ram?: CompDetails<Ram> | null;
+    Ssd?: CompDetails<Ssd> | null;
+    Hdd?: CompDetails<Hdd> | null;
+    Psu?: CompDetails<Psu> | null;
+    CpuCooler?: CompDetails<CpuCooler> | null;
+    Case?: CompDetails<Case> | null;
+    CaseFan?: CompDetails<CaseFan> | null;
+    SoundCard?: CompDetails<SoundCard> | null;
+    WirelessNetworkCard?: CompDetails<WirelessNetworkCard> | null;
 };
 
 export type ConfigurationSlot = {

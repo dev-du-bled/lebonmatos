@@ -1,7 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ComponentWithDetails } from "./compatibility";
-import { SelectedPost } from "@/components/configurator/component-selector";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -61,7 +60,7 @@ export function formatComponentDetails(
 
     if (component.Hdd) {
         const hdd = component.Hdd;
-        return `${hdd.capacity} Go | ${hdd.rpm} RPM | ${hdd.cache} Mo | ${hdd.formFactor}"`;
+        return `${hdd.capacity} Go | ${hdd.cache} Mo | ${hdd.formFactor}"`;
     }
 
     if (component.Ssd) {
@@ -110,126 +109,4 @@ export function formatComponentDetails(
     }
 
     return "";
-}
-
-// map meilisearch hit to SelectedPost, handling component details
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mapHitToSelectedPost(hit: any): SelectedPost {
-    const component: ComponentWithDetails = {
-        id: hit.componentId || hit.id,
-        type: hit.componentType,
-        name: hit.componentName,
-    };
-
-    switch (component.type) {
-        case "CPU":
-            component.Cpu = {
-                microarch: hit.microarch,
-                coreClock: hit.coreClock,
-                boostClock: hit.boostClock ?? null,
-                coreCount: hit.coreCount,
-            };
-            break;
-        case "MOTHERBOARD":
-            component.Motherboard = {
-                socket: hit.socket,
-                formFactor: hit.formFactor,
-                memorySlots: hit.memorySlots,
-                maxMemory: hit.maxMemory,
-            };
-            break;
-        case "RAM":
-            component.Ram = {
-                type: hit.ramType ?? null,
-                modules: hit.modules,
-                size: hit.size,
-                speed: hit.speed ?? null,
-            };
-            break;
-        case "GPU":
-            component.Gpu = {
-                coreClock: hit.coreClock ?? null,
-                boostClock: hit.boostClock ?? null,
-                chipset: hit.chipset,
-                memory: hit.memory,
-                length: hit.length ?? null,
-            };
-            break;
-        case "POWER_SUPPLY":
-            component.Psu = {
-                wattage: hit.wattage,
-                efficiency: hit.efficiency ?? null,
-                modular: hit.modular ?? null,
-            };
-            break;
-        case "CASE":
-            component.Case = {
-                type: hit.caseType,
-                sidePanel: hit.sidePanel ?? null,
-                volume: hit.volume ?? null,
-                bays3_5: hit.bays3_5,
-            };
-            break;
-        case "HDD":
-            component.Hdd = {
-                capacity: hit.capacity,
-                rpm: hit.rpm,
-                cache: hit.cache,
-                formFactor: hit.formFactor,
-            };
-            break;
-        case "SSD":
-            component.Ssd = {
-                capacity: hit.capacity,
-                cache: hit.cache,
-                interface: hit.interface,
-                formFactor: hit.formFactor,
-            };
-            break;
-        case "CPU_COOLER":
-            component.CpuCooler = {
-                rpmIdle: hit.rpmIdle,
-                rpmMax: hit.rpmMax,
-                noiseIdle: hit.noiseIdle,
-                noiseMax: hit.noiseMax,
-                size: hit.size,
-            };
-            break;
-        case "CASE_FAN":
-            component.CaseFan = {
-                size: hit.size,
-                rpmIdle: hit.rpmIdle,
-                rpmMax: hit.rpmMax,
-                noiseIdle: hit.noiseIdle,
-                noiseMax: hit.noiseMax,
-                airFlowIdle: hit.airFlowIdle,
-                airFlowMax: hit.airFlowMax,
-                pwm: hit.pwm,
-            };
-            break;
-        case "SOUND_CARD":
-            component.SoundCard = {
-                channels: hit.channels,
-                sampleRate: hit.sampleRate,
-                chipset: hit.chipset,
-                interface: hit.interface,
-            };
-            break;
-        case "WIRELESS_NETWORK_CARD":
-            component.WirelessNetworkCard = {
-                interface: hit.interface,
-                protocol: hit.protocol,
-            };
-            break;
-        default:
-            break;
-    }
-
-    return {
-        id: hit.id,
-        title: hit.title,
-        price: hit.price,
-        images: hit.images,
-        component,
-    };
 }

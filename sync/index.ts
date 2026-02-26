@@ -23,36 +23,156 @@ async function syncPost(id: string) {
         // Extract first image if available
         const firstImage =
             post.images && post.images.length > 0 ? post.images[0] : null;
-        let enrichedPost = { ...post, firstImage };
 
-        // Enrich with component-specific data if post has a component
-        if (post.componentId && post.componentType) {
-            const tableName = TYPE_TO_TABLE[post.componentType];
-            if (tableName && COMPONENT_QUERIES_BASE[tableName]) {
-                const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
-                const { rows: componentData } = await client.query(
-                    componentQuery,
-                    [post.componentId]
-                );
-
-                if (componentData.length > 0) {
-                    const { estimatedPrice, color, ...componentFields } =
-                        componentData[0];
-                    enrichedPost = {
-                        ...post,
-                        firstImage,
-                        componentEstimatedPrice: estimatedPrice,
-                        componentColor: color,
-                        ...componentFields,
-                    };
-                }
-            }
+        // If post has no component, return as-is with first image
+        if (!post.componentId || !post.componentType) {
+            const task = await wrappMeiliTask(
+                meilisearch.index("posts").addDocuments([{ ...post, firstImage }])
+            );
+            console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+            return;
         }
 
-        const task = await wrappMeiliTask(
-            meilisearch.index("posts").addDocuments([enrichedPost])
-        );
-        console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+        // Get the table name for this component type
+        const tableName = TYPE_TO_TABLE[post.componentType];
+        if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
+            console.warn(
+                `No query found for component type: ${post.componentType}`
+            );
+            const task = await wrappMeiliTask(
+                meilisearch.index("posts").addDocuments([{ ...post, firstImage }])
+            );
+            console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+            return;
+        }
+
+        // Fetch the specific component data
+        const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
+        const { rows: componentData } = await client.query(componentQuery, [
+            post.componentId,
+        ]);
+
+        // Build nested component structure
+        if (componentData.length > 0) {
+            const c = componentData[0];
+            const componentDetails: Record<string, unknown> = {};
+
+            if (post.componentType === "CPU") {
+                componentDetails.Cpu = {
+                    microarch: c.microarch,
+                    coreCount: c.coreCount,
+                    coreClock: c.coreClock,
+                    boostClock: c.boostClock,
+                    tdp: c.tdp,
+                    graphics: c.graphics,
+                };
+            } else if (post.componentType === "GPU") {
+                componentDetails.Gpu = {
+                    chipset: c.chipset,
+                    memory: c.memory,
+                    coreClock: c.coreClock,
+                    boostClock: c.boostClock,
+                    length: c.length,
+                };
+            } else if (post.componentType === "MOTHERBOARD") {
+                componentDetails.Motherboard = {
+                    socket: c.socket,
+                    formFactor: c.formFactor,
+                    maxMemory: c.maxMemory,
+                    memorySlots: c.memorySlots,
+                };
+            } else if (post.componentType === "RAM") {
+                componentDetails.Ram = {
+                    type: c.ramType,
+                    speed: c.speed,
+                    modules: c.modules,
+                    size: c.size,
+                    casLatency: c.casLatency,
+                };
+            } else if (post.componentType === "SSD") {
+                componentDetails.Ssd = {
+                    capacity: c.capacity,
+                    cache: c.cache,
+                    interface: c.interface,
+                    formFactor: c.formFactor,
+                };
+            } else if (post.componentType === "HDD") {
+                componentDetails.Hdd = {
+                    capacity: c.capacity,
+                    cache: c.cache,
+                    formFactor: c.formFactor,
+                    interface: c.interface,
+                };
+            } else if (post.componentType === "POWER_SUPPLY") {
+                componentDetails.Psu = {
+                    type: c.psuType,
+                    wattage: c.wattage,
+                    efficiency: c.efficiency,
+                    modular: c.modular,
+                };
+            } else if (post.componentType === "CASE") {
+                componentDetails.Case = {
+                    type: c.caseType,
+                    sidePanel: c.sidePanel,
+                    volume: c.volume,
+                    bays3_5: c.bays3_5,
+                };
+            } else if (post.componentType === "CASE_FAN") {
+                componentDetails.CaseFan = {
+                    size: c.size,
+                    rpmIdle: c.rpmIdle,
+                    rpmMax: c.rpmMax,
+                    noiseIdle: c.noiseIdle,
+                    noiseMax: c.noiseMax,
+                    airflowIdle: c.airflowIdle,
+                    airflowMax: c.airflowMax,
+                    pwm: c.pwm,
+                };
+            } else if (post.componentType === "CPU_COOLER") {
+                componentDetails.CpuCooler = {
+                    rpmIdle: c.rpmIdle,
+                    rpmMax: c.rpmMax,
+                    noiseIdle: c.noiseIdle,
+                    noiseMax: c.noiseMax,
+                    size: c.size,
+                };
+            } else if (post.componentType === "SOUND_CARD") {
+                componentDetails.SoundCard = {
+                    channels: c.channels,
+                    digitalAudio: c.digitalAudio,
+                    snr: c.snr,
+                    sampleRate: c.sampleRate,
+                    chipset: c.chipset,
+                    interface: c.interface,
+                };
+            } else if (post.componentType === "WIRELESS_NETWORK_CARD") {
+                componentDetails.WirelessNetworkCard = {
+                    interface: c.interface,
+                    protocol: c.protocol,
+                };
+            }
+
+            const enrichedPost = {
+                ...post,
+                firstImage,
+                component: {
+                    id: c.id,
+                    name: c.name,
+                    type: c.type,
+                    color: c.color,
+                    price: c.estimatedPrice,
+                    ...componentDetails,
+                },
+            };
+
+            const task = await wrappMeiliTask(
+                meilisearch.index("posts").addDocuments([enrichedPost])
+            );
+            console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+        } else {
+            await meilisearch.index("posts").deleteDocument(id);
+            console.log(`Pruned old post ${id}`);
+        }
     } else {
         await meilisearch.index("posts").deleteDocument(id);
         console.log(`Pruned old post ${id}`);
