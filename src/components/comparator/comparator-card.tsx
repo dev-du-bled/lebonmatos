@@ -75,7 +75,9 @@ export default function ComparatorCard({
             {/* CONTENT */}
             <div
                 className="p-4 grid gap-3 flex-1"
-                style={{ gridTemplateRows: `repeat(${Math.max(specKeys.length, 1)}, minmax(0, 1fr))` }}
+                style={{
+                    gridTemplateRows: `repeat(${Math.max(specKeys.length, 1)}, minmax(0, 1fr))`,
+                }}
             >
                 {specKeys.map((key) => {
                     const value = data.specs?.[key];

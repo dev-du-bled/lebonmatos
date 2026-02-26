@@ -56,7 +56,9 @@ export function humanizeKey(key: string): string {
         .join(" ");
 }
 
-export function extractNumber(value: string | number | undefined): number | null {
+export function extractNumber(
+    value: string | number | undefined
+): number | null {
     if (value === undefined || value === null) return null;
     if (typeof value === "number") return Number.isFinite(value) ? value : null;
     const match = String(value).match(/-?\d+(\.\d+)?/);
@@ -107,7 +109,10 @@ function applyUnit(key: string, num: number): string | number {
     }
 }
 
-export function formatSpecValue(key: string, value: string | number | undefined): string | number | undefined {
+export function formatSpecValue(
+    key: string,
+    value: string | number | undefined
+): string | number | undefined {
     if (value === undefined || value === null) return undefined;
 
     const keyLower = key.toLowerCase();
@@ -115,7 +120,12 @@ export function formatSpecValue(key: string, value: string | number | undefined)
     // If already a string with a known unit suffix, return as-is
     if (typeof value === "string") {
         const str = value.trim();
-        if (/\b(ghz|mhz|kb|mb|gb|tb|go|to|w|wh|€|eur|%|hz|mm|db|cfm)\b/i.test(str)) return str;
+        if (
+            /\b(ghz|mhz|kb|mb|gb|tb|go|to|w|wh|€|eur|%|hz|mm|db|cfm)\b/i.test(
+                str
+            )
+        )
+            return str;
         // Only reformat if the string is purely numeric (digits, dot, optional sign)
         if (!/^-?\d+(\.\d+)?$/.test(str)) return str;
         const num = extractNumber(str);

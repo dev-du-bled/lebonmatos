@@ -8,7 +8,11 @@ interface Props {
     label?: string;
 }
 
-export default function ComparatorAddCard({ onAdd, disabled = false, label = "Ajouter une annonce" }: Props) {
+export default function ComparatorAddCard({
+    onAdd,
+    disabled = false,
+    label = "Ajouter une annonce",
+}: Props) {
     return (
         <article
             onClick={disabled ? undefined : onAdd}

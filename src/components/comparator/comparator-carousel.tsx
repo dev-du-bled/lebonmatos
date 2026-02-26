@@ -1,6 +1,12 @@
 "use client";
 
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
 
 import ComparatorCard from "./comparator-card";
 import ComparatorAddCard from "./comparator-add-card";
@@ -40,7 +46,10 @@ export default function ComparatorCarousel({
         <Carousel className="w-full">
             <CarouselContent>
                 {components.map((c, i) => (
-                    <CarouselItem key={c.id} className="md:basis-1/2 xl:basis-1/3 px-4 items-stretch">
+                    <CarouselItem
+                        key={c.id}
+                        className="md:basis-1/2 xl:basis-1/3 px-4 items-stretch"
+                    >
                         <ComparatorCard
                             data={c}
                             index={i}
@@ -55,7 +64,10 @@ export default function ComparatorCarousel({
                 ))}
 
                 {/* Add card - always last */}
-                <CarouselItem key={addCardData.id} className="md:basis-1/2 xl:basis-1/3 px-4 items-stretch">
+                <CarouselItem
+                    key={addCardData.id}
+                    className="md:basis-1/2 xl:basis-1/3 px-4 items-stretch"
+                >
                     <ComparatorAddCard onAdd={onAdd} />
                 </CarouselItem>
             </CarouselContent>
