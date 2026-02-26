@@ -11,8 +11,8 @@ interface Props {
 
 export default function ComparatorAddCard({ onAdd, disabled = false, label = "Ajouter une annonce" }: Props) {
     return (
-        <article className="border-2 border-dashed rounded-lg bg-background shadow-sm overflow-hidden">
-            <div className="relative h-48">
+        <article className="border-2 border-dashed rounded-lg bg-background shadow-sm overflow-hidden h-full flex flex-col">
+            <div className="relative flex-1 min-h-48">
                 <div className="h-full flex items-center justify-center bg-muted text-muted-foreground">
                     <Button
                         variant="outline"
