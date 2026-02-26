@@ -3,8 +3,7 @@ export type Trend = "up" | "down" | "none";
 export function humanizeKey(key: string) {
     if (!key) return "";
 
-    const FR_LABELS: Record<string, string> = {
-        name: "Nom",
+    const LABELS: Record<string, string> = {
         type: "Type",
         brand: "Marque",
         coreCount: "Nombre de cœurs",
@@ -25,18 +24,16 @@ export function humanizeKey(key: string) {
 
     const lower = key.toLowerCase();
     const labelsLower: Record<string, string> = {};
-    Object.entries(FR_LABELS).forEach(([k, v]) => {
+    Object.entries(LABELS).forEach(([k, v]) => {
         labelsLower[k.toLowerCase()] = v;
     });
 
-    if (FR_LABELS[key]) return FR_LABELS[key];
+    if (LABELS[key]) return LABELS[key];
     if (labelsLower[lower]) return labelsLower[lower];
 
     if (key.toUpperCase() === key) return key;
 
-    const spaced = key
-        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-        .replace(/[_-]/g, " ");
+    const spaced = key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_-]/g, " ");
 
     return spaced
         .split(" ")
@@ -44,9 +41,7 @@ export function humanizeKey(key: string) {
         .join(" ");
 }
 
-export function extractNumber(
-    value: string | number | undefined
-): number | null {
+export function extractNumber(value: string | number | undefined): number | null {
     if (value === undefined || value === null) return null;
 
     if (typeof value === "number") return value;
@@ -60,10 +55,7 @@ export function extractNumber(
     return Number.isFinite(num) ? num : null;
 }
 
-export function formatSpecValue(
-    key: string,
-    value: string | number | undefined
-): string | number | undefined {
+export function formatSpecValue(key: string, value: string | number | undefined): string | number | undefined {
     if (value === undefined || value === null) return undefined;
 
     const keyLower = key.toLowerCase();

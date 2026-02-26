@@ -11,44 +11,103 @@ export type Annonce = {
 
 export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
     return selected.map((c) => {
-        const specs: Record<string, any> = {};
+        const specs: Record<string, string | number | undefined> = {};
 
-        specs["name"] = c.component?.name;
-        specs["type"] = String(c.component?.type ?? "");
+        switch (c.componentType) {
+            case "CPU":
+                specs["microarch"] = c.microarch;
+                specs["coreCount"] = c.coreCount;
+                specs["coreClock"] = c.coreClock;
+                specs["boostClock"] = c.boostClock;
+                break;
 
-        if (c.component?.Cpu) {
-            specs["coreCount"] = c.component.Cpu.coreCount;
-            specs["coreClock"] = c.component.Cpu.coreClock;
-            specs["boostClock"] = c.component.Cpu.boostClock;
-            specs["tdp"] = c.component.Cpu.tdp;
+            case "GPU":
+                specs["chipset"] = c.chipset;
+                specs["memory"] = c.memory;
+                specs["coreClock"] = c.coreClock;
+                specs["boostClock"] = c.boostClock;
+                specs["length"] = c.length;
+                break;
+
+            case "MOTHERBOARD":
+                specs["socket"] = c.socket;
+                specs["formFactor"] = c.formFactor;
+                specs["maxMemory"] = c.maxMemory;
+                specs["memorySlots"] = c.memorySlots;
+                break;
+
+            case "RAM":
+                specs["type"] = c.ramType ?? c.type;
+                specs["speed"] = c.speed;
+                specs["modules"] = c.modules;
+                specs["size"] = c.size;
+                specs["casLatency"] = c.casLatency;
+                break;
+
+            case "SSD":
+                specs["capacity"] = c.capacity;
+                specs["cache"] = c.cache;
+                specs["interface"] = c.interface;
+                specs["formFactor"] = c.formFactor;
+                break;
+
+            case "HDD":
+                specs["capacity"] = c.capacity;
+                specs["cache"] = c.cache;
+                specs["interface"] = c.interface;
+                specs["formFactor"] = c.formFactor;
+                break;
+
+            case "POWER_SUPPLY":
+                specs["type"] = c.psuType;
+                specs["wattage"] = c.wattage;
+                specs["efficiency"] = c.efficiency;
+                specs["modular"] = c.modular;
+                break;
+
+            case "CPU_COOLER":
+                specs["rpmIdle"] = c.rpmIdle;
+                specs["rpmMax"] = c.rpmMax;
+                specs["noiseIdle"] = c.noiseIdle;
+                specs["noiseMax"] = c.noiseMax;
+                specs["size"] = c.size;
+                break;
+
+            case "CASE":
+                specs["type"] = c.caseType;
+                specs["sidePanel"] = c.sidePanel;
+                specs["volume"] = c.volume;
+                specs["bays3_5"] = c.bays3_5;
+                break;
+
+            case "CASE_FAN":
+                specs["size"] = c.size;
+                specs["rpmIdle"] = c.rpmIdle;
+                specs["rpmMax"] = c.rpmMax;
+                specs["noiseIdle"] = c.noiseIdle;
+                specs["noiseMax"] = c.noiseMax;
+                specs["airflowIdle"] = c.airflowIdle;
+                specs["airflowMax"] = c.airflowMax;
+                break;
+
+            case "SOUND_CARD":
+                specs["channels"] = c.channels;
+                specs["snr"] = c.snr;
+                specs["sampleRate"] = c.sampleRate;
+                specs["interface"] = c.interface;
+                specs["chipset"] = c.chipset;
+                break;
+
+            case "WIRELESS_NETWORK_CARD":
+                specs["interface"] = c.interface;
+                specs["protocol"] = c.protocol;
+                break;
         }
 
-        if (c.component?.Gpu) {
-            specs["chipset"] = c.component.Gpu.chipset;
-            specs["memory"] = c.component.Gpu.memory;
-            specs["boostClock"] = c.component.Gpu.boostClock;
-        }
-
-        if (c.component?.Ram) {
-            specs["speed"] = c.component.Ram.speed;
-            specs["size"] = c.component.Ram.size;
-            specs["casLatency"] = c.component.Ram.casLatency;
-        }
-
-        if (c.component?.Ssd) {
-            specs["capacity"] = c.component.Ssd.capacity;
-            specs["interface"] = c.component.Ssd.interface;
-        }
-
-        if (c.component?.Hdd) {
-            specs["capacity"] = c.component.Hdd.capacity;
-            specs["interface"] = c.component.Hdd.interface;
-        }
-
-        if (c.component?.Psu) {
-            specs["wattage"] = c.component.Psu.wattage;
-            specs["efficiency"] = c.component.Psu.efficiency;
-        }
+        // Supprimer les clés undefined pour ne pas polluer l'affichage
+        (Object.keys(specs) as string[]).forEach((k) => {
+            if (specs[k] === undefined) delete specs[k];
+        });
 
         specs["price"] = c.price;
 
@@ -56,8 +115,8 @@ export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
             id: c.id,
             title: c.title,
             price: c.price,
-            imageSrc: c.images?.[0],
-            componentType: String(c.component?.type ?? "").toLowerCase(),
+            imageSrc: c.images?.[0] ?? c.firstImage,
+            componentType: c.componentType?.toLowerCase(),
             specs,
         };
     });

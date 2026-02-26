@@ -39,12 +39,7 @@ export default function ComparatorCard({
             {/* IMAGE */}
             <div className="relative h-48">
                 {data.imageSrc ? (
-                    <Image
-                        src={data.imageSrc}
-                        alt={data.title}
-                        fill
-                        className="object-cover rounded-t-lg"
-                    />
+                    <Image src={data.imageSrc} alt={data.title} fill className="object-cover rounded-t-lg" />
                 ) : (
                     <div className="h-full flex items-center justify-center bg-muted text-muted-foreground">
                         No Image
@@ -69,10 +64,8 @@ export default function ComparatorCard({
                         <Trash size={16} />
                     </Button>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                    <h2 className="text-white font-bold text-xl">
-                        {data.title}
-                    </h2>
+                <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-4">
+                    <h2 className="text-white font-bold text-xl">{data.title}</h2>
                 </div>
             </div>
 
@@ -85,33 +78,21 @@ export default function ComparatorCard({
 
                     if (nonNumericKeys.has(key.toLowerCase())) {
                         return (
-                            <div
-                                key={key}
-                                className="text-center py-2 border-b last:border-b-0"
-                            >
+                            <div key={key} className="text-center py-2 border-b last:border-b-0">
                                 <div className="font-semibold text-sm text-muted-foreground mb-1">
                                     {humanizeKey(key)}
                                 </div>
-                                <div className="font-medium">
-                                    {formatted ?? "-"}
-                                </div>
+                                <div className="font-medium">{formatted ?? "-"}</div>
                             </div>
                         );
                     }
 
                     return (
-                        <div
-                            key={key}
-                            className="flex justify-between items-center py-2 border-b last:border-b-0"
-                        >
-                            <span className="text-sm font-medium text-muted-foreground">
-                                {humanizeKey(key)}
-                            </span>
+                        <div key={key} className="flex justify-between items-center py-2 border-b last:border-b-0">
+                            <span className="text-sm font-medium text-muted-foreground">{humanizeKey(key)}</span>
                             <div className="flex items-center gap-2">
                                 {renderTrend(trend)}
-                                <span className="font-semibold">
-                                    {formatted ?? "-"}
-                                </span>
+                                <span className="font-semibold">{formatted ?? "-"}</span>
                             </div>
                         </div>
                     );

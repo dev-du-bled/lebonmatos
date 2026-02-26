@@ -9,20 +9,16 @@ interface Props {
     label?: string;
 }
 
-export default function ComparatorAddCard({
-    onAdd,
-    disabled = false,
-    label = "Ajouter une annonce",
-}: Props) {
+export default function ComparatorAddCard({ onAdd, disabled = false, label = "Ajouter une annonce" }: Props) {
     return (
-        <article className="border rounded-lg bg-background shadow-sm overflow-hidden">
+        <article className="border-2 border-dashed rounded-lg bg-background shadow-sm overflow-hidden">
             <div className="relative h-48">
                 <div className="h-full flex items-center justify-center bg-muted text-muted-foreground">
                     <Button
                         variant="outline"
                         onClick={onAdd}
                         disabled={disabled}
-                        className="h-14 w-14 rounded-full flex items-center justify-center"
+                        className="h-14 w-14 rounded-full flex items-center justify-center border-2 border-dashed"
                     >
                         <Plus size={28} />
                     </Button>
