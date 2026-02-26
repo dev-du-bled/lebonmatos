@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import {
     Search,
     X,
@@ -61,12 +62,14 @@ const componentTypeIcons: Record<ComponentType, LucideIcon> = {
 interface ComponentSelectorProps {
     selectedComponent?: ReturnedComponent;
     setSelectedComponent: (component?: ReturnedComponent) => void;
+    disabled?: boolean;
     errored: boolean;
 }
 
 export default function ComponentSelector({
     selectedComponent,
     setSelectedComponent,
+    disabled,
     errored,
 }: ComponentSelectorProps) {
     const [open, setOpen] = useState(false);
@@ -77,6 +80,10 @@ export default function ComponentSelector({
     const [debouncedQuery, setDebouncedQuery] = useState("");
 
     const componentTypes = Object.values(ComponentType);
+
+    const debouncedSetQuery = useDebouncedCallback((value: string) => {
+        setDebouncedQuery(value);
+    }, 300);
 
     // Reset state when dialog opens
     useEffect(() => {
@@ -92,14 +99,6 @@ export default function ComponentSelector({
         setQuery("");
         setDebouncedQuery("");
     }, [selectedType]);
-
-    // Debounce query
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedQuery(query);
-        }, 300);
-        return () => clearTimeout(handler);
-    }, [query]);
 
     // Fetch components
     const { data, isFetching } = trpc.components.getComponents.useQuery(
@@ -121,10 +120,10 @@ export default function ComponentSelector({
         setSelectedComponent(undefined);
     };
 
-    // Get icon for a component type
-    const getTypeIcon = (type: ComponentType) => {
-        const Icon = componentTypeIcons[type];
-        return Icon ? <Icon className="h-4 w-4" /> : null;
+    const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setQuery(value);
+        debouncedSetQuery(value);
     };
 
     return (
@@ -135,6 +134,7 @@ export default function ComponentSelector({
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
                             <Button
+                                disabled={disabled}
                                 variant="outline"
                                 className={cn(
                                     "w-full justify-start h-auto min-h-12 px-4 py-3 text-left font-normal",
@@ -215,9 +215,7 @@ export default function ComponentSelector({
                                             <Input
                                                 placeholder={`Rechercher un ${getEnumDisplay(selectedType).toLowerCase()}...`}
                                                 value={query}
-                                                onChange={(e) =>
-                                                    setQuery(e.target.value)
-                                                }
+                                                onChange={handleQueryChange}
                                                 className="pl-9 pr-9"
                                                 autoFocus
                                             />
@@ -233,7 +231,7 @@ export default function ComponentSelector({
                                         </div>
                                     </div>
 
-                                    <ScrollArea className="max-h-[300px] border-t">
+                                    <ScrollArea className="max-h-125 border-t">
                                         <div className="p-2">
                                             {query.length < 3 ? (
                                                 <div className="py-12 text-center text-sm text-muted-foreground">
@@ -275,7 +273,7 @@ export default function ComponentSelector({
                                                         >
                                                             <div className="flex items-start justify-between gap-2">
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className="font-medium truncate">
+                                                                    <p className="font-medium line-clamp-1">
                                                                         {
                                                                             component.name
                                                                         }
@@ -356,8 +354,9 @@ export default function ComponentSelector({
                         </div>
                         <button
                             type="button"
+                            disabled={disabled}
                             onClick={clearSelection}
-                            className="p-1.5 rounded-md hover:bg-muted transition-colors shrink-0"
+                            className="p-1.5 rounded-md hover:bg-muted transition-colors shrink-0 disabled:opacity-50"
                             aria-label="Supprimer le composant"
                         >
                             <X className="h-4 w-4 text-muted-foreground" />

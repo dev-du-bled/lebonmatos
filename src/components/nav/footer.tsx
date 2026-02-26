@@ -13,7 +13,7 @@ export default function Footer({ className }: { className?: string }) {
                 className
             )}
         >
-            <div className="mx-auto wide-lock px-5 py-12">
+            <div className="mx-auto wide-lock-wider px-5 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                     {/* Left: logo + copyright */}
                     <div className="flex flex-col gap-4 justify-center w-full">
@@ -55,7 +55,7 @@ export default function Footer({ className }: { className?: string }) {
                             </li>
                             <li>
                                 <Link
-                                    href="/configurateur"
+                                    href="/configurator"
                                     className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     Configurateur
@@ -63,7 +63,7 @@ export default function Footer({ className }: { className?: string }) {
                             </li>
                             <li>
                                 <Link
-                                    href="/comparateur"
+                                    href="/comparator"
                                     className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     Comparateur
@@ -83,7 +83,7 @@ export default function Footer({ className }: { className?: string }) {
                         <ul className="space-y-2">
                             <li>
                                 <Link
-                                    href="/a-propos"
+                                    href="/about"
                                     className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     A propos
@@ -99,7 +99,7 @@ export default function Footer({ className }: { className?: string }) {
                             </li>
                             <li>
                                 <Link
-                                    href="/politique_confidentialite"
+                                    href="/privacy-policy"
                                     className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     Politique de Confidentialité

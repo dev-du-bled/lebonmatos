@@ -12,7 +12,6 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -73,12 +72,10 @@ const themeIcons = {
 export function DevToolbox() {
     const { theme, setTheme } = useTheme();
     const [position, setPosition] = React.useState<Position>("bottom-right");
-    const [mounted, setMounted] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
 
     // Charger la position depuis localStorage au montage
     React.useEffect(() => {
-        setMounted(true);
         const savedPosition = localStorage.getItem(
             "dev-toolbox-position"
         ) as Position | null;
@@ -98,8 +95,8 @@ export function DevToolbox() {
         const { error } = await authClient.signUp.email({
             email: defaultUser.email,
             password: defaultUser.password,
-            username: defaultUser.username,
             name: defaultUser.name,
+            username: defaultUser.username,
         });
 
         if (error) {
@@ -124,7 +121,7 @@ export function DevToolbox() {
             toast.error(error.message || "Erreur lors de la connexion");
         } else {
             toast.success("Connecté en tant que " + defaultUser.email);
-            window.location.reload();
+            // window.location.reload();
         }
         setIsLoading(false);
     };

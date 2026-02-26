@@ -121,7 +121,7 @@ model Psu {
   efficiency  String?   @db.VarChar(50)
   modular     String?   @db.VarChar(20)
 
-  @@map("powerSupply")
+  @@map("power_supply")
 }
 
 model CpuCooler {
@@ -134,7 +134,7 @@ model CpuCooler {
   noiseMax    Decimal?  @db.Decimal(6, 1)
   size        Int?      @db.SmallInt
 
-  @@map("cpuCooler")
+  @@map("cpu_cooler")
 }
 
 model Case {
@@ -162,7 +162,7 @@ model CaseFan {
   airflowMax  Decimal?  @db.Decimal(6, 1)
   pwm         Boolean   @default(false)
 
-  @@map("caseFan")
+  @@map("case_fan")
 }
 
 model SoundCard {
@@ -176,7 +176,7 @@ model SoundCard {
   chipset      String?   @db.VarChar(75)
   interface    String    @db.VarChar(20)
 
-  @@map("soundCard")
+  @@map("sound_card")
 }
 
 model WirelessNetworkCard {
@@ -186,5 +186,5 @@ model WirelessNetworkCard {
   interface   String    @db.VarChar(50)
   protocol    String    @db.VarChar(100)
 
-  @@map("wirelessNetworkCard")
+  @@map("wireless_network_card")
 }

@@ -1,38 +1,42 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import { useSession } from "../auth/session-provider";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
-interface ButtonsProps {
-    initialUser?: typeof authClient.$Infer.Session.user | null;
-}
+export function BuyButtons() {
+    const { session } = useSession();
 
-export function BuyButtons({ initialUser }: ButtonsProps) {
-    const { data, isPending } = authClient.useSession();
+    const user = session?.user;
 
-    const user = isPending ? initialUser : data?.user;
+    if (!user) return null;
 
     return (
-        <>
-            {user && (
-                <div className="flex gap-2 mt-2 md:mt-0">
-                    <Link href="#">
-                        <Button variant={"outline"}>Faire une offre</Button>
+        <Card className="gap-3">
+            <CardHeader>
+                <CardTitle>Intéressé ?</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+                <div className="flex gap-2">
+                    <Link href="#" className="flex-1">
+                        <Button variant={"outline"} className="w-full">
+                            Faire une offre
+                        </Button>
                     </Link>
-                    <Link href="#">
-                        <Button>Acheter</Button>
+                    <Link href="#" className="flex-1">
+                        <Button className="w-full">Acheter</Button>
                     </Link>
                 </div>
-            )}
-        </>
+            </CardContent>
+        </Card>
     );
 }
 
-export function ContactButton({ initialUser }: ButtonsProps) {
-    const { data, isPending } = authClient.useSession();
+export function ContactButton() {
+    const { session } = useSession();
 
-    const user = isPending ? initialUser : data?.user;
+    const user = session?.user;
 
     if (user) {
         return (

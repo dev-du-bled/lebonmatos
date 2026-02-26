@@ -27,8 +27,8 @@ model User {
   username        String?
   displayUsername String?
   bio             String?
-  ratingsReceived Rating[] @relation("ratee")
-  ratingsGiven    Rating[] @relation("rater")
+  ratingsReceived Rating[]        @relation("ratee")
+  ratingsGiven    Rating[]        @relation("rater")
   configurations  Configuration[]
 
   @@unique([email])
@@ -86,10 +86,10 @@ model Post {
   userId             String
   title              String              @db.VarChar(50)
   description        String?
-  location           String?
   price              Int
   componentId        String
   component          Component           @relation(fields: [componentId], references: [id])
+  location           Location?
   Favorites          Favorite[]
   Report             Report[]
   Discussion         Discussion[]
@@ -100,6 +100,25 @@ model Post {
   @@map("post")
 }
 
+model Location {
+  id          String  @id @default(cuid())
+  lat         Float
+  lon         Float
+  name        String
+  displayName String
+  city        String
+  state       String
+  region      String
+  country     String
+  countryCode String
+  coordinates Float[]
+
+  postId String @unique
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("location")
+}
+
 model Favorite {
   id     String @id @default(cuid())
   userId String
@@ -107,6 +126,7 @@ model Favorite {
   postId String
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
+  @@unique([postId, userId])
   @@map("favorite")
 }
 

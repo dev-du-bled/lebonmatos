@@ -6,7 +6,7 @@ import { profileImageSchema } from "./images";
 export const userBaseSchema = z.object({
     id: z.string(),
     name: z.string().min(2).max(80),
-    email: z.string().email(),
+    email: z.email(),
     emailVerified: z.boolean().default(false),
     image: z.string().nullable().optional(),
     phoneNumber: z.string().nullable().optional(),
@@ -27,27 +27,26 @@ export const userBaseSchema = z.object({
 const nameField = z
     .string()
     .trim()
-    .min(2, { message: "Le nom doit contenir au moins 2 caractères" })
-    .max(80, { message: "Le nom ne doit pas dépasser 80 caractères" });
+    .min(2, { error: "Le nom doit contenir au moins 2 caractères" })
+    .max(80, { error: "Le nom ne doit pas dépasser 80 caractères" });
 
 const usernameField = z
     .string()
     .trim()
     .min(5, {
-        message: "Le nom d'utilisateur doit contenir au moins 5 caractères",
+        error: "Le nom d'utilisateur doit contenir au moins 5 caractères",
     })
     .max(32, {
-        message: "Le nom d'utilisateur ne doit pas dépasser 32 caractères",
+        error: "Le nom d'utilisateur ne doit pas dépasser 32 caractères",
     })
     .regex(USERNAME_REGEX, {
-        message:
-            "Le nom d'utilisateur ne peut contenir que des lettres, chiffres, underscores ou points",
+        error: "Le nom d'utilisateur ne peut contenir que des lettres, chiffres, underscores ou points",
     });
 
 const bioFormField = z
     .string()
     .trim()
-    .max(500, { message: "La bio ne doit pas dépasser 500 caractères" })
+    .max(500, { error: "La bio ne doit pas dépasser 500 caractères" })
     .optional()
     .or(z.literal(""));
 
@@ -55,7 +54,7 @@ const phoneNumberFormField = z
     .string()
     .trim()
     .max(30, {
-        message: "Le numéro de téléphone ne doit pas dépasser 30 caractères",
+        error: "Le numéro de téléphone ne doit pas dépasser 30 caractères",
     })
     .optional()
     .or(z.literal(""))
@@ -72,20 +71,22 @@ export const publicProfileFormSchema = z.object({
 
 export const personalInfoFormSchema = z.object({
     name: nameField,
-    email: z.string().email({ message: "Email invalide" }),
+    email: z.email({ error: "Email invalide" }),
     phoneNumber: phoneNumberFormField,
 });
 
 export const changePasswordSchema = z
     .object({
-        currentPassword: z.string().min(1, "Mot de passe actuel requis"),
-        newPassword: z
+        currentPassword: z
             .string()
-            .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
-        confirmPassword: z.string().min(1, "Confirmation requise"),
+            .min(1, { error: "Mot de passe actuel requis" }),
+        newPassword: z.string().min(8, {
+            error: "Le mot de passe doit contenir au moins 8 caractères",
+        }),
+        confirmPassword: z.string().min(1, { error: "Confirmation requise" }),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
-        message: "Les mots de passe ne correspondent pas",
+        error: "Les mots de passe ne correspondent pas",
         path: ["confirmPassword"],
     });
 
@@ -120,7 +121,7 @@ export const publicProfileUpdateSchema = z
 
 export const personalInfoUpdateSchema = z.object({
     name: nameField,
-    email: z.string().email(),
+    email: z.email({ error: "Email invalide" }),
     phoneNumber: phoneNumberFormField.transform(emptyToNull),
 });
 
@@ -138,8 +139,7 @@ export const profileUpdateSchema = z
             ctx.addIssue({
                 path: ["avatar"],
                 code: "custom",
-                message:
-                    "Veuillez choisir entre mettre à jour ou supprimer l'avatar",
+                error: "Veuillez choisir entre mettre à jour ou supprimer l'avatar",
             });
         }
     });

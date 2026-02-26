@@ -23,7 +23,7 @@ export type ReturnedComponent<T = unknown> = {
     data: T;
 };
 
-export type Components = { name: string } & (
+export type Components =
     | Cpu
     | Gpu
     | Ram
@@ -35,8 +35,7 @@ export type Components = { name: string } & (
     | CaseFan
     | CpuCooler
     | SoundCard
-    | WirelessNetworkCard
-);
+    | WirelessNetworkCard;
 
 // loop over the entries of the data object and format them into a string to display on ui
 export function formatComponentData(type: ComponentType, data: Components) {
@@ -167,6 +166,152 @@ const displayWirelessNetworkCard = (data: WirelessNetworkCard) => ({
     interface: `Interface: ${data.interface}`,
     protocol: `Protocole: ${data.protocol}`,
 });
+
+// Returns structured label/value pairs for table display
+export function getComponentSpecs(
+    type: ComponentType,
+    data: Components
+): { label: string; value: string }[] {
+    const specMapping: Record<
+        ComponentType,
+        (data: Components) => { label: string; value: string }[]
+    > = {
+        CPU: (d) => {
+            const cpu = d as Cpu;
+            return [
+                { label: "Coeurs", value: `${cpu.coreCount}` },
+                { label: "Fréquence de base", value: `${cpu.coreClock} GHz` },
+                { label: "Fréquence turbo", value: `${cpu.boostClock} GHz` },
+                { label: "Architecture", value: `${cpu.microarch}` },
+                { label: "TDP", value: `${cpu.tdp} W` },
+                {
+                    label: "iGPU",
+                    value: cpu.graphics || "Aucun",
+                },
+            ];
+        },
+        GPU: (d) => {
+            const gpu = d as Gpu;
+            return [
+                { label: "Chipset", value: `${gpu.chipset}` },
+                { label: "Mémoire", value: `${gpu.memory} Go` },
+                { label: "Fréquence de base", value: `${gpu.coreClock} MHz` },
+                { label: "Fréquence turbo", value: `${gpu.boostClock} MHz` },
+                { label: "Longueur", value: `${gpu.length} mm` },
+            ];
+        },
+        MOTHERBOARD: (d) => {
+            const mb = d as Motherboard;
+            return [
+                { label: "Socket", value: `${mb.socket}` },
+                { label: "Format", value: `${mb.formFactor}` },
+                { label: "Mémoire max", value: `${mb.maxMemory} Go` },
+                { label: "Slots mémoire", value: `${mb.memorySlots}` },
+            ];
+        },
+        RAM: (d) => {
+            const ram = d as Ram;
+            return [
+                { label: "Type", value: `${ram.type}` },
+                { label: "Vitesse", value: `${ram.speed} MHz` },
+                { label: "Modules", value: `${ram.modules}x` },
+                { label: "Taille", value: `${ram.size} Go` },
+                { label: "Latence CAS", value: `CL${ram.casLatency}` },
+            ];
+        },
+        SSD: (d) => {
+            const ssd = d as Ssd;
+            return [
+                { label: "Capacité", value: `${ssd.capacity} Go` },
+                { label: "Cache", value: `${ssd.cache} Mo` },
+                { label: "Interface", value: `${ssd.interface}` },
+                { label: "Format", value: `${ssd.formFactor}` },
+            ];
+        },
+        HDD: (d) => {
+            const hdd = d as Hdd;
+            return [
+                { label: "Capacité", value: `${hdd.capacity} Go` },
+                { label: "Cache", value: `${hdd.cache} Mo` },
+                { label: "Format", value: `${hdd.formFactor}` },
+                { label: "Interface", value: `${hdd.interface}` },
+            ];
+        },
+        POWER_SUPPLY: (d) => {
+            const psu = d as Psu;
+            return [
+                { label: "Type", value: `${psu.type}` },
+                { label: "Puissance", value: `${psu.wattage} W` },
+                { label: "Efficacité", value: `${psu.efficiency}` },
+                { label: "Modulaire", value: `${psu.modular}` },
+            ];
+        },
+        CPU_COOLER: (d) => {
+            const cooler = d as CpuCooler;
+            return [
+                {
+                    label: "RPM",
+                    value: `${cooler.rpmIdle} - ${cooler.rpmMax}`,
+                },
+                {
+                    label: "Bruit",
+                    value: `${cooler.noiseIdle} - ${cooler.noiseMax} dB`,
+                },
+                { label: "Taille", value: `${cooler.size}` },
+            ];
+        },
+        CASE: (d) => {
+            const c = d as Case;
+            return [
+                { label: "Type", value: `${c.type}` },
+                { label: "Panneau latéral", value: `${c.sidePanel}` },
+                { label: "Volume", value: `${c.volume}` },
+                { label: 'Baies 3.5"', value: `${c.bays3_5}` },
+            ];
+        },
+        CASE_FAN: (d) => {
+            const fan = d as CaseFan;
+            return [
+                { label: "Taille", value: `${fan.size} mm` },
+                { label: "RPM", value: `${fan.rpmIdle} - ${fan.rpmMax}` },
+                {
+                    label: "Bruit",
+                    value: `${fan.noiseIdle} - ${fan.noiseMax} dB`,
+                },
+                {
+                    label: "Débit",
+                    value: `${fan.airflowIdle} - ${fan.airflowMax} CFM`,
+                },
+                { label: "PWM", value: fan.pwm ? "Oui" : "Non" },
+            ];
+        },
+        SOUND_CARD: (d) => {
+            const sc = d as SoundCard;
+            return [
+                { label: "Canaux", value: `${sc.channels}` },
+                { label: "Audio numérique", value: `${sc.digitalAudio}` },
+                { label: "SNR", value: `${sc.snr}` },
+                { label: "Échantillonnage", value: `${sc.sampleRate}` },
+                { label: "Chipset", value: `${sc.chipset}` },
+                { label: "Interface", value: `${sc.interface}` },
+            ];
+        },
+        WIRELESS_NETWORK_CARD: (d) => {
+            const wnc = d as WirelessNetworkCard;
+            return [
+                { label: "Interface", value: `${wnc.interface}` },
+                { label: "Protocole", value: `${wnc.protocol}` },
+            ];
+        },
+    };
+
+    return specMapping[type](data).filter(
+        (spec) =>
+            spec.value !== "null" &&
+            spec.value !== "undefined" &&
+            spec.value !== ""
+    );
+}
 
 export function getEnumDisplay(type: ComponentType) {
     return enumDisplayMapping[type];

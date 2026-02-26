@@ -6,7 +6,7 @@ export default async function Home() {
     const { posts, cases, cpus, gpus } = await trpc.posts.getHomePage();
 
     return (
-        <div className="wide-lock font-serif w-[70%] flex flex-col justify-center gap-3 mb-3!">
+        <div className="wide-lock font-serif flex flex-col justify-center gap-3 mb-[50px]!">
             <PostCarousel
                 headerText="En recherche de Matos?"
                 fullHeight={true}

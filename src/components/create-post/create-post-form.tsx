@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import {
@@ -29,85 +29,185 @@ import { trpc } from "@/trpc/client";
 import { postFormSchema, type PostFormData } from "@/lib/schema/post";
 import ImageUpload from "../ui/image-upload";
 import { useUploadThing } from "@/utils/uploadthing";
-import { Loader2 } from "lucide-react";
+import { AppRouter } from "@/trpc/routers/_app";
+import { inferRouterOutputs } from "@trpc/server";
+import LocationSelector from "./location-selector";
 
-export default function CreatePostForm() {
+interface PostFormProps {
+    post: inferRouterOutputs<AppRouter>["posts"]["getPost"] | null;
+}
+
+export default function CreatePostForm({ post }: PostFormProps) {
     const ut = useUploadThing("postUploader");
 
     const form = useForm<PostFormData>({
         resolver: zodResolver(postFormSchema),
         defaultValues: {
-            component: undefined,
-            title: "",
-            description: "",
-            location: "",
-            price: 0,
-            images: [],
+            component: post?.component,
+            title: post?.title || "",
+            description: post?.description || "",
+            location: post?.location,
+            price: post?.price || 0,
+            images: post?.images || [],
         },
+        mode: "onChange",
     });
 
     const [selectedComponent, setSelectedComponent] = useState<
         ReturnedComponent | undefined
-    >(undefined);
-    const mutation = trpc.posts.createPost.useMutation();
+    >(post?.component);
+    const create = trpc.posts.createPost.useMutation();
+    const edit = trpc.posts.editPost.useMutation();
     const router = useRouter();
+
+    const isLoading =
+        form.formState.isSubmitting || create.isPending || edit.isPending;
+
+    useEffect(() => {
+        form.reset({
+            component: post?.component,
+            title: post?.title || "",
+            description: post?.description || "",
+            location: post?.location,
+            price: post?.price || 0,
+            images: post?.images || [],
+        });
+        setSelectedComponent(post?.component);
+    }, [post, form]);
+
+    useEffect(() => {
+        // warn on page exit/reload if its a post edit and there are unsaved changes
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (post && form.formState.isDirty) e.preventDefault();
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [post, form.formState.isDirty]);
 
     const onSubmit = async (formData: PostFormData) => {
         let uploadResult;
-        if (formData.images && formData.images.length > 0) {
-            try {
-                uploadResult = await ut.startUpload(formData.images);
-                if (!uploadResult) {
+        if (post) {
+            if (formData.images) {
+                const newImages = formData.images.filter(
+                    (img) => typeof img !== "string"
+                );
+
+                if (newImages.length > 0) {
+                    try {
+                        uploadResult = await ut.startUpload(newImages);
+                        if (!uploadResult) {
+                            form.setError("images", {
+                                message:
+                                    "L'upload des images a échoué. Veuillez réessayer.",
+                            });
+                            return;
+                        }
+                    } catch (error) {
+                        form.setError("images", {
+                            message:
+                                error instanceof Error
+                                    ? error.message
+                                    : "Une erreur est survenue lors de l'upload des images.",
+                        });
+                        return;
+                    }
+                }
+            }
+
+            const images = formData.images
+                ? [
+                      ...formData.images.filter(
+                          (img) => typeof img === "string"
+                      ),
+                      ...(uploadResult
+                          ? uploadResult.map((img) => img.ufsUrl)
+                          : []),
+                  ]
+                : post.images;
+
+            edit.mutate(
+                {
+                    id: post.id,
+                    componentId: formData.component.id,
+                    title: formData.title,
+                    description: formData.description,
+                    location: formData.location,
+                    price: formData.price,
+                    images: images,
+                },
+                {
+                    onSuccess: (data) => {
+                        router.push(`/post/${data.postId}`);
+                    },
+                    onError: (error) => {
+                        form.setError("root", {
+                            message: error.message || "Une erreur est survenue",
+                        });
+                    },
+                }
+            );
+        } else {
+            if (formData.images && formData.images.length > 0) {
+                try {
+                    uploadResult = await ut.startUpload(
+                        formData.images as File[]
+                    );
+                    if (!uploadResult) {
+                        form.setError("images", {
+                            message:
+                                "L'upload des images a échoué. Veuillez réessayer.",
+                        });
+                        return;
+                    }
+                } catch (error) {
                     form.setError("images", {
                         message:
-                            "L'upload des images a échoué. Veuillez réessayer.",
+                            error instanceof Error
+                                ? error.message
+                                : "Une erreur est survenue lors de l'upload des images.",
                     });
                     return;
                 }
-            } catch (error) {
-                form.setError("images", {
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Une erreur est survenue lors de l'upload des images.",
-                });
-                return;
             }
-        }
 
-        mutation.mutate(
-            {
-                componentId: formData.component.id,
-                title: formData.title,
-                description: formData.description,
-                location: formData.location,
-                price: formData.price,
-                images: uploadResult
-                    ? uploadResult.map((img) => img.ufsUrl)
-                    : [],
-            },
-            {
-                onSuccess: (data) => {
-                    router.push(`/post/${data.postId}`);
+            create.mutate(
+                {
+                    componentId: formData.component.id,
+                    title: formData.title,
+                    description: formData.description,
+                    location: formData.location,
+                    price: formData.price,
+                    images: uploadResult
+                        ? uploadResult.map((img) => img.ufsUrl)
+                        : [],
                 },
-                onError: (error) => {
-                    form.setError("root", {
-                        message: error.message || "Une erreur est survenue",
-                    });
-                },
-            }
-        );
+                {
+                    onSuccess: (data) => {
+                        router.push(`/post/${data.postId}`);
+                    },
+                    onError: (error) => {
+                        form.setError("root", {
+                            message: error.message || "Une erreur est survenue",
+                        });
+                    },
+                }
+            );
+        }
     };
 
     return (
         <Card className="w-full border-none shadow-none bg-transparent">
             <CardHeader className="text-center px-0">
                 <CardTitle className="text-3xl font-bold">
-                    Créer une Annonce
+                    {post ? "Editer une Annonce" : "Créer une Annonce"}
                 </CardTitle>
                 <CardDescription>
-                    Mettez en vente vos composants informatiques en quelques
-                    clics.
+                    {post
+                        ? "Éditez votre annonce en quelques clics."
+                        : "Mettez en vente vos composants informatiques en quelques clics."}
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -160,6 +260,7 @@ export default function CreatePostForm() {
                                                         !!form.formState.errors
                                                             .component
                                                     }
+                                                    disabled={isLoading}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -188,9 +289,7 @@ export default function CreatePostForm() {
                                             <FormControl>
                                                 <Input
                                                     placeholder="Ex: Carte Graphique RTX 3080 Excellent état"
-                                                    disabled={
-                                                        mutation.isPending
-                                                    }
+                                                    disabled={isLoading}
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -212,11 +311,9 @@ export default function CreatePostForm() {
                                             </FormLabel>
                                             <FormControl>
                                                 <Textarea
-                                                    className="min-h-[120px] resize-y"
+                                                    className="min-h-30 resize-y"
                                                     placeholder="Décrivez l'état du produit, la raison de la vente, etc..."
-                                                    disabled={
-                                                        mutation.isPending
-                                                    }
+                                                    disabled={isLoading}
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -226,12 +323,12 @@ export default function CreatePostForm() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex gap-6 flex-col sm:flex-row items-start">
                                 <FormField
                                     control={form.control}
                                     name="price"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="w-full">
                                             <FormLabel>
                                                 Prix (€){" "}
                                                 <span className="text-destructive">
@@ -244,9 +341,12 @@ export default function CreatePostForm() {
                                                         type="number"
                                                         step={0.01}
                                                         min={0}
-                                                        disabled={
-                                                            mutation.isPending
+                                                        aria-invalid={
+                                                            !!form.formState
+                                                                .errors.price
                                                         }
+                                                        placeholder="0.00"
+                                                        disabled={isLoading}
                                                         className="pl-8"
                                                         {...field}
                                                         onChange={(e) =>
@@ -272,15 +372,22 @@ export default function CreatePostForm() {
                                     control={form.control}
                                     name="location"
                                     render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Localisation</FormLabel>
+                                        <FormItem className="w-full">
+                                            <FormLabel>
+                                                Localisation{" "}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
+                                            </FormLabel>
                                             <FormControl>
-                                                <Input
-                                                    placeholder="Ville ou Code Postal"
-                                                    disabled={
-                                                        mutation.isPending
-                                                    }
-                                                    {...field}
+                                                <LocationSelector
+                                                    defaultValue={field.value}
+                                                    onChange={(location) => {
+                                                        field.onChange(
+                                                            location
+                                                        );
+                                                    }}
+                                                    disabled={isLoading}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -313,11 +420,9 @@ export default function CreatePostForm() {
                                             </div>
                                             <FormControl>
                                                 <ImageUpload
-                                                    variant="dropzone"
                                                     maxImages={6}
                                                     disabled={
-                                                        form.formState
-                                                            .isSubmitting ||
+                                                        isLoading ||
                                                         (field.value?.length ??
                                                             0) >= 6
                                                     }
@@ -343,17 +448,17 @@ export default function CreatePostForm() {
                             <Button
                                 type="submit"
                                 size="lg"
-                                disabled={form.formState.isSubmitting}
+                                loading={isLoading}
+                                disabled={
+                                    isLoading ||
+                                    !form.formState.isValid ||
+                                    !form.formState.isDirty
+                                }
                                 className="w-full font-semibold text-base"
                             >
-                                {form.formState.isSubmitting ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Publication en cours...
-                                    </>
-                                ) : (
-                                    "Publier l'annonce"
-                                )}
+                                {post
+                                    ? "Editer l'annonce"
+                                    : "Publier l'annonce"}
                             </Button>
                         </div>
                     </form>

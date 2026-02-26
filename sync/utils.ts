@@ -19,6 +19,7 @@ export const POST_QUERY_BASE = `
         p.price,
         p."userId",
         p."componentId",
+        p.images,
         c.name as "componentName",
         c.type as "componentType",
         u.name as "userName"
@@ -77,12 +78,12 @@ export const COMPONENT_QUERIES_BASE: Record<string, string> = {
         SELECT c.id, c.name, c."estimatedPrice", c.color, c.type,
                t.type as "psuType", t.wattage, t.efficiency, t.modular
         FROM component c
-        JOIN "powerSupply" t ON c.id = t."componentId"`,
+        JOIN "power_supply" t ON c.id = t."componentId"`,
     cpuCooler: `
         SELECT c.id, c.name, c."estimatedPrice", c.color, c.type,
                t."rpmIdle", t."rpmMax", t."noiseIdle"::float, t."noiseMax"::float, t.size
         FROM component c
-        JOIN "cpuCooler" t ON c.id = t."componentId"`,
+        JOIN "cpu_cooler" t ON c.id = t."componentId"`,
     case: `
         SELECT c.id, c.name, c."estimatedPrice", c.color, c.type,
                t.type as "caseType", t."sidePanel", t.volume::float, t."bays3_5"
@@ -92,15 +93,15 @@ export const COMPONENT_QUERIES_BASE: Record<string, string> = {
         SELECT c.id, c.name, c."estimatedPrice", c.color, c.type,
                t.size, t."rpmIdle", t."rpmMax", t."noiseIdle"::float, t."noiseMax"::float, t."airflowIdle"::float, t."airflowMax"::float, t.pwm
         FROM component c
-        JOIN "caseFan" t ON c.id = t."componentId"`,
+        JOIN "case_fan" t ON c.id = t."componentId"`,
     soundCard: `
         SELECT c.id, c.name, c."estimatedPrice", c.color, c.type,
                t.channels, t."digitalAudio", t.snr, t."sampleRate", t.chipset, t.interface
         FROM component c
-        JOIN "soundCard" t ON c.id = t."componentId"`,
+        JOIN "sound_card" t ON c.id = t."componentId"`,
     wirelessNetworkCard: `
         SELECT c.id, c.name, c."estimatedPrice", c.color, c.type,
                t.interface, t.protocol
         FROM component c
-        JOIN "wirelessNetworkCard" t ON c.id = t."componentId"`,
+        JOIN "wireless_network_card" t ON c.id = t."componentId"`,
 };
