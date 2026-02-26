@@ -82,7 +82,10 @@ export default function Loading() {
                 <Skeleton className="h-7 w-64" />
                 <div className="flex gap-4 overflow-hidden">
                     {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="shrink-0 basis-4/5 sm:basis-1/2 lg:basis-1/4 space-y-2">
+                        <div
+                            key={i}
+                            className="shrink-0 basis-4/5 sm:basis-1/2 lg:basis-1/4 space-y-2"
+                        >
                             <Skeleton className="w-full aspect-video rounded-lg" />
                             <Skeleton className="h-4 w-3/4" />
                             <Skeleton className="h-4 w-1/2" />
