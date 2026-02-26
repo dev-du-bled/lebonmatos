@@ -14,88 +14,20 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/client";
-import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
+import {
+    COMPONENT_TYPE_LABELS,
+    ComponentWithDetails,
+} from "@/lib/compatibility";
 import { Search, Heart, Plus, Loader2 } from "lucide-react";
 import Image from "next/image";
 
 export type SelectedPost = {
     id: string;
     title: string;
-    description: string;
     price: number;
     images: string[];
-    firstImage?: string;
-
-    componentName: string;
-    componentType: ComponentType;
-    componentColor?: string;
-    componentEstimatedPrice?: number;
-
-    // Component-specific fields (flattened from Meilisearch)
-    // Motherboard
-    socket?: string;
-    formFactor?: string;
-    maxMemory?: number;
-    memorySlots?: number;
-
-    // CPU
-    microarch?: string;
-    coreCount?: number;
-    coreClock?: number;
-    boostClock?: number;
-
-    // RAM
-    ramType?: string;
-    type?: string;
-    speed?: number;
-    modules?: number;
-    size?: number;
-    casLatency?: number;
-
-    // GPU
-    chipset?: string;
-    memory?: number;
-    length?: number;
-
-    // SSD/HDD
-    capacity?: number;
-    cache?: number;
-    interface?: string;
-
-    // PSU
-    psuType?: string;
-    wattage?: number;
-    efficiency?: string;
-    modular?: string;
-
-    // CPU Cooler / Case Fan
-    rpmIdle?: number;
-    rpmMax?: number;
-    noiseIdle?: number;
-    noiseMax?: number;
-    airflowIdle?: number;
-    airflowMax?: number;
-    pwm?: boolean;
-
-    // Case
-    caseType?: string;
-    sidePanel?: string;
-    volume?: number;
-    bays3_5?: number;
-
-    // Sound Card
-    channels?: number;
-    digitalAudio?: string;
-    snr?: number;
-    sampleRate?: number;
-
-    // Wireless Network Card
-    protocol?: string;
-
-    // User info
-    userId?: string;
-    userName?: string;
-    componentId?: string;
+    firstImage?: string | null;
+    component: ComponentWithDetails;
 };
 
 type ComponentSelectorProps = {
@@ -297,6 +229,7 @@ function PostCard({
     onSelect: (post: SelectedPost) => void;
 }) {
     const imageUrl = post.images?.[0] || post.firstImage;
+    const comp = post.component;
 
     return (
         <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors w-full box-border min-w-0">
@@ -320,21 +253,22 @@ function PostCard({
                     {post.title}
                 </h4>
                 <p className="text-sm text-muted-foreground truncate w-full block">
-                    {post.componentName}
+                    {comp.name}
                 </p>
-                {post.componentType === "MOTHERBOARD" && post.socket && (
+                {comp.type === "MOTHERBOARD" && comp.Motherboard && (
                     <p className="text-xs text-muted-foreground truncate">
-                        Socket: {post.socket} | {post.formFactor}
+                        Socket: {comp.Motherboard.socket} |{" "}
+                        {comp.Motherboard.formFactor}
                     </p>
                 )}
-                {post.componentType === "CPU" && post.microarch && (
+                {comp.type === "CPU" && comp.Cpu && (
                     <p className="text-xs text-muted-foreground truncate">
-                        {post.microarch}
+                        {comp.Cpu.microarch}
                     </p>
                 )}
-                {post.componentType === "RAM" && post.ramType && (
+                {comp.type === "RAM" && comp.Ram && (
                     <p className="text-xs text-muted-foreground truncate">
-                        {post.ramType} | {post.modules}x{post.size}Go
+                        {comp.Ram.type} | {comp.Ram.modules}x{comp.Ram.size}Go
                     </p>
                 )}
             </div>

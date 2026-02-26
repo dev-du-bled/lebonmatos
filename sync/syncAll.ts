@@ -6,6 +6,7 @@ import {
     COMPONENT_QUERIES_BASE,
     TYPE_TO_TABLE,
 } from "./utils";
+import { buildComponentDetails } from "@/utils/components";
 
 const pg_url = process.env["DATABASE_URL"];
 if (!pg_url)
@@ -75,16 +76,14 @@ async function syncAll() {
                         [post.componentId]
                     );
 
-                    // Merge post data with component data
                     if (componentData.length > 0) {
-                        const { estimatedPrice, color, ...componentFields } =
-                            componentData[0];
                         return {
                             ...post,
                             firstImage,
-                            componentEstimatedPrice: estimatedPrice,
-                            componentColor: color,
-                            ...componentFields,
+                            component: {
+                                // build the details as expected by the ui
+                                ...buildComponentDetails(componentData[0]),
+                            },
                         };
                     }
 

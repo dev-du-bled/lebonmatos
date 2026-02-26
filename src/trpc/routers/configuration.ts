@@ -368,6 +368,6 @@ export const configurationRouter = createTRPCRouter({
                 },
             });
 
-            return favorites.map((f) => f.post);
+            return favorites.map((fav) => fav.post);
         }),
 });
