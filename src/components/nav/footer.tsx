@@ -13,7 +13,7 @@ export default function Footer({ className }: { className?: string }) {
                 className
             )}
         >
-            <div className="mx-auto wide-lock px-5 py-12">
+            <div className="mx-auto wide-lock-wider px-5 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                     {/* Left: logo + copyright */}
                     <div className="flex flex-col gap-4 justify-center w-full">

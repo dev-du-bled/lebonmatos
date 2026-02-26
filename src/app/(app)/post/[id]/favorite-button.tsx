@@ -1,6 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { trpc } from "@/trpc/client";
 import { Heart } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -12,6 +18,9 @@ interface FavoritePostProps {
     post: {
         id: string;
         isFavorited?: boolean;
+        seller?: {
+            id: string;
+        };
     };
     className?: string;
 }
@@ -48,16 +57,26 @@ export default function FavoriteButton({ post, className }: FavoritePostProps) {
     };
 
     if (!session) return null;
+    if (post.seller?.id === session?.user?.id) return null;
 
     return (
-        <Button
-            size="icon-sm"
-            onClick={toggleFavorite}
-            className={className}
-            loading={favMutation.isPending}
-            disabled={favMutation.isPending}
-        >
-            <Heart fill={isFavorite ? "black" : "none"} />
-        </Button>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        size="icon-sm"
+                        onClick={toggleFavorite}
+                        className={className}
+                        loading={favMutation.isPending}
+                        disabled={favMutation.isPending}
+                    >
+                        <Heart fill={isFavorite ? "currentColor" : "none"} />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    {isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
 }
