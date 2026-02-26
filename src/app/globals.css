@@ -236,3 +236,8 @@
     max-width: min(1450px, 85vw);
     margin: 0 auto;
 }
+
+.wide-lock-wider {
+    max-width: min(1600px, 90vw);
+    margin: 0 auto;
+}
