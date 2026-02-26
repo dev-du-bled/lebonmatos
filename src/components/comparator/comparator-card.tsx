@@ -34,8 +34,11 @@ export default function ComparatorCard({
         return <Icon size={16} className={color} />;
     }
 
+    // Price is shown in the footer, not in the specs list
+    const specKeys = allKeys.filter((k) => k !== "price");
+
     return (
-        <article className="border rounded-lg bg-background shadow-sm overflow-hidden">
+        <article className="border rounded-lg bg-background shadow-sm overflow-hidden h-full flex flex-col">
             {/* IMAGE */}
             <div className="relative h-48">
                 {data.imageSrc ? (
@@ -70,34 +73,36 @@ export default function ComparatorCard({
             </div>
 
             {/* CONTENT */}
-            <div className="p-4 space-y-3">
-                {allKeys.map((key) => {
+            <div
+                className="p-4 grid gap-3 flex-1"
+                style={{ gridTemplateRows: `repeat(${Math.max(specKeys.length, 1)}, minmax(0, 1fr))` }}
+            >
+                {specKeys.map((key) => {
                     const value = data.specs?.[key];
                     const trend = trends[data.id]?.[key] ?? "none";
                     const formatted = formatSpecValue(key, value);
-
-                    if (nonNumericKeys.has(key.toLowerCase())) {
-                        return (
-                            <div key={key} className="text-center py-2 border-b last:border-b-0">
-                                <div className="font-semibold text-sm text-muted-foreground mb-1">
-                                    {humanizeKey(key)}
-                                </div>
-                                <div className="font-medium">{formatted ?? "-"}</div>
-                            </div>
-                        );
-                    }
+                    const isNonNumeric = nonNumericKeys.has(key.toLowerCase());
 
                     return (
-                        <div key={key} className="flex justify-between items-center py-2 border-b last:border-b-0">
-                            <span className="text-sm font-medium text-muted-foreground">{humanizeKey(key)}</span>
-                            <div className="flex items-center gap-2">
-                                {renderTrend(trend)}
-                                <span className="font-semibold">{formatted ?? "-"}</span>
+                        <div key={key} className="flex flex-col items-center justify-center text-center">
+                            <div className="font-semibold text-sm text-muted-foreground mb-1">{humanizeKey(key)}</div>
+                            <div
+                                className={`font-semibold flex items-center gap-2 ${isNonNumeric ? "text-base" : "text-lg"}`}
+                            >
+                                {!isNonNumeric && renderTrend(trend)}
+                                <span>{formatted ?? "-"}</span>
                             </div>
                         </div>
                     );
                 })}
             </div>
+
+            {/* FOOTER */}
+            {data.price !== undefined && (
+                <div className="px-4 py-3 flex items-center justify-between">
+                    <span className="font-bold text-3xl">{formatSpecValue("price", data.price as number)}</span>
+                </div>
+            )}
         </article>
     );
 }
