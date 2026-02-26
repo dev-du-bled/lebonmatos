@@ -85,8 +85,8 @@ export function formatComponentDetails(
         if (fan.rpmMax) parts.push(`${fan.rpmMax} RPM (max)`);
         if (fan.noiseIdle) parts.push(`${fan.noiseIdle} dB (idle)`);
         if (fan.noiseMax) parts.push(`${fan.noiseMax} dB (max)`);
-        if (fan.airFlowIdle) parts.push(`${fan.airFlowIdle} CFM (idle)`);
-        if (fan.airFlowMax) parts.push(`${fan.airFlowMax} CFM (max)`);
+        if (fan.airflowIdle) parts.push(`${fan.airflowIdle} CFM (idle)`);
+        if (fan.airflowMax) parts.push(`${fan.airflowMax} CFM (max)`);
         if (fan.pwm !== null) parts.push(fan.pwm ? "PWM" : "Non-PWM");
         return parts.join(" | ");
     }
