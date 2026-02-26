@@ -73,7 +73,7 @@ export function ComponentSelector({
             limit: 20,
         },
         {
-            enabled: open && activeTab === "search"
+            enabled: open && activeTab === "search",
         }
     );
 

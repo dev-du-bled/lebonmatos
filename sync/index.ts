@@ -27,7 +27,9 @@ async function syncPost(id: string) {
         // If post has no component, return as-is with first image
         if (!post.componentId || !post.componentType) {
             const task = await wrappMeiliTask(
-                meilisearch.index("posts").addDocuments([{ ...post, firstImage }])
+                meilisearch
+                    .index("posts")
+                    .addDocuments([{ ...post, firstImage }])
             );
             console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
             return;
@@ -40,7 +42,9 @@ async function syncPost(id: string) {
                 `No query found for component type: ${post.componentType}`
             );
             const task = await wrappMeiliTask(
-                meilisearch.index("posts").addDocuments([{ ...post, firstImage }])
+                meilisearch
+                    .index("posts")
+                    .addDocuments([{ ...post, firstImage }])
             );
             console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
             return;
