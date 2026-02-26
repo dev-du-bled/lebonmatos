@@ -182,10 +182,7 @@ export default function ComparatorContent() {
 
     /* ---------- ICONS ---------- */
 
-    const componentTypeIcons: Record<
-        ComponentType,
-        React.ComponentType<unknown>
-    > = {
+    const componentTypeIcons = {
         CPU: Cpu,
         GPU: MonitorUp,
         MOTHERBOARD: CircuitBoard,
@@ -200,7 +197,7 @@ export default function ComparatorContent() {
         WIRELESS_NETWORK_CARD: Wifi,
     };
 
-    const componentTypes = Object.values(ComponentType);
+    const componentTypes = Object.keys(componentTypeIcons) as ComponentType[];
 
     /* ===================================== */
 

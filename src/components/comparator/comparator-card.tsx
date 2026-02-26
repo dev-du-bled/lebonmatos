@@ -115,9 +115,9 @@ export default function ComparatorCard({
 
             {/* FOOTER */}
             {data.price !== undefined && (
-                <div className="px-4 py-3 border-t flex items-center gap-2">
+                <div className="px-4 py-3 flex items-center gap-2">
                     {renderTrend(trends[data.id]?.["price"] ?? "none")}
-                    <span className="font-bold text-lg">
+                    <span className="font-bold text-3xl">
                         {formatSpecValue("price", data.price as number)}
                     </span>
                 </div>

@@ -59,14 +59,8 @@
         "@eslint/eslintrc": "^3.3.3",
         "@faker-js/faker": "^10.2.0",
         "@tailwindcss/postcss": "^4.1.18",
-<<<<<<< HEAD
         "@types/node": "^20.19.31",
-||||||| 2b9238d
-        "@types/node": "^20.19.30",
-=======
         "@types/leaflet": "^1.9.21",
-        "@types/node": "^20.19.30",
->>>>>>> main
         "@types/pg": "^8.16.0",
         "@types/react": "^19.2.13",
         "@types/react-dom": "^19.2.3",
