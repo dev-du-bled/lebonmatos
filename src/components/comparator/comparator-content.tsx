@@ -2,7 +2,10 @@
 
 import React, { useMemo, useState } from "react";
 
-import { ComponentSelector, type SelectedPost } from "@/components/configurator/component-selector";
+import {
+    ComponentSelector,
+    type SelectedPost,
+} from "@/components/configurator/component-selector";
 import { ComponentType } from "@prisma/client";
 
 import {
@@ -21,7 +24,12 @@ import {
     ChevronRight,
 } from "lucide-react";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
@@ -45,7 +53,9 @@ export default function ComparatorContent() {
     const [pickerType, setPickerType] = useState<ComponentType>();
 
     // Type persisté dès la première sélection — source de vérité pour toute la session de comparaison
-    const [comparisonType, setComparisonType] = useState<ComponentType | undefined>();
+    const [comparisonType, setComparisonType] = useState<
+        ComponentType | undefined
+    >();
 
     /* ---------- TYPE ---------- */
 
@@ -56,7 +66,9 @@ export default function ComparatorContent() {
 
     function handleSelect(post: SelectedPost) {
         if (replaceIndex !== null) {
-            setSelected((p) => p.map((x, i) => (i === replaceIndex ? post : x)));
+            setSelected((p) =>
+                p.map((x, i) => (i === replaceIndex ? post : x))
+            );
             setReplaceIndex(null);
         } else {
             // Premier ajout : on mémorise le type pour toute la session de comparaison
@@ -91,7 +103,9 @@ export default function ComparatorContent() {
     const allKeys = useMemo(() => {
         const s = new Set<string>();
 
-        components.forEach((c) => Object.keys(c.specs).forEach((k) => s.add(k)));
+        components.forEach((c) =>
+            Object.keys(c.specs).forEach((k) => s.add(k))
+        );
 
         return Array.from(s);
     }, [components]);
@@ -124,10 +138,15 @@ export default function ComparatorContent() {
                 return;
             }
 
-            const avg = nums.reduce((a, b) => a + b.v, 0) / nums.length;
-
             const keyLower = key.toLowerCase();
             const invert = lowerIsBetter.has(keyLower);
+
+            const best = invert
+                ? Math.min(...nums.map((x) => x.v))
+                : Math.max(...nums.map((x) => x.v));
+            const worst = invert
+                ? Math.max(...nums.map((x) => x.v))
+                : Math.min(...nums.map((x) => x.v));
 
             components.forEach((c) => {
                 const val = extractNumber(c.specs[key]);
@@ -137,17 +156,9 @@ export default function ComparatorContent() {
                     return;
                 }
 
-                if (!invert) {
-                    if (val > avg) map[c.id][key] = "up";
-                    else if (val < avg) map[c.id][key] = "down";
-                    else map[c.id][key] = "none";
-                } else {
-                    // For keys where lower is better, invert the interpretation:
-                    // a value lower than average is an "up" (better), higher is "down" (worse)
-                    if (val < avg) map[c.id][key] = "up";
-                    else if (val > avg) map[c.id][key] = "down";
-                    else map[c.id][key] = "none";
-                }
+                if (val === best) map[c.id][key] = "up";
+                else if (val === worst) map[c.id][key] = "down";
+                else map[c.id][key] = "mid";
             });
         });
 
@@ -156,11 +167,25 @@ export default function ComparatorContent() {
 
     /* ---------- NON NUMERIC ---------- */
 
-    const nonNumericKeys = useMemo(() => new Set(["type", "chipset", "socket", "interface", "brand"]), []);
+    const nonNumericKeys = useMemo(
+        () =>
+            new Set([
+                "name",
+                "type",
+                "chipset",
+                "socket",
+                "interface",
+                "brand",
+            ]),
+        []
+    );
 
     /* ---------- ICONS ---------- */
 
-    const componentTypeIcons: Record<ComponentType, React.ComponentType<unknown>> = {
+    const componentTypeIcons: Record<
+        ComponentType,
+        React.ComponentType<unknown>
+    > = {
         CPU: Cpu,
         GPU: MonitorUp,
         MOTHERBOARD: CircuitBoard,
@@ -218,7 +243,10 @@ export default function ComparatorContent() {
                                     onClick={() => {
                                         setPickerType(type);
                                         setTypePickerOpen(false);
-                                        setTimeout(() => setSelectorOpen(true), 150);
+                                        setTimeout(
+                                            () => setSelectorOpen(true),
+                                            150
+                                        );
                                     }}
                                 >
                                     <Icon size={16} />
@@ -235,7 +263,11 @@ export default function ComparatorContent() {
             <ComponentSelector
                 open={selectorOpen}
                 onOpenChange={setSelectorOpen}
-                componentType={(selected.length ? allowedType : pickerType) ?? pickerType ?? ComponentType.CPU}
+                componentType={
+                    (selected.length ? allowedType : pickerType) ??
+                    pickerType ??
+                    ComponentType.CPU
+                }
                 onSelect={handleSelect}
                 isAuthenticated={false}
                 excludePostIds={selected.map((s) => s.id)}

@@ -1,4 +1,4 @@
-export type Trend = "up" | "down" | "none";
+export type Trend = "up" | "down" | "mid" | "none";
 
 const LABELS: Record<string, string> = {
     type: "Type",

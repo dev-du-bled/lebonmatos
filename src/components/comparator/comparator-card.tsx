@@ -29,6 +29,8 @@ export default function ComparatorCard({
 }: Props) {
     function renderTrend(trend: Trend) {
         if (trend === "none") return null;
+        if (trend === "mid")
+            return <span className="text-orange-400 font-bold text-sm">—</span>;
         const Icon = trend === "up" ? ArrowUp : ArrowDown;
         const color = trend === "up" ? "text-emerald-500" : "text-rose-600";
         return <Icon size={16} className={color} />;
@@ -113,12 +115,10 @@ export default function ComparatorCard({
 
             {/* FOOTER */}
             {data.price !== undefined && (
-                <div className="px-4 py-3 flex items-center justify-between">
-                    <span className="font-bold text-3xl flex items-center gap-2">
-                        <span>
-                            {formatSpecValue("price", data.price as number)}
-                        </span>
-                        {renderTrend(trends[data.id]?.["price"] ?? "none")}
+                <div className="px-4 py-3 border-t flex items-center gap-2">
+                    {renderTrend(trends[data.id]?.["price"] ?? "none")}
+                    <span className="font-bold text-lg">
+                        {formatSpecValue("price", data.price as number)}
                     </span>
                 </div>
             )}
