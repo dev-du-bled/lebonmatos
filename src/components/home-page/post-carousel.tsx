@@ -21,16 +21,16 @@ export default function PostCarousel({
 }: PostCarouselProps) {
     return (
         <div className="flex flex-col w-full">
-            <span className="text-2xl font-bold font-sans text-foreground">
+            <span className="text-xl sm:text-2xl font-bold font-sans text-foreground py-2">
                 {headerText}
             </span>
             {posts.length > 0 ? (
-                <Carousel className="w-full">
+                <Carousel className="w-full relative">
                     <CarouselContent>
                         {posts.map((post) => {
                             return (
                                 <CarouselItem
-                                    className="lg:basis-1/5 sm:basis-1/3"
+                                    className="basis-1/2 sm:basis-1/3 lg:basis-1/5"
                                     key={post.id}
                                 >
                                     <PostPreview
@@ -41,8 +41,8 @@ export default function PostCarousel({
                             );
                         })}
                     </CarouselContent>
-                    <CarouselPrevious />
-                    <CarouselNext />
+                    <CarouselPrevious className="absolute -left-5 top-1/2 -translate-y-1/2" />
+                    <CarouselNext className="absolute -right-5 top-1/2 -translate-y-1/2" />
                 </Carousel>
             ) : (
                 <span className="self-center text-xl font-sans my-10 text-foreground">
