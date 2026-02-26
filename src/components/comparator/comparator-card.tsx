@@ -42,7 +42,12 @@ export default function ComparatorCard({
             {/* IMAGE */}
             <div className="relative h-48">
                 {data.imageSrc ? (
-                    <Image src={data.imageSrc} alt={data.title} fill className="object-cover rounded-t-lg" />
+                    <Image
+                        src={data.imageSrc}
+                        alt={data.title}
+                        fill
+                        className="object-cover rounded-t-lg"
+                    />
                 ) : (
                     <div className="h-full flex items-center justify-center bg-muted text-muted-foreground">
                         No Image
@@ -68,7 +73,9 @@ export default function ComparatorCard({
                     </Button>
                 </div>
                 <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-4">
-                    <h2 className="text-white font-bold text-xl">{data.title}</h2>
+                    <h2 className="text-white font-bold text-xl">
+                        {data.title}
+                    </h2>
                 </div>
             </div>
 
@@ -86,8 +93,13 @@ export default function ComparatorCard({
                     const isNonNumeric = nonNumericKeys.has(key.toLowerCase());
 
                     return (
-                        <div key={key} className="flex flex-col items-center justify-center text-center">
-                            <div className="font-semibold text-sm text-muted-foreground mb-1">{humanizeKey(key)}</div>
+                        <div
+                            key={key}
+                            className="flex flex-col items-center justify-center text-center"
+                        >
+                            <div className="font-semibold text-sm text-muted-foreground mb-1">
+                                {humanizeKey(key)}
+                            </div>
                             <div
                                 className={`font-semibold flex items-center gap-2 ${isNonNumeric ? "text-base" : "text-lg"}`}
                             >
@@ -102,7 +114,12 @@ export default function ComparatorCard({
             {/* FOOTER */}
             {data.price !== undefined && (
                 <div className="px-4 py-3 flex items-center justify-between">
-                    <span className="font-bold text-3xl">{formatSpecValue("price", data.price as number)}</span>
+                    <span className="font-bold text-3xl flex items-center gap-2">
+                        <span>
+                            {formatSpecValue("price", data.price as number)}
+                        </span>
+                        {renderTrend(trends[data.id]?.["price"] ?? "none")}
+                    </span>
                 </div>
             )}
         </article>
