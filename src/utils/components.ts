@@ -346,7 +346,7 @@ export function buildComponentDetails(data: any): ComponentWithDetails {
         type: data.type,
     };
 
-    switch (data.componentType as ComponentType) {
+    switch (data.type as ComponentType) {
         case "CPU":
             details.Cpu = {
                 microarch: data.microarch,
