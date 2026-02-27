@@ -302,7 +302,12 @@ export const postRouter = createTRPCRouter({
             const post = await prisma.post.findUnique({
                 where: { id: input.postId },
                 include: {
-                    user: true,
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                        },
+                    },
                     component: true,
                     location: true,
                     Favorites: ctx.session?.user
@@ -387,7 +392,7 @@ export const postRouter = createTRPCRouter({
                 ...(input.sellerData && {
                     seller: {
                         id: post.user.id,
-                        name: post.user.name,
+                        username: post.user.username,
                         rating: rating
                             ? {
                                   avg: rating._avg.rating
@@ -432,10 +437,19 @@ export const postRouter = createTRPCRouter({
         }),
 
     getHomePage: publicProcedure.query(async () => {
+        const userSelect = {
+            select: {
+                id: true,
+                username: true,
+                displayUsername: true,
+                image: true,
+            },
+        } as const;
+
         const posts = await prisma.post.findMany({
             take: 10,
             include: {
-                user: true,
+                user: userSelect,
                 location: true,
             },
             where: {
@@ -448,7 +462,7 @@ export const postRouter = createTRPCRouter({
         const cases = await prisma.post.findMany({
             take: 10,
             include: {
-                user: true,
+                user: userSelect,
                 location: true,
                 component: {
                     select: {
@@ -466,7 +480,7 @@ export const postRouter = createTRPCRouter({
         const cpus = await prisma.post.findMany({
             take: 10,
             include: {
-                user: true,
+                user: userSelect,
                 location: true,
                 component: {
                     select: {
@@ -484,7 +498,7 @@ export const postRouter = createTRPCRouter({
         const gpus = await prisma.post.findMany({
             take: 10,
             include: {
-                user: true,
+                user: userSelect,
                 location: true,
                 component: {
                     select: {

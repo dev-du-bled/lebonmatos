@@ -48,7 +48,7 @@ export function UserMenu() {
                 >
                     <DropdownMenuLabel>
                         Bienvenue,{" "}
-                        <span className="font-bold">{session.user.name}</span>
+                        <span className="font-bold">{session.user.username ?? session.user.name}</span>
                     </DropdownMenuLabel>
                     <DropdownMenuItem asChild>
                         <Link href="/profile">Mon profil</Link>
