@@ -1,11 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -22,16 +16,13 @@ import PostMap from "@/components/post/post-map";
 import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
 import z from "zod";
+import Link from "next/link";
 
 type Params = {
     id: string;
 };
 
-export async function generateMetadata({
-    params,
-}: {
-    params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
     const { id } = await params;
 
     const post = await getPost(id);
@@ -47,11 +38,7 @@ const getPost = cache(async (id: string) => {
     return post;
 });
 
-export default async function PostPage({
-    params,
-}: {
-    params: Promise<Params>;
-}) {
+export default async function PostPage({ params }: { params: Promise<Params> }) {
     const { id } = await params;
 
     if (!z.cuid().safeParse(id).success) notFound();
@@ -74,24 +61,20 @@ export default async function PostPage({
                     <div className="relative rounded-xl shadow-md overflow-hidden bg-muted">
                         <Carousel className="w-full relative">
                             <CarouselContent className="ml-0">
-                                {(post.images.length > 0
-                                    ? post.images
-                                    : ["/images/fallback.webp"]
-                                ).map((image, index) => (
-                                    <CarouselItem key={index} className="pl-0">
-                                        <AspectRatio ratio={4 / 3}>
-                                            <Image
-                                                src={
-                                                    image ||
-                                                    "/images/fallback.webp"
-                                                }
-                                                alt={`Image ${index + 1}`}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        </AspectRatio>
-                                    </CarouselItem>
-                                ))}
+                                {(post.images.length > 0 ? post.images : ["/images/fallback.webp"]).map(
+                                    (image, index) => (
+                                        <CarouselItem key={index} className="pl-0">
+                                            <AspectRatio ratio={4 / 3}>
+                                                <Image
+                                                    src={image || "/images/fallback.webp"}
+                                                    alt={`Image ${index + 1}`}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </AspectRatio>
+                                        </CarouselItem>
+                                    )
+                                )}
                             </CarouselContent>
                             <CarouselPrevious className="left-4" />
                             <CarouselNext className="right-4" />
@@ -106,39 +89,33 @@ export default async function PostPage({
                             />
                         </div>
                         <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-6 pt-20 pointer-events-none">
-                            <h1 className="text-2xl md:text-4xl font-bold text-white">
-                                {post.title}
-                            </h1>
-                            <p className="text-2xl font-semibold text-primary mt-2">
-                                {post.price} €
-                            </p>
+                            <h1 className="text-2xl md:text-4xl font-bold text-white">{post.title}</h1>
+                            <p className="text-2xl font-semibold text-primary mt-2">{post.price} €</p>
                         </div>
                     </div>
 
                     {/* Vendeur (placé sous l'image) */}
 
                     <div className="flex items-center gap-4">
-                        <Avatar className="h-14 w-14 border">
-                            <AvatarImage src="" />
-                            <AvatarFallback className="bg-muted text-lg">
-                                {post.seller?.name.charAt(0)}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                            <p className="font-semibold text-lg">
-                                {post.seller?.name}
-                            </p>
-                            {post.seller?.rating &&
-                                post.seller.rating.count > 0 && (
+                        <Link href={`/profile/${post.seller?.id}`} className="flex items-center gap-4 flex-1">
+                            <Avatar className="h-14 w-14 border">
+                                <AvatarImage src="" />
+                                <AvatarFallback className="bg-muted text-lg">
+                                    {post.seller?.name.charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                                <p className="font-semibold text-lg">{post.seller?.name}</p>
+                                {post.seller?.rating && post.seller.rating.count > 0 && (
                                     <div className="flex items-center gap-1 mt-0.5">
                                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                                         <span className="text-sm text-muted-foreground">
-                                            {post.seller.rating.avg.toFixed(1)}{" "}
-                                            ({post.seller.rating.count} avis)
+                                            {post.seller.rating.avg.toFixed(1)} ({post.seller.rating.count} avis)
                                         </span>
                                     </div>
                                 )}
-                        </div>
+                            </div>
+                        </Link>
                         <div className="hidden sm:block">
                             <ContactButton />
                         </div>
@@ -146,9 +123,7 @@ export default async function PostPage({
 
                     {/* Description */}
                     <div className="py-4">
-                        <h2 className="text-2xl font-semibold mb-4">
-                            Description
-                        </h2>
+                        <h2 className="text-2xl font-semibold mb-4">Description</h2>
                         <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-line">
                             {post.description}
                         </p>
@@ -167,12 +142,8 @@ export default async function PostPage({
                     <Card className="gap-0">
                         <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg">
-                                    Spécifications
-                                </CardTitle>
-                                <Badge variant="outline">
-                                    {getEnumDisplay(post.component.type)}
-                                </Badge>
+                                <CardTitle className="text-lg">Spécifications</CardTitle>
+                                <Badge variant="outline">{getEnumDisplay(post.component.type)}</Badge>
                             </div>
                             <p className="text-xs font-mono text-muted-foreground line-clamp-1">
                                 {post.component.name}
@@ -181,20 +152,12 @@ export default async function PostPage({
                         <CardContent className="p-0">
                             <Table>
                                 <TableBody>
-                                    {getComponentSpecs(
-                                        post.component.type,
-                                        post.component.data
-                                    ).map((spec, index) => (
-                                        <TableRow
-                                            key={index}
-                                            className="hover:bg-transparent"
-                                        >
+                                    {getComponentSpecs(post.component.type, post.component.data).map((spec, index) => (
+                                        <TableRow key={index} className="hover:bg-transparent">
                                             <TableCell className="font-medium text-muted-foreground py-3 pl-6 w-1/2">
                                                 {spec.label}
                                             </TableCell>
-                                            <TableCell className="py-3 pr-6 text-right">
-                                                {spec.value}
-                                            </TableCell>
+                                            <TableCell className="py-3 pr-6 text-right">{spec.value}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -207,16 +170,11 @@ export default async function PostPage({
             {/* Annonces similaires */}
             {similarPost.length > 0 && (
                 <div className="space-y-6 pt-8 border-t">
-                    <h2 className="text-2xl font-semibold">
-                        Plus comme &quot;{post.title}&quot;
-                    </h2>
+                    <h2 className="text-2xl font-semibold">Plus comme &quot;{post.title}&quot;</h2>
                     <Carousel className="w-full">
                         <CarouselContent className="-ml-4">
                             {similarPost.map((p) => (
-                                <CarouselItem
-                                    key={p.id}
-                                    className="pl-4 basis-4/5 sm:basis-1/2 lg:basis-1/4"
-                                >
+                                <CarouselItem key={p.id} className="pl-4 basis-4/5 sm:basis-1/2 lg:basis-1/4">
                                     <PostCard {...p} />
                                 </CarouselItem>
                             ))}
