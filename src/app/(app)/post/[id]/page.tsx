@@ -116,10 +116,11 @@ export default async function PostPage({
                     </div>
 
                     {/* Vendeur (placé sous l'image) */}
-
                     <div className="flex items-center gap-4">
                         <Avatar className="h-14 w-14 border">
-                            <AvatarImage src="" />
+                            <AvatarImage
+                                src={post.seller?.image || undefined}
+                            />
                             <AvatarFallback className="bg-muted text-lg">
                                 {post.seller?.name.charAt(0)}
                             </AvatarFallback>

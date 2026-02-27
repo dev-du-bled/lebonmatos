@@ -388,6 +388,7 @@ export const postRouter = createTRPCRouter({
                     seller: {
                         id: post.user.id,
                         name: post.user.name,
+                        image: post.user.image,
                         rating: rating
                             ? {
                                   avg: rating._avg.rating
