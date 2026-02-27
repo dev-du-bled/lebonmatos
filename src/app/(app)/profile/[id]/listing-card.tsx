@@ -25,11 +25,11 @@ interface ListingCardProps {
 
 export function ListingCard({ listing }: ListingCardProps) {
     return (
-        <Card className="overflow-hidden transition hover:border-primary hover:shadow-md p-0 gap-0">
-            <div className="flex flex-col sm:flex-row">
+        <Card className="overflow-hidden transition hover:border-primary hover:shadow-md p-0 gap-0 h-40 sm:h-40">
+            <div className="flex flex-col sm:flex-row h-full">
                 <Link
-                    href={`/listing/${listing.id}`}
-                    className="relative h-40 w-full bg-secondary sm:h-auto sm:w-48 shrink-0"
+                    href={`/post/${listing.id}`}
+                    className="relative h-40 w-full bg-secondary sm:h-40 sm:w-48 shrink-0"
                 >
                     <Image
                         src={listing.thumbnail?.image || "/images/fallback.webp"}
@@ -38,8 +38,8 @@ export function ListingCard({ listing }: ListingCardProps) {
                         className="h-full w-full object-cover"
                     />
                 </Link>
-                <div className="flex flex-1 flex-col justify-between p-4 gap-4">
-                    <Link href={`/listing/${listing.id}`} className="space-y-1">
+                <div className="flex flex-1 flex-col justify-between p-4 gap-4 h-full">
+                    <Link href={`/post/${listing.id}`} className="space-y-1">
                         <div className="flex justify-between items-start gap-2">
                             <CardTitle className="text-base line-clamp-1">{listing.title}</CardTitle>
                             <span className="text-lg font-bold dark:text-primary shrink-0">
