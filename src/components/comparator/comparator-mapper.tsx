@@ -17,8 +17,14 @@ export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
             case "CPU":
                 specs["microarch"] = c.component.Cpu?.microarch;
                 specs["coreCount"] = c.component.Cpu?.coreCount;
-                specs["coreClock"] = c.component.Cpu?.coreClock != null ? Number(c.component.Cpu.coreClock) : undefined;
-                specs["boostClock"] = c.component.Cpu?.boostClock != null ? Number(c.component.Cpu.boostClock) : undefined;
+                specs["coreClock"] =
+                    c.component.Cpu?.coreClock != null
+                        ? Number(c.component.Cpu.coreClock)
+                        : undefined;
+                specs["boostClock"] =
+                    c.component.Cpu?.boostClock != null
+                        ? Number(c.component.Cpu.boostClock)
+                        : undefined;
                 break;
 
             case "GPU":
@@ -68,15 +74,24 @@ export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
             case "CPU_COOLER":
                 specs["rpmIdle"] = c.component.CpuCooler?.rpmIdle ?? undefined;
                 specs["rpmMax"] = c.component.CpuCooler?.rpmMax ?? undefined;
-                specs["noiseIdle"] = c.component.CpuCooler?.noiseIdle != null ? Number(c.component.CpuCooler.noiseIdle) : undefined;
-                specs["noiseMax"] = c.component.CpuCooler?.noiseMax != null ? Number(c.component.CpuCooler.noiseMax) : undefined;
+                specs["noiseIdle"] =
+                    c.component.CpuCooler?.noiseIdle != null
+                        ? Number(c.component.CpuCooler.noiseIdle)
+                        : undefined;
+                specs["noiseMax"] =
+                    c.component.CpuCooler?.noiseMax != null
+                        ? Number(c.component.CpuCooler.noiseMax)
+                        : undefined;
                 specs["size"] = c.component.CpuCooler?.size ?? undefined;
                 break;
 
             case "CASE":
                 specs["type"] = c.component.Case?.type;
                 specs["sidePanel"] = c.component.Case?.sidePanel ?? undefined;
-                specs["volume"] = c.component.Case?.volume != null ? Number(c.component.Case.volume) : undefined;
+                specs["volume"] =
+                    c.component.Case?.volume != null
+                        ? Number(c.component.Case.volume)
+                        : undefined;
                 specs["bays3_5"] = c.component.Case?.bays3_5;
                 break;
 
@@ -84,16 +99,29 @@ export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
                 specs["size"] = c.component.CaseFan?.size;
                 specs["rpmIdle"] = c.component.CaseFan?.rpmIdle ?? undefined;
                 specs["rpmMax"] = c.component.CaseFan?.rpmMax ?? undefined;
-                specs["noiseIdle"] = c.component.CaseFan?.noiseIdle != null ? Number(c.component.CaseFan.noiseIdle) : undefined;
-                specs["noiseMax"] = c.component.CaseFan?.noiseMax != null ? Number(c.component.CaseFan.noiseMax) : undefined;
-                specs["airflowIdle"] = c.component.CaseFan?.airflowIdle != null ? Number(c.component.CaseFan.airflowIdle) : undefined;
-                specs["airflowMax"] = c.component.CaseFan?.airflowMax != null ? Number(c.component.CaseFan.airflowMax) : undefined;
+                specs["noiseIdle"] =
+                    c.component.CaseFan?.noiseIdle != null
+                        ? Number(c.component.CaseFan.noiseIdle)
+                        : undefined;
+                specs["noiseMax"] =
+                    c.component.CaseFan?.noiseMax != null
+                        ? Number(c.component.CaseFan.noiseMax)
+                        : undefined;
+                specs["airflowIdle"] =
+                    c.component.CaseFan?.airflowIdle != null
+                        ? Number(c.component.CaseFan.airflowIdle)
+                        : undefined;
+                specs["airflowMax"] =
+                    c.component.CaseFan?.airflowMax != null
+                        ? Number(c.component.CaseFan.airflowMax)
+                        : undefined;
                 break;
 
             case "SOUND_CARD":
                 specs["channels"] = c.component.SoundCard?.channels;
                 specs["snr"] = c.component.SoundCard?.snr ?? undefined;
-                specs["sampleRate"] = c.component.SoundCard?.sampleRate ?? undefined;
+                specs["sampleRate"] =
+                    c.component.SoundCard?.sampleRate ?? undefined;
                 specs["interface"] = c.component.SoundCard?.interface;
                 specs["chipset"] = c.component.SoundCard?.chipset ?? undefined;
                 break;
