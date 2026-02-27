@@ -38,6 +38,7 @@ type ComponentSelectorProps = {
     componentType: ComponentType;
     onSelect: (post: SelectedPost) => void;
     isAuthenticated?: boolean;
+    excludePostIds?: string[];
 };
 
 export function ComponentSelector({
@@ -46,6 +47,7 @@ export function ComponentSelector({
     componentType,
     onSelect,
     isAuthenticated = false,
+    excludePostIds = [],
 }: ComponentSelectorProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -88,6 +90,16 @@ export function ComponentSelector({
         onSelect(post);
         onOpenChange(false);
     };
+
+    // Filter out excluded posts from search results
+    const filteredSearchResults = searchQuery$.data?.filter(
+        (post) => !excludePostIds.includes(post.id)
+    );
+
+    // Filter out excluded posts from favorites
+    const filteredFavorites = favoritesQuery$.data?.filter(
+        (post) => !excludePostIds.includes(post.id)
+    );
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -162,19 +174,26 @@ export function ComponentSelector({
                                                 )
                                             )}
                                         </div>
-                                    ) : searchQuery$.data?.length === 0 ? (
+                                    ) : filteredSearchResults?.length === 0 ? (
                                         <div className="text-center text-muted-foreground py-8">
-                                            Aucune annonce trouvée
+                                            {excludePostIds.length > 0 &&
+                                            searchQuery$.data?.length !== 0
+                                                ? "Tous les composants disponibles sont déjà ajoutés"
+                                                : "Aucune annonce trouvée"}
                                         </div>
                                     ) : (
                                         <div className="space-y-2 w-full">
-                                            {searchQuery$.data?.map((post) => (
-                                                <PostCard
-                                                    key={post.id}
-                                                    post={post as SelectedPost}
-                                                    onSelect={handleSelect}
-                                                />
-                                            ))}
+                                            {filteredSearchResults?.map(
+                                                (post) => (
+                                                    <PostCard
+                                                        key={post.id}
+                                                        post={
+                                                            post as SelectedPost
+                                                        }
+                                                        onSelect={handleSelect}
+                                                    />
+                                                )
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -197,13 +216,16 @@ export function ComponentSelector({
                                         />
                                     ))}
                                 </div>
-                            ) : favoritesQuery$.data?.length === 0 ? (
+                            ) : filteredFavorites?.length === 0 ? (
                                 <div className="text-center text-muted-foreground py-8">
-                                    Aucun favori pour ce type de composant
+                                    {excludePostIds.length > 0 &&
+                                    favoritesQuery$.data?.length !== 0
+                                        ? "Tous vos favoris sont déjà ajoutés"
+                                        : "Aucun favori pour ce type de composant"}
                                 </div>
                             ) : (
                                 <div className="space-y-2 w-full pr-2">
-                                    {favoritesQuery$.data?.map((post) => (
+                                    {filteredFavorites?.map((post) => (
                                         <PostCard
                                             key={post.id}
                                             post={post as SelectedPost}
