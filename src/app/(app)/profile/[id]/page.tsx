@@ -106,10 +106,14 @@ function EmptyState() {
     );
 }
 
-async function ListingsContent() {
-    const listings = await trpc.posts.getUserListings();
+async function ListingsContent({ user }: { user: { id: string } | null }) {
+    if (!user?.id) {
+        return <EmptyState />;
+    }
 
-    if (listings.length === 0) {
+    const listings = await trpc.posts.getUserListings({ userId: user.id });
+
+    if (!listings || listings.length === 0) {
         return <EmptyState />;
     }
 
@@ -132,7 +136,7 @@ export default async function ProfilePage({ params }: { params: Promise<Params> 
             {
                 <Suspense fallback={<ProfileHeaderSkeleton />}>
                     <ProfileHeader user={user} />
-                    <ListingsContent />
+                    <ListingsContent user={user} />
                 </Suspense>
             }
         </section>
