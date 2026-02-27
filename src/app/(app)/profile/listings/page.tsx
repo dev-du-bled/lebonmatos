@@ -58,14 +58,11 @@ function EmptyState() {
             <div className="space-y-2">
                 <h2 className="text-xl font-semibold">Aucune annonce</h2>
                 <p className="max-w-sm text-muted-foreground">
-                    Vous n&apos;avez pas encore publié d&apos;annonce. Commencez
-                    à vendre vos composants dès maintenant !
+                    Vous n&apos;avez pas encore publié d&apos;annonce. Commencez à vendre vos composants dès maintenant
+                    !
                 </p>
             </div>
-            <Link
-                href="/create-post"
-                className={cn(buttonVariants({ size: "lg" }))}
-            >
+            <Link href="/create-post" className={cn(buttonVariants({ size: "lg" }))}>
                 <Plus className="size-4" />
                 Publier une annonce
             </Link>
@@ -74,7 +71,7 @@ function EmptyState() {
 }
 
 async function ListingsContent() {
-    const listings = await trpc.posts.getUserListings();
+    const listings = await trpc.posts.getUserListings({});
 
     if (listings.length === 0) {
         return <EmptyState />;
@@ -90,7 +87,7 @@ async function ListingsContent() {
 }
 
 async function HeaderAction() {
-    const listings = await trpc.posts.getUserListings();
+    const listings = await trpc.posts.getUserListings({});
 
     if (listings.length === 0) {
         return null;
@@ -122,9 +119,7 @@ export default function ListingsPage() {
                     </Link>
                     <div>
                         <h1 className="text-2xl font-semibold">Mes annonces</h1>
-                        <p className="text-sm text-muted-foreground">
-                            Gérez vos annonces en ligne
-                        </p>
+                        <p className="text-sm text-muted-foreground">Gérez vos annonces en ligne</p>
                     </div>
                 </div>
                 <Suspense fallback={<Skeleton className="h-9 w-40" />}>

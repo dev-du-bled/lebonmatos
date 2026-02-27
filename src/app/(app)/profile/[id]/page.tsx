@@ -2,10 +2,11 @@ import { Metadata } from "next";
 import { cache } from "react";
 import { trpc } from "@/trpc/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 import { Star, FileText } from "lucide-react";
-import { PostCard } from "./post-card";
+import { ListingCard } from "./listing-card";
 
 type Params = {
     id: string;
@@ -48,7 +49,53 @@ function ProfileHeaderSkeleton() {
     );
 }
 
-function ProfileHeader({ user }: { user: any }) {
+function ListingCardSkeleton() {
+    return (
+        <Card className="overflow-hidden p-0 gap-0">
+            <div className="flex flex-col sm:flex-row">
+                <Skeleton className="h-40 w-full sm:h-auto sm:w-48 shrink-0 rounded-none aspect-square sm:aspect-auto" />
+                <CardContent className="flex flex-1 flex-col justify-between gap-4 p-4">
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-start gap-2">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-6 w-20 shrink-0" />
+                        </div>
+                        <Skeleton className="h-3 w-1/3" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                        <Skeleton className="h-8 w-24" />
+                        <Skeleton className="h-8 w-24" />
+                    </div>
+                </CardContent>
+            </div>
+        </Card>
+    );
+}
+
+function ListingsSkeleton() {
+    return (
+        <div className="grid gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+                <ListingCardSkeleton key={i} />
+            ))}
+        </div>
+    );
+}
+
+function ProfileHeader({
+    user,
+}: {
+    user: {
+        id: string;
+        username?: string | null;
+        name?: string | null;
+        image?: string | null;
+        bio?: string | null;
+        rating: { average?: number | null; count: number };
+    };
+}) {
     const displayName = user.username ?? user.name ?? "Mon profil";
     const initials = displayName
         .split(/\s+/)
@@ -106,12 +153,8 @@ function EmptyState() {
     );
 }
 
-async function ListingsContent({ user }: { user: { id: string } | null }) {
-    if (!user?.id) {
-        return <EmptyState />;
-    }
-
-    const listings = await trpc.posts.getUserListings({ userId: user.id });
+async function ListingsContent({ userId }: { userId: string }) {
+    const listings = await trpc.posts.getUserListings({ userId });
 
     if (!listings || listings.length === 0) {
         return <EmptyState />;
@@ -120,7 +163,7 @@ async function ListingsContent({ user }: { user: { id: string } | null }) {
     return (
         <div className="grid gap-4">
             {listings.map((listing) => (
-                <PostCard key={listing.id} post={listing} />
+                <ListingCard key={listing.id} listing={listing} />
             ))}
         </div>
     );
@@ -133,12 +176,20 @@ export default async function ProfilePage({ params }: { params: Promise<Params> 
 
     return (
         <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
-            {
+            <div className="mb-8">
                 <Suspense fallback={<ProfileHeaderSkeleton />}>
                     <ProfileHeader user={user} />
-                    <ListingsContent user={user} />
                 </Suspense>
-            }
+            </div>
+
+            <div className="mb-4">
+                <h2 className="text-xl font-semibold">Annonces</h2>
+                <p className="text-sm text-muted-foreground">Les annonces publiées par ce vendeur</p>
+            </div>
+
+            <Suspense fallback={<ListingsSkeleton />}>
+                {user?.id ? <ListingsContent userId={user.id} /> : <EmptyState />}
+            </Suspense>
         </section>
     );
 }
