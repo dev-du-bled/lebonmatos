@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { ComponentType } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import type { SelectedPost } from "@/components/configurator/component-selector";
 
 const configurationItemSchema = z.object({
     componentType: z.enum(ComponentType),
@@ -340,22 +341,7 @@ export const configurationRouter = createTRPCRouter({
                 include: {
                     post: {
                         include: {
-                            component: {
-                                include: {
-                                    Cpu: true,
-                                    Gpu: true,
-                                    Motherboard: true,
-                                    Ram: true,
-                                    Ssd: true,
-                                    Hdd: true,
-                                    Psu: true,
-                                    CpuCooler: true,
-                                    Case: true,
-                                    CaseFan: true,
-                                    SoundCard: true,
-                                    WirelessNetworkCard: true,
-                                },
-                            },
+                            ...postWithComponentInclude,
                             user: {
                                 select: {
                                     id: true,
@@ -368,6 +354,6 @@ export const configurationRouter = createTRPCRouter({
                 },
             });
 
-            return favorites.map((f) => f.post);
+            return favorites.map((fav) => fav.post) as SelectedPost[];
         }),
 });

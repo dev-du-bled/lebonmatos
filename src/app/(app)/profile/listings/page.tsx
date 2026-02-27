@@ -7,6 +7,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ListingCard } from "./listing-card";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Mes annonces",
+    description: "Gérez vos annonces en ligne sur LeBonMatos",
+};
 
 function ListingCardSkeleton() {
     return (

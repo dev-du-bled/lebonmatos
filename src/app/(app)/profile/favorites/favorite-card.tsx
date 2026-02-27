@@ -7,6 +7,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ComponentType } from "@prisma/client";
 
 interface FavoriteCardProps {
     favorite: {
@@ -17,7 +18,7 @@ interface FavoriteCardProps {
         component: {
             id: string;
             name: string;
-            type: string;
+            type: ComponentType;
         };
         thumbnail: {
             image: string;

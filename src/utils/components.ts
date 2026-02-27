@@ -1,3 +1,4 @@
+import { ComponentWithDetails } from "@/lib/compatibility";
 import {
     Cpu,
     Gpu,
@@ -331,3 +332,127 @@ const enumDisplayMapping: Record<ComponentType, string> = {
     SOUND_CARD: "Carte Son",
     WIRELESS_NETWORK_CARD: "Carte Wifi",
 };
+
+/**
+ * Build the object for the configurator based on component data
+ * @param data component data
+ * @returns the data with the returned component
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function buildComponentDetails(data: any): ComponentWithDetails {
+    const details: ComponentWithDetails = {
+        id: data.id,
+        name: data.name,
+        type: data.type,
+    };
+
+    switch (data.type as ComponentType) {
+        case "CPU":
+            details.Cpu = {
+                microarch: data.microarch,
+                coreCount: data.coreCount,
+                coreClock: data.coreClock,
+                boostClock: data.boostClock,
+                tdp: data.tdp,
+                graphics: data.graphics,
+            };
+            break;
+        case "GPU":
+            details.Gpu = {
+                chipset: data.chipset,
+                memory: data.memory,
+                coreClock: data.coreClock,
+                boostClock: data.boostClock,
+                length: data.length,
+            };
+            break;
+        case "MOTHERBOARD":
+            details.Motherboard = {
+                socket: data.socket,
+                formFactor: data.formFactor,
+                maxMemory: data.maxMemory,
+                memorySlots: data.memorySlots,
+            };
+            break;
+        case "RAM":
+            details.Ram = {
+                type: data.type ?? data.ramType,
+                speed: data.speed,
+                modules: data.modules,
+                size: data.size,
+                casLatency: data.casLatency,
+            };
+            break;
+        case "SSD":
+            details.Ssd = {
+                capacity: data.capacity,
+                cache: data.cache,
+                interface: data.interface,
+                formFactor: data.formFactor,
+            };
+            break;
+        case "HDD":
+            details.Hdd = {
+                capacity: data.capacity,
+                cache: data.cache,
+                formFactor: data.formFactor,
+                interface: data.interface,
+            };
+            break;
+        case "POWER_SUPPLY":
+            details.Psu = {
+                type: data.type ?? data.psuType,
+                wattage: data.wattage,
+                efficiency: data.efficiency,
+                modular: data.modular,
+            };
+            break;
+        case "CASE":
+            details.Case = {
+                type: data.type ?? data.caseType,
+                sidePanel: data.sidePanel,
+                volume: data.volume,
+                bays3_5: data.bays3_5,
+            };
+            break;
+        case "CASE_FAN":
+            details.CaseFan = {
+                size: data.size,
+                rpmIdle: data.rpmIdle,
+                rpmMax: data.rpmMax,
+                noiseIdle: data.noiseIdle,
+                noiseMax: data.noiseMax,
+                airflowIdle: data.airflowIdle,
+                airflowMax: data.airflowMax,
+                pwm: data.pwm,
+            };
+            break;
+        case "CPU_COOLER":
+            details.CpuCooler = {
+                rpmIdle: data.rpmIdle,
+                rpmMax: data.rpmMax,
+                noiseIdle: data.noiseIdle,
+                noiseMax: data.noiseMax,
+                size: data.size,
+            };
+            break;
+        case "SOUND_CARD":
+            details.SoundCard = {
+                channels: data.channels,
+                digitalAudio: data.digitalAudio,
+                snr: data.snr,
+                sampleRate: data.sampleRate,
+                chipset: data.chipset,
+                interface: data.interface,
+            };
+            break;
+        case "WIRELESS_NETWORK_CARD":
+            details.WirelessNetworkCard = {
+                interface: data.interface,
+                protocol: data.protocol,
+            };
+            break;
+    }
+
+    return details;
+}

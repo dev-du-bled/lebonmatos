@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
@@ -20,6 +19,7 @@ import {
 import { Plus, Trash2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import type { SelectedPost } from "./component-selector";
+import { formatComponentDetails } from "@/lib/utils";
 
 type ConfigSlotCardProps = {
     componentType: ComponentType;
@@ -76,30 +76,28 @@ export function ConfigSlotCard({
         >
             <CardHeader className="py-3 px-4 gap-0">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex">
+                    <CardTitle className="text-lg flex gap-2 items-center">
                         {COMPONENT_TYPE_LABELS[componentType]}
                         {hasError && (
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div className="cursor-help inline-flex items-center justify-center rounded-full bg-destructive/10 p-1 text-destructive">
-                                            <AlertCircle className="size-4" />
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <div className="text-sm font-normal max-w-xs">
-                                            {issues.map((issue, i) => (
-                                                <p
-                                                    key={i}
-                                                    className="mb-1 last:mb-0"
-                                                >
-                                                    {issue.message}
-                                                </p>
-                                            ))}
-                                        </div>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="cursor-help inline-flex items-center justify-center rounded-full bg-destructive/10 p-1 text-destructive">
+                                        <AlertCircle className="size-4" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <div className="text-sm font-normal max-w-xs">
+                                        {issues.map((issue, i) => (
+                                            <p
+                                                key={i}
+                                                className="mb-1 last:mb-0"
+                                            >
+                                                {issue.message}
+                                            </p>
+                                        ))}
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
                         )}
                     </CardTitle>
                     {(!post || isMulti) && (
@@ -116,67 +114,66 @@ export function ConfigSlotCard({
             <Separator />
             <CardContent className="p-4">
                 {post ? (
-                    <div className="flex items-center gap-4">
-                        <div className="relative size-20 shrink-0 bg-muted rounded-lg overflow-hidden border">
-                            {post.images?.[0] ? (
-                                <Image
-                                    src={post.images[0]}
-                                    alt={post.title}
-                                    fill
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <div className="size-full flex items-center justify-center text-muted-foreground text-xs">
-                                    N/A
-                                </div>
-                            )}
+                    <div className="flex flex-col xs:flex-row xs:items-center gap-4">
+                        <div className="relative h-35 xs:size-20 w-full shrink-0 bg-muted rounded-lg overflow-hidden border">
+                            <Image
+                                src={post.images[0] || "/images/fallback.webp"}
+                                alt={post.title}
+                                fill
+                                className="object-cover"
+                            />
                         </div>
-                        <div className="flex-1 min-w-0 space-y-1">
-                            <p className="font-medium truncate text-base">
+                        <div className="flex-1 space-y-1">
+                            <p className="font-medium wrap-anywhere line-clamp-2 text-base">
                                 {post.title}
                             </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                                {post.componentName}
+                            <p className="text-sm text-muted-foreground wrap-break-word">
+                                {post.component.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground wrap-break-word">
+                                {formatComponentDetails(post.component)}
                             </p>
                         </div>
-                        {isMulti && (
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">
-                                    x
-                                </span>
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    max={10}
-                                    value={quantity}
-                                    onChange={(e) =>
-                                        onQuantityChange(
-                                            componentType,
-                                            parseInt(e.target.value)
-                                        )
-                                    }
-                                    className="w-16 text-center"
-                                />
-                            </div>
-                        )}
-                        <div className="text-right shrink-0 min-w-20">
-                            <p className="font-semibold text-lg">
-                                {post.price * quantity} €
-                            </p>
-                            {isMulti && quantity > 1 && (
-                                <p className="text-xs text-muted-foreground">
-                                    {post.price} € / unité
-                                </p>
+                        <div className="flex items-center justify-end gap-4">
+                            {isMulti && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-muted-foreground">
+                                        x
+                                    </span>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        max={10}
+                                        value={quantity}
+                                        onChange={(e) =>
+                                            onQuantityChange(
+                                                componentType,
+                                                parseInt(e.target.value)
+                                            )
+                                        }
+                                        className="w-16 text-center"
+                                    />
+                                </div>
                             )}
+                            <div className="text-right shrink-0">
+                                <p className="font-semibold text-lg">
+                                    {post.price * quantity} €
+                                </p>
+                                {isMulti && (
+                                    <p className="text-xs text-muted-foreground">
+                                        {post.price} € / unité
+                                    </p>
+                                )}
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-destructive transition-colors"
+                                onClick={() => onRemove(componentType)}
+                            >
+                                <Trash2 className="size-4" />
+                            </Button>
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-destructive transition-colors"
-                            onClick={() => onRemove(componentType)}
-                        >
-                            <Trash2 className="size-4" />
-                        </Button>
                     </div>
                 ) : (
                     <button

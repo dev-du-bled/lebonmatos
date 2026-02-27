@@ -21,6 +21,7 @@ import { cache } from "react";
 import PostMap from "@/components/post/post-map";
 import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
+import z from "zod";
 
 type Params = {
     id: string;
@@ -52,6 +53,8 @@ export default async function PostPage({
     params: Promise<Params>;
 }) {
     const { id } = await params;
+
+    if (!z.cuid().safeParse(id).success) notFound();
 
     const post = await getPost(id);
 

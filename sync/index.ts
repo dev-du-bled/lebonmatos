@@ -6,6 +6,7 @@ import {
     TYPE_TO_TABLE,
     COMPONENT_QUERIES_BASE,
 } from "./utils";
+import { buildComponentDetails } from "@/utils/components";
 
 let client: Client;
 let meilisearch: MeiliSearch;
@@ -23,36 +24,57 @@ async function syncPost(id: string) {
         // Extract first image if available
         const firstImage =
             post.images && post.images.length > 0 ? post.images[0] : null;
-        let enrichedPost = { ...post, firstImage };
 
-        // Enrich with component-specific data if post has a component
-        if (post.componentId && post.componentType) {
-            const tableName = TYPE_TO_TABLE[post.componentType];
-            if (tableName && COMPONENT_QUERIES_BASE[tableName]) {
-                const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
-                const { rows: componentData } = await client.query(
-                    componentQuery,
-                    [post.componentId]
-                );
-
-                if (componentData.length > 0) {
-                    const { estimatedPrice, color, ...componentFields } =
-                        componentData[0];
-                    enrichedPost = {
-                        ...post,
-                        firstImage,
-                        componentEstimatedPrice: estimatedPrice,
-                        componentColor: color,
-                        ...componentFields,
-                    };
-                }
-            }
+        // If post has no component, return as-is with first image
+        if (!post.componentId || !post.componentType) {
+            const task = await wrappMeiliTask(
+                meilisearch
+                    .index("posts")
+                    .addDocuments([{ ...post, firstImage }])
+            );
+            console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+            return;
         }
 
-        const task = await wrappMeiliTask(
-            meilisearch.index("posts").addDocuments([enrichedPost])
-        );
-        console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+        // Get the table name for this component type
+        const tableName = TYPE_TO_TABLE[post.componentType];
+        if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
+            console.warn(
+                `No query found for component type: ${post.componentType}`
+            );
+            const task = await wrappMeiliTask(
+                meilisearch
+                    .index("posts")
+                    .addDocuments([{ ...post, firstImage }])
+            );
+            console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+            return;
+        }
+
+        // Fetch the specific component data
+        const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
+        const { rows: componentData } = await client.query(componentQuery, [
+            post.componentId,
+        ]);
+
+        // Build nested component structure
+        if (componentData.length > 0) {
+            const enrichedPost = {
+                ...post,
+                firstImage,
+                component: {
+                    ...buildComponentDetails(componentData[0]),
+                },
+            };
+
+            const task = await wrappMeiliTask(
+                meilisearch.index("posts").addDocuments([enrichedPost])
+            );
+            console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+        } else {
+            await meilisearch.index("posts").deleteDocument(id);
+            console.log(`Pruned old post ${id}`);
+        }
     } else {
         await meilisearch.index("posts").deleteDocument(id);
         console.log(`Pruned old post ${id}`);
