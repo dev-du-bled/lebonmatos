@@ -10,7 +10,7 @@ import {
 import { utapi } from "@/lib/utapi";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 
-const profileSelect = {
+const privateProfileSelect = {
     id: true,
     name: true,
     email: true,
@@ -22,10 +22,20 @@ const profileSelect = {
     image: true,
 } satisfies Prisma.UserSelect;
 
-type ProfileRecord = Prisma.UserGetPayload<{ select: typeof profileSelect }>;
+const publicProfileSelect = {
+    id: true,
+    username: true,
+    displayUsername: true,
+    bio: true,
+    createdAt: true,
+    image: true,
+} satisfies Prisma.UserSelect;
 
-function mapProfileResult(
-    user: ProfileRecord,
+type PrivateProfileRecord = Prisma.UserGetPayload<{ select: typeof privateProfileSelect }>;
+type PublicProfileRecord = Prisma.UserGetPayload<{ select: typeof publicProfileSelect }>;
+
+function mapPrivateProfileResult(
+    user: PrivateProfileRecord,
     rating: { average: number | null; count: number }
 ) {
     return {
@@ -42,10 +52,37 @@ function mapProfileResult(
     };
 }
 
+function mapPublicProfileResult(
+    user: PublicProfileRecord,
+    rating: { average: number | null; count: number }
+) {
+    return {
+        id: user.id,
+        username: user.username,
+        displayUsername: user.displayUsername,
+        bio: user.bio,
+        createdAt: user.createdAt.toISOString(),
+        image: user.image,
+        rating,
+    };
+}
+
+async function getRating(userId: string) {
+    const aggregates = await prisma.rating.aggregate({
+        where: { userId },
+        _avg: { rating: true },
+        _count: { rating: true },
+    });
+    return {
+        average: aggregates._avg.rating ? Number(aggregates._avg.rating) : null,
+        count: aggregates._count.rating,
+    };
+}
+
 async function buildProfilePayload(userId: string) {
     const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: profileSelect,
+        select: privateProfileSelect,
     });
 
     if (!user) {
@@ -55,16 +92,23 @@ async function buildProfilePayload(userId: string) {
         });
     }
 
-    const aggregates = await prisma.rating.aggregate({
-        where: { userId },
-        _avg: { rating: true },
-        _count: { rating: true },
+    return mapPrivateProfileResult(user, await getRating(userId));
+}
+
+async function buildPublicProfilePayload(userId: string) {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: publicProfileSelect,
     });
 
-    return mapProfileResult(user, {
-        average: aggregates._avg.rating ? Number(aggregates._avg.rating) : null,
-        count: aggregates._count.rating,
-    });
+    if (!user) {
+        throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Utilisateur introuvable",
+        });
+    }
+
+    return mapPublicProfileResult(user, await getRating(userId));
 }
 
 async function deleteUserImage(image: string) {
@@ -78,18 +122,14 @@ export const userRouter = createTRPCRouter({
     meId: privateProcedure.query(({ ctx }) => {
         return ctx.session!.user.id;
     }),
-    getProfile: publicProcedure
-        .input(z.object({ userId: z.string().optional() }).optional())
-        .query(async ({ ctx, input }) => {
-            const userId = input?.userId ?? ctx.session?.user.id;
-            if (!userId) {
-                throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message:
-                        "Vous devez être connecté pour accéder à ce profil",
-                });
-            }
-            return buildProfilePayload(userId);
+    getProfile: privateProcedure.query(async ({ ctx }) => {
+        return buildProfilePayload(ctx.session!.user.id);
+    }),
+
+    getPublicProfile: publicProcedure
+        .input(z.object({ userId: z.string() }))
+        .query(async ({ input }) => {
+            return buildPublicProfilePayload(input.userId);
         }),
     updateProfile: privateProcedure
         .input(profileUpdateSchema)
