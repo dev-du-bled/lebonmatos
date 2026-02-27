@@ -31,8 +31,12 @@ const publicProfileSelect = {
     image: true,
 } satisfies Prisma.UserSelect;
 
-type PrivateProfileRecord = Prisma.UserGetPayload<{ select: typeof privateProfileSelect }>;
-type PublicProfileRecord = Prisma.UserGetPayload<{ select: typeof publicProfileSelect }>;
+type PrivateProfileRecord = Prisma.UserGetPayload<{
+    select: typeof privateProfileSelect;
+}>;
+type PublicProfileRecord = Prisma.UserGetPayload<{
+    select: typeof publicProfileSelect;
+}>;
 
 function mapPrivateProfileResult(
     user: PrivateProfileRecord,

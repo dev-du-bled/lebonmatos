@@ -356,7 +356,9 @@ export function PublicProfileDialog({
                                             <AvatarImage
                                                 src={avatarPreview}
                                                 alt={
-                                                    watchedUsername || user.username || ""
+                                                    watchedUsername ||
+                                                    user.username ||
+                                                    ""
                                                 }
                                                 className="object-cover"
                                             />

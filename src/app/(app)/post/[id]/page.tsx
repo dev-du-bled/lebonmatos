@@ -80,8 +80,7 @@ export default async function PostPage({
                                     <AspectRatio ratio={4 / 3}>
                                         <Image
                                             src={
-                                                image ||
-                                                "/images/fallback.webp"
+                                                image || "/images/fallback.webp"
                                             }
                                             alt={`Image ${index + 1}`}
                                             fill
@@ -175,8 +174,8 @@ export default async function PostPage({
                                 <div className="flex items-center gap-1 mt-0.5">
                                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                                     <span className="text-sm text-muted-foreground">
-                                        {post.seller.rating.avg.toFixed(1)}{" "}
-                                        ({post.seller.rating.count} avis)
+                                        {post.seller.rating.avg.toFixed(1)} (
+                                        {post.seller.rating.count} avis)
                                     </span>
                                 </div>
                             )}
@@ -188,9 +187,7 @@ export default async function PostPage({
 
                 {/* Description - mobile: 4e, desktop: col 1-2 row 3 */}
                 <div className="lg:col-span-2 lg:col-start-1 lg:row-start-3 py-4">
-                    <h2 className="text-2xl font-semibold mb-4">
-                        Description
-                    </h2>
+                    <h2 className="text-2xl font-semibold mb-4">Description</h2>
                     <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-line">
                         {post.description}
                     </p>

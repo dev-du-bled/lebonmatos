@@ -13,7 +13,8 @@ interface UserPreviewProps {
 
 export default async function UserPreview({ user }: UserPreviewProps) {
     const profile = await trpc.user.getPublicProfile({ userId: user.id });
-    const displayName = user.displayUsername ?? user.username ?? "Utilisateur supprimé";
+    const displayName =
+        user.displayUsername ?? user.username ?? "Utilisateur supprimé";
 
     return (
         <div className="flex flex-row items-center gap-2">
@@ -23,9 +24,7 @@ export default async function UserPreview({ user }: UserPreviewProps) {
             </Avatar>
 
             <div className="flex font-sans flex-col">
-                <span className="text-sm">
-                    {displayName}
-                </span>
+                <span className="text-sm">{displayName}</span>
                 <span className="flex flex-row items-center gap-1 text-xs font-sans">
                     {profile?.rating.average?.toFixed(1) ?? "-"}
                     <Star size={12} className="fill-primary stroke-0" />
