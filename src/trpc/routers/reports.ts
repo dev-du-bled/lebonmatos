@@ -17,7 +17,13 @@ export const reportsRouter = createTRPCRouter({
                 sortOrder: z.enum(["asc", "desc"]).default("desc"),
                 search: z.string().optional(),
                 searchField: z
-                    .enum(["details", "reporterEmail", "reporterName"])
+                    .enum([
+                        "details",
+                        "reporterEmail",
+                        "reporterName",
+                        "reportedUserName",
+                        "reportedUserEmail",
+                    ])
                     .optional(),
             })
         )
@@ -45,6 +51,14 @@ export const reportsRouter = createTRPCRouter({
                     where.user = {
                         name: { contains: search, mode: "insensitive" },
                     };
+                } else if (searchField === "reportedUserName") {
+                    where.reportedUser = {
+                        name: { contains: search, mode: "insensitive" },
+                    };
+                } else if (searchField === "reportedUserEmail") {
+                    where.reportedUser = {
+                        email: { contains: search, mode: "insensitive" },
+                    };
                 }
             }
 
@@ -66,6 +80,9 @@ export const reportsRouter = createTRPCRouter({
                             },
                         },
                         user: { select: { id: true, name: true, email: true } },
+                        reportedUser: {
+                            select: { id: true, name: true, email: true },
+                        },
                     },
                 }),
                 prisma.report.count({ where }),

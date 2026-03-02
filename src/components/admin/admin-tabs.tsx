@@ -7,7 +7,11 @@ export default function AdminTabs() {
     const router = useRouter();
     const path = usePathname();
 
-    const defaultPath = path.includes("/posts") ? "posts" : "accounts";
+    const defaultPath = path.includes("/posts")
+        ? "posts"
+        : path.includes("/reviews")
+        ? "reviews"
+        : "accounts";
 
     return (
         <Tabs
@@ -16,7 +20,7 @@ export default function AdminTabs() {
         >
             <TabsList variant="line" className="space-x-4">
                 <TabsTrigger value="posts">Annonces</TabsTrigger>
-                <TabsTrigger value="accounts">Profils</TabsTrigger>
+                <TabsTrigger value="accounts">Utilisateurs</TabsTrigger>
                 <TabsTrigger value="reviews">Avis</TabsTrigger>
             </TabsList>
         </Tabs>

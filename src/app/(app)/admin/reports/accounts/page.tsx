@@ -1,96 +1,95 @@
 "use client";
 
-import * as React from "react";
 import { SortingState } from "@tanstack/react-table";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { authClient } from "@/lib/auth-client";
+import { trpc } from "@/trpc/client";
 import { DataTable } from "@/components/admin/data-table";
 import { makeColumns } from "./columns";
+import { useState, useCallback, useMemo } from "react";
 
 const SEARCH_FIELDS = [
-    { value: "email", label: "Email", placeholder: "Rechercher par email..." },
-    { value: "name", label: "Nom", placeholder: "Rechercher par nom..." },
+    {
+        value: "reportedUserName",
+        label: "Nom signalé",
+        placeholder: "Rechercher par nom...",
+    },
+    {
+        value: "reportedUserEmail",
+        label: "Email signalé",
+        placeholder: "Rechercher par email...",
+    },
+    {
+        value: "reporterName",
+        label: "Nom reporter",
+        placeholder: "Rechercher par nom du reporter...",
+    },
+    {
+        value: "details",
+        label: "Détails",
+        placeholder: "Rechercher dans les détails...",
+    },
 ];
 
-export default function AccountsPage() {
-    const queryClient = useQueryClient();
-
-    const [pageIndex, setPageIndex] = React.useState(0);
-    const [pageSize, setPageSize] = React.useState(10);
-    const [sorting, setSorting] = React.useState<SortingState>([
-        { id: "createdAt", desc: true },
+export default function AccountsReportsPage() {
+    const [pageIndex, setPageIndex] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [sorting, setSorting] = useState<SortingState>([
+        { id: "reportedAt", desc: true },
     ]);
-    const [searchValue, setSearchValue] = React.useState("");
-    const [searchField, setSearchField] = React.useState<"email" | "name">(
-        "email"
-    );
+    const [search, setSearch] = useState("");
+    const [searchField, setSearchField] = useState("reportedUserName");
 
-    const sortField = sorting[0]?.id ?? "createdAt";
+    const sortField = sorting[0]?.id ?? "reportedAt";
     const sortOrder = sorting[0]?.desc === false ? "asc" : "desc";
 
-    const queryKey = [
-        "admin",
-        "users",
-        pageIndex,
-        pageSize,
-        sortField,
-        sortOrder,
-        searchField,
-        searchValue,
-    ];
+    const validSortFields = ["reportedAt", "reason", "type"] as const;
+    const safeSortBy = validSortFields.includes(
+        sortField as (typeof validSortFields)[number]
+    )
+        ? (sortField as (typeof validSortFields)[number])
+        : "reportedAt";
 
-    const { data, isFetching } = useQuery({
-        queryKey,
-        queryFn: async () => {
-            const result = await authClient.admin.listUsers({
-                query: {
-                    limit: pageSize,
-                    offset: pageIndex * pageSize,
-                    sortBy: sortField,
-                    sortDirection: sortOrder,
-                    ...(searchValue
-                        ? {
-                              searchValue,
-                              searchField,
-                              searchOperator: "contains" as const,
-                          }
-                        : {}),
-                },
-            });
-            if (result.error) throw result.error;
-            return result.data;
-        },
+    const { data, isFetching } = trpc.reports.getReports.useQuery({
+        type: "USER",
+        limit: pageSize,
+        offset: pageIndex * pageSize,
+        sortBy: safeSortBy,
+        sortOrder,
+        ...(search
+            ? {
+                  search,
+                  searchField: searchField as
+                      | "details"
+                      | "reporterEmail"
+                      | "reporterName"
+                      | "reportedUserName"
+                      | "reportedUserEmail",
+              }
+            : {}),
     });
 
-    const handleMutationSuccess = React.useCallback(() => {
-        queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
-    }, [queryClient]);
+    const columns = useMemo(() => makeColumns(), []);
 
-    const columns = React.useMemo(
-        () => makeColumns(handleMutationSuccess),
-        [handleMutationSuccess]
-    );
-
-    const handleSearch = React.useCallback((value: string, field: string) => {
-        setSearchValue(value);
-        setSearchField(field as "email" | "name");
+    const handleSearch = useCallback((value: string, field: string) => {
+        setSearch(value);
+        setSearchField(field);
+        setPageIndex(0);
     }, []);
 
     return (
         <div className="p-6 space-y-4">
             <div>
                 <h1 className="text-2xl font-semibold tracking-tight">
-                    Utilisateurs
+                    Signalements d&apos;Utilisateurs
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                    Gérez les comptes utilisateurs.
+                    Gérez les signalements d&apos;utilisateurs.
                 </p>
             </div>
 
             <DataTable
                 columns={columns}
-                data={data?.users ?? []}
-                totalCount={data?.total ?? 0}
+                data={data?.reports ?? []}
+                totalCount={data?.totalCount ?? 0}
                 pageIndex={pageIndex}
                 pageSize={pageSize}
                 sorting={sorting}

@@ -1,13 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { Column, ColumnDef } from "@tanstack/react-table";
 import {
     ArrowDown,
     ArrowUp,
     ChevronsUpDown,
     MoreHorizontal,
-    ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,28 +17,38 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { authClient } from "@/lib/auth-client";
+import type { REPORT_TYPE } from "@prisma/client";
 
-export type UserRow = {
+export type UserReportRow = {
     id: string;
-    name: string;
-    email: string;
-    emailVerified: boolean;
-    image?: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    role?: string | null;
-    banned: boolean | null;
-    banReason?: string | null;
-    banExpires?: Date | null;
+    reason: REPORT_TYPE;
+    details: string | null;
+    reportedAt: Date | string;
+    user: { id: string; name: string | null; email: string | null } | null;
+    reportedUser: { id: string; name: string | null; email: string | null } | null;
+};
+
+const reasonLabel: Record<REPORT_TYPE, string> = {
+    SPAM: "Spam",
+    INNAPPROPRIATE: "Inapproprié",
+    HARASSMENT: "Harcèlement",
+    SCAM: "Arnaque",
+    OTHER: "Autre",
+};
+
+const reasonVariant: Record<REPORT_TYPE, "destructive" | "secondary" | "outline"> = {
+    SPAM: "secondary",
+    INNAPPROPRIATE: "destructive",
+    HARASSMENT: "destructive",
+    SCAM: "destructive",
+    OTHER: "outline",
 };
 
 function SortableHeader({
     column,
     title,
 }: {
-    column: Column<UserRow, unknown>;
+    column: Column<UserReportRow, unknown>;
     title: string;
 }) {
     return (
@@ -62,29 +70,7 @@ function SortableHeader({
     );
 }
 
-function RowActions({
-    user,
-    onMutationSuccess,
-}: {
-    user: UserRow;
-    onMutationSuccess: () => void;
-}) {
-    const [isPending, setIsPending] = React.useState(false);
-
-    const handleBan = async () => {
-        setIsPending(true);
-        await authClient.admin.banUser({ userId: user.id });
-        setIsPending(false);
-        onMutationSuccess();
-    };
-
-    const handleUnban = async () => {
-        setIsPending(true);
-        await authClient.admin.unbanUser({ userId: user.id });
-        setIsPending(false);
-        onMutationSuccess();
-    };
-
+function RowActions({ report }: { report: UserReportRow }) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -95,32 +81,32 @@ function RowActions({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                    <a
-                        href={`/profile/${user.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        Voir le profil
-                    </a>
+                <DropdownMenuItem
+                    onClick={() => navigator.clipboard.writeText(report.id)}
+                >
+                    Copier l&apos;ID du signalement
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {user.banned ? (
-                    <DropdownMenuItem
-                        onClick={handleUnban}
-                        disabled={isPending}
-                    >
-                        <ShieldCheck className="mr-2 h-4 w-4" />
-                        Débannir
+                {report.user && (
+                    <DropdownMenuItem asChild>
+                        <a
+                            href={`/profile/${report.user.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            Voir le profil du reporter
+                        </a>
                     </DropdownMenuItem>
-                ) : (
-                    <DropdownMenuItem
-                        onClick={handleBan}
-                        disabled={isPending}
-                        className="text-destructive focus:text-destructive"
-                    >
-                        Bannir
+                )}
+                {report.reportedUser && (
+                    <DropdownMenuItem asChild>
+                        <a
+                            href={`/profile/${report.reportedUser.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            Voir le profil signalé
+                        </a>
                     </DropdownMenuItem>
                 )}
             </DropdownMenuContent>
@@ -128,107 +114,88 @@ function RowActions({
     );
 }
 
-export function makeColumns(
-    onMutationSuccess: () => void
-): ColumnDef<UserRow>[] {
+export function makeColumns(): ColumnDef<UserReportRow>[] {
     return [
         {
-            accessorKey: "name",
+            accessorKey: "reportedAt",
             header: ({ column }) => (
-                <SortableHeader column={column} title="Utilisateur" />
-            ),
-            cell: ({ row }) => {
-                const user = row.original;
-                return (
-                    <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage
-                                src={user.image ?? undefined}
-                                alt={user.name}
-                            />
-                            <AvatarFallback className="text-xs">
-                                {user.name.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium">{user.name}</span>
-                    </div>
-                );
-            },
-        },
-        {
-            accessorKey: "email",
-            header: ({ column }) => (
-                <SortableHeader column={column} title="Email" />
-            ),
-            cell: ({ row }) => {
-                const { email, emailVerified } = row.original;
-                return (
-                    <div className="flex flex-col">
-                        <span className="text-sm">{email}</span>
-                        {!emailVerified && (
-                            <span className="text-xs text-muted-foreground">
-                                Non vérifié
-                            </span>
-                        )}
-                    </div>
-                );
-            },
-        },
-        {
-            accessorKey: "role",
-            header: "Rôle",
-            cell: ({ row }) => {
-                const role = row.getValue<string | null>("role");
-                return role === "admin" ? (
-                    <Badge variant="destructive">Admin</Badge>
-                ) : (
-                    <Badge variant="secondary">Utilisateur</Badge>
-                );
-            },
-            enableSorting: false,
-        },
-        {
-            accessorKey: "banned",
-            header: "Statut",
-            cell: ({ row }) => {
-                const { banned, banReason } = row.original;
-                return banned ? (
-                    <Badge
-                        variant="destructive"
-                        className="cursor-default"
-                        title={banReason ?? undefined}
-                    >
-                        Banni
-                    </Badge>
-                ) : (
-                    <Badge variant="outline">Actif</Badge>
-                );
-            },
-            enableSorting: false,
-        },
-        {
-            accessorKey: "createdAt",
-            header: ({ column }) => (
-                <SortableHeader column={column} title="Inscrit le" />
+                <SortableHeader column={column} title="Date" />
             ),
             cell: ({ row }) =>
-                new Date(row.getValue("createdAt")).toLocaleDateString(
-                    "fr-FR",
-                    {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                    }
-                ),
+                new Date(row.getValue("reportedAt")).toLocaleDateString("fr-FR", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                }),
+        },
+        {
+            accessorKey: "reason",
+            header: ({ column }) => (
+                <SortableHeader column={column} title="Raison" />
+            ),
+            cell: ({ row }) => {
+                const reason = row.getValue<REPORT_TYPE>("reason");
+                return (
+                    <Badge variant={reasonVariant[reason]} className="capitalize">
+                        {reasonLabel[reason]}
+                    </Badge>
+                );
+            },
+        },
+        {
+            accessorKey: "reportedUser",
+            header: "Utilisateur signalé",
+            cell: ({ row }) => {
+                const user = row.original.reportedUser;
+                if (!user)
+                    return <span className="text-muted-foreground text-sm">—</span>;
+                return (
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium">{user.name ?? "—"}</span>
+                        <span className="text-xs text-muted-foreground">{user.email}</span>
+                    </div>
+                );
+            },
+            enableSorting: false,
+        },
+        {
+            accessorKey: "user",
+            header: "Reporter",
+            cell: ({ row }) => {
+                const user = row.original.user;
+                if (!user)
+                    return <span className="text-muted-foreground text-sm">—</span>;
+                return (
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium">{user.name ?? "—"}</span>
+                        <span className="text-xs text-muted-foreground">{user.email}</span>
+                    </div>
+                );
+            },
+            enableSorting: false,
+        },
+        {
+            accessorKey: "details",
+            header: "Détails",
+            cell: ({ row }) => {
+                const details = row.getValue<string | null>("details");
+                if (!details)
+                    return (
+                        <span className="text-muted-foreground text-sm italic">
+                            Aucun détail fourni
+                        </span>
+                    );
+                return (
+                    <span className="max-w-62.5 truncate block text-sm" title={details}>
+                        {details}
+                    </span>
+                );
+            },
+            enableSorting: false,
         },
         {
             id: "actions",
-            cell: ({ row }) => (
-                <RowActions
-                    user={row.original}
-                    onMutationSuccess={onMutationSuccess}
-                />
-            ),
+            cell: ({ row }) => <RowActions report={row.original} />,
         },
     ];
 }
