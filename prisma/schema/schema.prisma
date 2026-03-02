@@ -18,6 +18,7 @@ model User {
   sessions          Session[]
   accounts          Account[]
   posts             Post[]
+  purchasedPosts    Post[]       @relation("boughtBy")
   favorites         Favorite[]
   reports           Report[]
   discussionsBuyer  Discussion[] @relation("discussionBuyer")
@@ -96,6 +97,9 @@ model Post {
   user               User                @relation(fields: [userId], references: [id])
   images             String[]
   ConfigurationItems ConfigurationItem[]
+  isSold             Boolean             @default(false)
+  boughtById         String?
+  boughtBy           User?               @relation("boughtBy", fields: [boughtById], references: [id], onDelete: SetNull)
 
   @@map("post")
 }
