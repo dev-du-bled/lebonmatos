@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { FileText, Plus, ArrowLeft } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ListingCard } from "./listing-card";
 import { Metadata } from "next";
+import NavBack from "@/components/nav/nav-back";
 
 export const metadata: Metadata = {
     title: "Mes annonces",
@@ -107,30 +108,15 @@ async function HeaderAction() {
 export default function ListingsPage() {
     return (
         <section className="mx-auto w-full max-w-4xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-4">
-                    <Link
-                        href="/profile"
-                        className={cn(
-                            buttonVariants({
-                                variant: "ghost",
-                                size: "icon",
-                            })
-                        )}
-                    >
-                        <ArrowLeft className="size-5" />
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-semibold">Mes annonces</h1>
-                        <p className="text-sm text-muted-foreground">
-                            Gérez vos annonces en ligne
-                        </p>
-                    </div>
-                </div>
+            <NavBack
+                href="/profile"
+                title="Mes annonces"
+                desc="Gérez vos annonces en ligne"
+            >
                 <Suspense fallback={<Skeleton className="h-9 w-40" />}>
                     <HeaderAction />
                 </Suspense>
-            </div>
+            </NavBack>
 
             <Suspense fallback={<ListingsSkeleton />}>
                 <ListingsContent />
