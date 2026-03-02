@@ -315,7 +315,11 @@ export const postRouter = createTRPCRouter({
                 },
             });
 
-            if (!post) return null;
+            if (!post || post.user.banned)
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
 
             const component = await prisma.component.findUnique({
                 where: { id: post.componentId },

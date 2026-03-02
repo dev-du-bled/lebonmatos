@@ -194,8 +194,11 @@ export function DataTable<TData, TValue>({
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id}>
+                                {headerGroup.headers.map((header, i) => (
+                                    <TableHead
+                                        key={header.id}
+                                        className={i === 0 ? "pl-4" : ""}
+                                    >
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
@@ -213,7 +216,10 @@ export function DataTable<TData, TValue>({
                             Array.from({ length: pageSize }).map((_, i) => (
                                 <TableRow key={i}>
                                     {columns.map((_, j) => (
-                                        <TableCell key={j}>
+                                        <TableCell
+                                            key={j}
+                                            className={j === 0 ? "pl-4" : ""}
+                                        >
                                             <Skeleton className="h-4 w-full" />
                                         </TableCell>
                                     ))}
@@ -222,8 +228,11 @@ export function DataTable<TData, TValue>({
                         ) : table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                    {row.getVisibleCells().map((cell, j) => (
+                                        <TableCell
+                                            key={cell.id}
+                                            className={j === 0 ? "pl-4" : ""}
+                                        >
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext()
@@ -238,7 +247,7 @@ export function DataTable<TData, TValue>({
                                     colSpan={columns.length}
                                     className="h-24 text-center text-muted-foreground"
                                 >
-                                    Aucun résultat trouvé.
+                                    Aucun signalement trouvé.
                                 </TableCell>
                             </TableRow>
                         )}

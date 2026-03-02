@@ -19,6 +19,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { REPORT_TYPE } from "@prisma/client";
+import Link from "next/link";
 
 export type ReportRow = {
     id: string;
@@ -105,7 +106,7 @@ export const columns: ColumnDef<ReportRow>[] = [
     },
     {
         accessorKey: "rating",
-        header: "Avis signalé",
+        header: "Avis",
         cell: ({ row }) => {
             const rating = row.original.rating;
             if (!rating)
@@ -136,7 +137,7 @@ export const columns: ColumnDef<ReportRow>[] = [
     },
     {
         accessorKey: "user",
-        header: "Reporter",
+        header: "Initiateur",
         cell: ({ row }) => {
             const user = row.original.user;
             if (!user)
@@ -192,24 +193,24 @@ export const columns: ColumnDef<ReportRow>[] = [
                         <DropdownMenuSeparator />
                         {report.post && (
                             <DropdownMenuItem asChild>
-                                <a
+                                <Link
                                     href={`/post/${report.post.id}`}
                                     target="_blank"
                                     rel="noreferrer"
                                 >
                                     Voir l&apos;annonce
-                                </a>
+                                </Link>
                             </DropdownMenuItem>
                         )}
                         {report.user && (
                             <DropdownMenuItem asChild>
-                                <a
+                                <Link
                                     href={`/profile/${report.user.id}`}
                                     target="_blank"
                                     rel="noreferrer"
                                 >
                                     Voir le profil du reporter
-                                </a>
+                                </Link>
                             </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
@@ -218,7 +219,9 @@ export const columns: ColumnDef<ReportRow>[] = [
                         <DropdownMenuItem>
                             Marquer comme résolu
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Supprimer</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive focus:text-destructive">
+                            Supprimer
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

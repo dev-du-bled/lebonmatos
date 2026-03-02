@@ -18,6 +18,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { REPORT_TYPE } from "@prisma/client";
+import Link from "next/link";
 
 export type UserReportRow = {
     id: string;
@@ -25,7 +26,11 @@ export type UserReportRow = {
     details: string | null;
     reportedAt: Date | string;
     user: { id: string; name: string | null; email: string | null } | null;
-    reportedUser: { id: string; name: string | null; email: string | null } | null;
+    reportedUser: {
+        id: string;
+        name: string | null;
+        email: string | null;
+    } | null;
 };
 
 const reasonLabel: Record<REPORT_TYPE, string> = {
@@ -36,7 +41,10 @@ const reasonLabel: Record<REPORT_TYPE, string> = {
     OTHER: "Autre",
 };
 
-const reasonVariant: Record<REPORT_TYPE, "destructive" | "secondary" | "outline"> = {
+const reasonVariant: Record<
+    REPORT_TYPE,
+    "destructive" | "secondary" | "outline"
+> = {
     SPAM: "secondary",
     INNAPPROPRIATE: "destructive",
     HARASSMENT: "destructive",
@@ -80,35 +88,35 @@ function RowActions({ report }: { report: UserReportRow }) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem
-                    onClick={() => navigator.clipboard.writeText(report.id)}
-                >
-                    Copier l&apos;ID du signalement
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 {report.user && (
                     <DropdownMenuItem asChild>
-                        <a
+                        <Link
                             href={`/profile/${report.user.id}`}
                             target="_blank"
                             rel="noreferrer"
                         >
-                            Voir le profil du reporter
-                        </a>
+                            Voir le profil de l&apos;initiateur
+                        </Link>
                     </DropdownMenuItem>
                 )}
                 {report.reportedUser && (
                     <DropdownMenuItem asChild>
-                        <a
+                        <Link
                             href={`/profile/${report.reportedUser.id}`}
                             target="_blank"
                             rel="noreferrer"
                         >
                             Voir le profil signalé
-                        </a>
+                        </Link>
                     </DropdownMenuItem>
                 )}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem>Marquer comme résolu</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                    Supprimer
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -122,11 +130,14 @@ export function makeColumns(): ColumnDef<UserReportRow>[] {
                 <SortableHeader column={column} title="Date" />
             ),
             cell: ({ row }) =>
-                new Date(row.getValue("reportedAt")).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                }),
+                new Date(row.getValue("reportedAt")).toLocaleDateString(
+                    "fr-FR",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                    }
+                ),
         },
         {
             accessorKey: "reason",
@@ -136,7 +147,10 @@ export function makeColumns(): ColumnDef<UserReportRow>[] {
             cell: ({ row }) => {
                 const reason = row.getValue<REPORT_TYPE>("reason");
                 return (
-                    <Badge variant={reasonVariant[reason]} className="capitalize">
+                    <Badge
+                        variant={reasonVariant[reason]}
+                        className="capitalize"
+                    >
                         {reasonLabel[reason]}
                     </Badge>
                 );
@@ -144,15 +158,21 @@ export function makeColumns(): ColumnDef<UserReportRow>[] {
         },
         {
             accessorKey: "reportedUser",
-            header: "Utilisateur signalé",
+            header: "Utilisateur",
             cell: ({ row }) => {
                 const user = row.original.reportedUser;
                 if (!user)
-                    return <span className="text-muted-foreground text-sm">—</span>;
+                    return (
+                        <span className="text-muted-foreground text-sm">—</span>
+                    );
                 return (
                     <div className="flex flex-col">
-                        <span className="text-sm font-medium">{user.name ?? "—"}</span>
-                        <span className="text-xs text-muted-foreground">{user.email}</span>
+                        <span className="text-sm font-medium">
+                            {user.name ?? "—"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                            {user.email}
+                        </span>
                     </div>
                 );
             },
@@ -160,15 +180,21 @@ export function makeColumns(): ColumnDef<UserReportRow>[] {
         },
         {
             accessorKey: "user",
-            header: "Reporter",
+            header: "Initiateur",
             cell: ({ row }) => {
                 const user = row.original.user;
                 if (!user)
-                    return <span className="text-muted-foreground text-sm">—</span>;
+                    return (
+                        <span className="text-muted-foreground text-sm">—</span>
+                    );
                 return (
                     <div className="flex flex-col">
-                        <span className="text-sm font-medium">{user.name ?? "—"}</span>
-                        <span className="text-xs text-muted-foreground">{user.email}</span>
+                        <span className="text-sm font-medium">
+                            {user.name ?? "—"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                            {user.email}
+                        </span>
                     </div>
                 );
             },
@@ -186,7 +212,10 @@ export function makeColumns(): ColumnDef<UserReportRow>[] {
                         </span>
                     );
                 return (
-                    <span className="max-w-62.5 truncate block text-sm" title={details}>
+                    <span
+                        className="max-w-62.5 truncate block text-sm"
+                        title={details}
+                    >
                         {details}
                     </span>
                 );

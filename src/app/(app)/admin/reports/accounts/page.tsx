@@ -19,8 +19,8 @@ const SEARCH_FIELDS = [
     },
     {
         value: "reporterName",
-        label: "Nom reporter",
-        placeholder: "Rechercher par nom du reporter...",
+        label: "Nom initiateur",
+        placeholder: "Rechercher par nom de l'initiateur...",
     },
     {
         value: "details",
@@ -76,30 +76,19 @@ export default function AccountsReportsPage() {
     }, []);
 
     return (
-        <div className="p-6 space-y-4">
-            <div>
-                <h1 className="text-2xl font-semibold tracking-tight">
-                    Signalements d&apos;Utilisateurs
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Gérez les signalements d&apos;utilisateurs.
-                </p>
-            </div>
-
-            <DataTable
-                columns={columns}
-                data={data?.reports ?? []}
-                totalCount={data?.totalCount ?? 0}
-                pageIndex={pageIndex}
-                pageSize={pageSize}
-                sorting={sorting}
-                isLoading={isFetching}
-                onPageChange={setPageIndex}
-                onPageSizeChange={setPageSize}
-                onSortingChange={setSorting}
-                searchFields={SEARCH_FIELDS}
-                onSearch={handleSearch}
-            />
-        </div>
+        <DataTable
+            columns={columns}
+            data={data?.reports ?? []}
+            totalCount={data?.totalCount ?? 0}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            sorting={sorting}
+            isLoading={isFetching}
+            onPageChange={setPageIndex}
+            onPageSizeChange={setPageSize}
+            onSortingChange={setSorting}
+            searchFields={SEARCH_FIELDS}
+            onSearch={handleSearch}
+        />
     );
 }

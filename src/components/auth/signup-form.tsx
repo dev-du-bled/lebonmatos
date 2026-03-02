@@ -21,6 +21,7 @@ import { authClient } from "@/lib/auth-client";
 import { signupSchema, type SignupFormData } from "@/lib/schema/auth";
 import AlreadyLoggedInRedirect from "./already-loggedin-redirect";
 import { AlertCircle, Lock } from "lucide-react";
+import Link from "next/link";
 
 export function SignupForm() {
     const [isLoading, setIsLoading] = useState(false);
@@ -240,7 +241,7 @@ export function SignupForm() {
                                 </Field>
                                 <FieldDescription className="text-center">
                                     Vous avez déjà un compte ?{" "}
-                                    <a
+                                    <Link
                                         href={
                                             redirect
                                                 ? `/login?redirect=${encodeURIComponent(redirect)}`
@@ -248,7 +249,7 @@ export function SignupForm() {
                                         }
                                     >
                                         Se connecter
-                                    </a>
+                                    </Link>
                                 </FieldDescription>
                             </FieldGroup>
                         </form>

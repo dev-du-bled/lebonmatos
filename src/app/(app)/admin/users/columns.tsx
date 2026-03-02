@@ -1,13 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { Column, ColumnDef } from "@tanstack/react-table";
 import {
     ArrowDown,
     ArrowUp,
     ChevronsUpDown,
     MoreHorizontal,
-    ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
+import { useState } from "react";
+import Link from "next/link";
 
 export type UserRow = {
     id: string;
@@ -69,7 +69,7 @@ function RowActions({
     user: UserRow;
     onMutationSuccess: () => void;
 }) {
-    const [isPending, setIsPending] = React.useState(false);
+    const [isPending, setIsPending] = useState(false);
 
     const handleBan = async () => {
         setIsPending(true);
@@ -94,24 +94,23 @@ function RowActions({
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                    <a
+                    <Link
                         href={`/profile/${user.id}`}
                         target="_blank"
                         rel="noreferrer"
                     >
                         Voir le profil
-                    </a>
+                    </Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {user.banned ? (
                     <DropdownMenuItem
                         onClick={handleUnban}
                         disabled={isPending}
                     >
-                        <ShieldCheck className="mr-2 h-4 w-4" />
                         Débannir
                     </DropdownMenuItem>
                 ) : (

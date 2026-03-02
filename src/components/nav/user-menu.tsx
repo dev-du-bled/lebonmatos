@@ -53,6 +53,11 @@ export function UserMenu() {
                     <DropdownMenuItem asChild>
                         <Link href="/profile">Mon profil</Link>
                     </DropdownMenuItem>
+                    {session.user.role === "admin" && (
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin">Administration</Link>
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => authClient.signOut()}>
                         Se déconnecter

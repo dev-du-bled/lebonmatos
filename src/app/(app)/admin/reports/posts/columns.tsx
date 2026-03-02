@@ -19,6 +19,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { REPORT_TYPE } from "@prisma/client";
+import Link from "next/link";
 
 export type ReportRow = {
     id: string;
@@ -88,40 +89,39 @@ function RowActions({
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
                     <MoreHorizontal className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem
-                    onClick={() => navigator.clipboard.writeText(report.id)}
-                >
-                    Copy report ID
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 {report.post && (
                     <DropdownMenuItem asChild>
-                        <a
+                        <Link
                             href={`/post/${report.post.id}`}
                             target="_blank"
                             rel="noreferrer"
                         >
-                            View post
-                        </a>
+                            Voir l&apos;annonce
+                        </Link>
                     </DropdownMenuItem>
                 )}
                 {report.user && (
                     <DropdownMenuItem asChild>
-                        <a
+                        <Link
                             href={`/profile/${report.user.id}`}
                             target="_blank"
                             rel="noreferrer"
                         >
-                            View reporter
-                        </a>
+                            Voir le profil de l&apos;initiateur
+                        </Link>
                     </DropdownMenuItem>
                 )}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Marquer comme résolu</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                    Supprimer
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -182,7 +182,7 @@ export function makeColumns(
         },
         {
             accessorKey: "user",
-            header: "Reporter",
+            header: "Initiateur",
             cell: ({ row }) => {
                 const user = row.original.user;
                 if (!user)

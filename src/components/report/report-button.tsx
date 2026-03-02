@@ -25,6 +25,7 @@ import { REPORT_TYPE } from "@prisma/client";
 import { trpc } from "@/trpc/client";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { useSession } from "@/components/auth/session-provider";
 
 const reportTypeConfig: Record<
     REPORT_TYPE,
@@ -62,7 +63,9 @@ interface ReportButtonProps {
 }
 
 export default function ReportButton({ postId }: ReportButtonProps) {
+    const { session } = useSession();
     const [open, setOpen] = useState(false);
+
     const [selectedType, setSelectedType] = useState<REPORT_TYPE | undefined>(
         undefined
     );
@@ -104,6 +107,8 @@ export default function ReportButton({ postId }: ReportButtonProps) {
             details: details.trim() || null,
         });
     };
+
+    if (!session) return null;
 
     return (
         <Dialog

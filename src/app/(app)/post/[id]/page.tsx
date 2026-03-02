@@ -21,9 +21,7 @@ import { cache } from "react";
 import PostMap from "@/components/post/post-map";
 import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
-import z from "zod";
 import ReportButton from "@/components/report/report-button";
-import { getUser } from "@/utils/getUser";
 
 type Params = {
     id: string;
@@ -38,6 +36,8 @@ export async function generateMetadata({
 
     const post = await getPost(id);
 
+    if (!post) notFound();
+
     return {
         title: `Annonce "${post?.title.slice(0, 15)}${post?.title.length || 0 > 15 ? "..." : ""}"`,
         description: `Découvrez en détails l'annonce "${post?.title}"`,
@@ -45,8 +45,11 @@ export async function generateMetadata({
 }
 
 const getPost = cache(async (id: string) => {
-    const post = await trpc.posts.getPost({ postId: id });
-    return post;
+    try {
+        return await trpc.posts.getPost({ postId: id });
+    } catch {
+        return null;
+    }
 });
 
 export default async function PostPage({
@@ -56,13 +59,9 @@ export default async function PostPage({
 }) {
     const { id } = await params;
 
-    if (!z.cuid().safeParse(id).success) notFound();
-
     const post = await getPost(id);
 
     if (!post) notFound();
-
-    const user = await getUser();
 
     const similarPost = await trpc.posts.getSimilarPosts({
         id: post.id,
@@ -101,17 +100,15 @@ export default async function PostPage({
                             <CarouselNext className="right-4" />
                         </Carousel>
                         {/* Bouton favoris en haut à droite */}
-                        {post.seller?.id !== user?.id && (
-                            <div className="absolute top-4 right-4 z-10 space-x-2">
-                                <ReportButton postId={post.id} />
-                                <FavoriteButton
-                                    post={{
-                                        id: post.id,
-                                        isFavorited: post.isFavorited,
-                                    }}
-                                />
-                            </div>
-                        )}
+                        <div className="absolute top-4 right-4 z-10 space-x-2">
+                            <ReportButton postId={post.id} />
+                            <FavoriteButton
+                                post={{
+                                    id: post.id,
+                                    isFavorited: post.isFavorited,
+                                }}
+                            />
+                        </div>
                         <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-6 pt-20 pointer-events-none">
                             <h1 className="text-2xl md:text-4xl font-bold text-white">
                                 {post.title}
