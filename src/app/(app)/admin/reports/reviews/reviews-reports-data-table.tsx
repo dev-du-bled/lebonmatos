@@ -2,9 +2,11 @@
 
 import { SortingState } from "@tanstack/react-table";
 import { trpc } from "@/trpc/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 import { DataTable } from "@/components/admin/data-table";
-import { columns } from "./columns";
-import { useState, useCallback } from "react";
+import { makeColumns } from "./columns";
+import { useState, useCallback, useMemo } from "react";
 
 const SEARCH_FIELDS = [
     {
@@ -14,17 +16,19 @@ const SEARCH_FIELDS = [
     },
     {
         value: "reporterEmail",
-        label: "Email reporter",
+        label: "Email Initiateur",
         placeholder: "Rechercher par email...",
     },
     {
         value: "reporterName",
-        label: "Nom reporter",
+        label: "Nom Initiateur",
         placeholder: "Rechercher par nom...",
     },
 ];
 
 export function ReviewsReportsDataTable() {
+    const queryClient = useQueryClient();
+
     const [pageIndex, setPageIndex] = useState(0);
     const [pageSize, setPageSize] = useState(10);
     const [sorting, setSorting] = useState<SortingState>([
@@ -59,6 +63,17 @@ export function ReviewsReportsDataTable() {
               }
             : {}),
     });
+
+    const handleMutationSuccess = useCallback(() => {
+        queryClient.invalidateQueries({
+            queryKey: getQueryKey(trpc.reports.getReports),
+        });
+    }, [queryClient]);
+
+    const columns = useMemo(
+        () => makeColumns(handleMutationSuccess),
+        [handleMutationSuccess]
+    );
 
     const handleSearch = useCallback((value: string, field: string) => {
         setSearch(value);

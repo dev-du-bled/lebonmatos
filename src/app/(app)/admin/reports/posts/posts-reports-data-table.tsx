@@ -16,12 +16,12 @@ const SEARCH_FIELDS = [
     },
     {
         value: "reporterEmail",
-        label: "Email reporter",
+        label: "Email Initiateur",
         placeholder: "Rechercher par email...",
     },
     {
         value: "reporterName",
-        label: "Nom reporter",
+        label: "Nom Initiateur",
         placeholder: "Rechercher par nom...",
     },
 ];

@@ -2,6 +2,8 @@
 
 import { SortingState } from "@tanstack/react-table";
 import { trpc } from "@/trpc/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 import { DataTable } from "@/components/admin/data-table";
 import { makeColumns } from "./columns";
 import { useState, useCallback, useMemo } from "react";
@@ -30,6 +32,8 @@ const SEARCH_FIELDS = [
 ];
 
 export function AccountsReportsDataTable() {
+    const queryClient = useQueryClient();
+
     const [pageIndex, setPageIndex] = useState(0);
     const [pageSize, setPageSize] = useState(10);
     const [sorting, setSorting] = useState<SortingState>([
@@ -67,7 +71,16 @@ export function AccountsReportsDataTable() {
             : {}),
     });
 
-    const columns = useMemo(() => makeColumns(), []);
+    const handleMutationSuccess = useCallback(() => {
+        queryClient.invalidateQueries({
+            queryKey: getQueryKey(trpc.reports.getReports),
+        });
+    }, [queryClient]);
+
+    const columns = useMemo(
+        () => makeColumns(handleMutationSuccess),
+        [handleMutationSuccess]
+    );
 
     const handleSearch = useCallback((value: string, field: string) => {
         setSearch(value);

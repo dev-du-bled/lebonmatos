@@ -302,12 +302,7 @@ export const postRouter = createTRPCRouter({
             const post = await prisma.post.findUnique({
                 where: { id: input.postId },
                 include: {
-                    user: {
-                        select: {
-                            id: true,
-                            username: true,
-                        },
-                    },
+                    user: true,
                     component: true,
                     location: true,
                     Favorites: ctx.session?.user

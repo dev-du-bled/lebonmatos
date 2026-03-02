@@ -21,6 +21,7 @@ import {
 import { REPORT_TYPE } from "@prisma/client";
 import Link from "next/link";
 import { reasonLabel, reasonVariant } from "@/lib/report";
+import { trpc } from "@/trpc/client";
 
 export type ReportRow = {
     id: string;
@@ -63,14 +64,24 @@ function SortableHeader({
 
 function RowActions({
     report,
+    onMutationSuccess,
 }: {
     report: ReportRow;
     onMutationSuccess: () => void;
 }) {
+    const resolve = trpc.reports.resolveReport.useMutation({
+        onSuccess: onMutationSuccess,
+    });
+    const remove = trpc.reports.deleteReport.useMutation({
+        onSuccess: onMutationSuccess,
+    });
+
+    const isPending = resolve.isPending || remove.isPending;
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+                <Button variant="ghost" className="h-8 w-8 p-0" disabled={isPending}>
                     <MoreHorizontal className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
@@ -100,8 +111,17 @@ function RowActions({
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Marquer comme résolu</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                <DropdownMenuItem
+                    disabled={isPending}
+                    onClick={() => resolve.mutate({ id: report.id })}
+                >
+                    Marquer comme résolu
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    disabled={isPending}
+                    onClick={() => remove.mutate({ id: report.id })}
+                >
                     Supprimer
                 </DropdownMenuItem>
             </DropdownMenuContent>

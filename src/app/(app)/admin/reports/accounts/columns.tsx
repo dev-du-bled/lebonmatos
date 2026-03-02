@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { REPORT_TYPE } from "@prisma/client";
 import Link from "next/link";
+import { trpc } from "@/trpc/client";
+import { reasonLabel, reasonVariant } from "@/lib/report";
 
 export type UserReportRow = {
     id: string;
@@ -31,25 +33,6 @@ export type UserReportRow = {
         name: string | null;
         email: string | null;
     } | null;
-};
-
-const reasonLabel: Record<REPORT_TYPE, string> = {
-    SPAM: "Spam",
-    INNAPPROPRIATE: "Inapproprié",
-    HARASSMENT: "Harcèlement",
-    SCAM: "Arnaque",
-    OTHER: "Autre",
-};
-
-const reasonVariant: Record<
-    REPORT_TYPE,
-    "destructive" | "secondary" | "outline"
-> = {
-    SPAM: "secondary",
-    INNAPPROPRIATE: "destructive",
-    HARASSMENT: "destructive",
-    SCAM: "destructive",
-    OTHER: "outline",
 };
 
 function SortableHeader({
@@ -78,11 +61,26 @@ function SortableHeader({
     );
 }
 
-function RowActions({ report }: { report: UserReportRow }) {
+function RowActions({
+    report,
+    onMutationSuccess,
+}: {
+    report: UserReportRow;
+    onMutationSuccess: () => void;
+}) {
+    const resolve = trpc.reports.resolveReport.useMutation({
+        onSuccess: onMutationSuccess,
+    });
+    const remove = trpc.reports.deleteReport.useMutation({
+        onSuccess: onMutationSuccess,
+    });
+
+    const isPending = resolve.isPending || remove.isPending;
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+                <Button variant="ghost" className="h-8 w-8 p-0" disabled={isPending}>
                     <span className="sr-only">Ouvrir le menu</span>
                     <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -112,17 +110,28 @@ function RowActions({ report }: { report: UserReportRow }) {
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem>Marquer comme résolu</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                    disabled={isPending}
+                    onClick={() => resolve.mutate({ id: report.id })}
+                >
+                    Marquer comme résolu
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    disabled={isPending}
+                    onClick={() => remove.mutate({ id: report.id })}
+                >
                     Supprimer
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
             </DropdownMenuContent>
         </DropdownMenu>
     );
 }
 
-export function makeColumns(): ColumnDef<UserReportRow>[] {
+export function makeColumns(
+    onMutationSuccess: () => void
+): ColumnDef<UserReportRow>[] {
     return [
         {
             accessorKey: "reportedAt",
@@ -224,7 +233,12 @@ export function makeColumns(): ColumnDef<UserReportRow>[] {
         },
         {
             id: "actions",
-            cell: ({ row }) => <RowActions report={row.original} />,
+            cell: ({ row }) => (
+                <RowActions
+                    report={row.original}
+                    onMutationSuccess={onMutationSuccess}
+                />
+            ),
         },
     ];
 }
