@@ -145,8 +145,8 @@ export function PublicProfileDialog({
     const watchedUsername = form.watch("username");
 
     const currentInitials = useMemo(
-        () => getInitials(watchedUsername || user.name),
-        [watchedUsername, user.name]
+        () => getInitials(watchedUsername || user.username),
+        [watchedUsername, user.username]
     );
 
     const updatePreview = (value: string | null) => {
@@ -356,7 +356,9 @@ export function PublicProfileDialog({
                                             <AvatarImage
                                                 src={avatarPreview}
                                                 alt={
-                                                    watchedUsername || user.name
+                                                    watchedUsername ||
+                                                    user.username ||
+                                                    ""
                                                 }
                                                 className="object-cover"
                                             />
