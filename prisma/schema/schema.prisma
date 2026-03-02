@@ -151,7 +151,7 @@ enum REPORT_TYPE {
 enum REPORT_CONTENT {
   USER
   POST
-  MESSAGE
+  REVIEW
 }
 
 model Report {
