@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { REPORT_TYPE } from "@prisma/client";
 import Link from "next/link";
+import { reasonLabel, reasonVariant } from "@/lib/report";
 
 export type ReportRow = {
     id: string;
@@ -32,25 +33,6 @@ export type ReportRow = {
     reportedAt: Date | string;
     post: { id: string; title: string | null } | null;
     user: { id: string; name: string | null; email: string | null } | null;
-};
-
-const reasonLabel: Record<REPORT_TYPE, string> = {
-    SPAM: "Spam",
-    INNAPPROPRIATE: "Inappropriate",
-    HARASSMENT: "Harassment",
-    SCAM: "Scam",
-    OTHER: "Other",
-};
-
-const reasonVariant: Record<
-    REPORT_TYPE,
-    "destructive" | "secondary" | "outline"
-> = {
-    SPAM: "secondary",
-    INNAPPROPRIATE: "destructive",
-    HARASSMENT: "destructive",
-    SCAM: "destructive",
-    OTHER: "outline",
 };
 
 function SortableHeader({

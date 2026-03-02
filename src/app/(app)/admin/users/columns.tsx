@@ -179,7 +179,7 @@ export function makeColumns(
             cell: ({ row }) => {
                 const role = row.getValue<string | null>("role");
                 return role === "admin" ? (
-                    <Badge variant="destructive">Admin</Badge>
+                    <Badge variant="info">Admin</Badge>
                 ) : (
                     <Badge variant="secondary">Utilisateur</Badge>
                 );

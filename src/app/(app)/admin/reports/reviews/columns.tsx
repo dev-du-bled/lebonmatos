@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { REPORT_TYPE } from "@prisma/client";
 import Link from "next/link";
+import { reasonLabel } from "@/lib/report";
 
 export type ReportRow = {
     id: string;
@@ -99,7 +100,7 @@ export const columns: ColumnDef<ReportRow>[] = [
             const reason = row.getValue<REPORT_TYPE>("reason");
             return (
                 <Badge variant={reasonVariant[reason]} className="capitalize">
-                    {reason.toLowerCase()}
+                    {reasonLabel[reason]}
                 </Badge>
             );
         },

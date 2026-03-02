@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Flag,
     ChevronRight,
@@ -11,6 +13,7 @@ import {
     MoreHorizontal,
     type LucideIcon,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -26,6 +29,10 @@ import { trpc } from "@/trpc/client";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useSession } from "@/components/auth/session-provider";
+import {
+    createReportSchema,
+    type CreateReportInput,
+} from "@/lib/schema/report";
 
 const reportTypeConfig: Record<
     REPORT_TYPE,
@@ -65,13 +72,30 @@ interface ReportButtonProps {
 export default function ReportButton({ postId }: ReportButtonProps) {
     const { session } = useSession();
     const [open, setOpen] = useState(false);
-
     const [selectedType, setSelectedType] = useState<REPORT_TYPE | undefined>(
         undefined
     );
-    const [details, setDetails] = useState("");
 
     const reportTypes = Object.values(REPORT_TYPE);
+
+    const {
+        formState: { isValid },
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        reset,
+        formState: { errors },
+    } = useForm<CreateReportInput>({
+        resolver: zodResolver(createReportSchema),
+        defaultValues: {
+            postId,
+            reason: undefined,
+            details: null,
+        },
+    });
+
+    const details = watch("details") ?? "";
 
     const { mutate: createReport, isPending } =
         trpc.reports.createReport.useMutation({
@@ -90,21 +114,25 @@ export default function ReportButton({ postId }: ReportButtonProps) {
                             : (error.message ??
                               "Une erreur est survenue. Réessayez."),
                 });
+                handleClose();
             },
         });
 
     const handleClose = () => {
         setOpen(false);
         setSelectedType(undefined);
-        setDetails("");
+        reset({ postId, reason: undefined, details: null });
     };
 
-    const handleSubmit = () => {
-        if (!selectedType) return;
+    const handleSelectType = (type: REPORT_TYPE) => {
+        setSelectedType(type);
+        setValue("reason", type, { shouldValidate: false });
+    };
+
+    const onSubmit = (data: CreateReportInput) => {
         createReport({
-            postId,
-            reason: selectedType,
-            details: details.trim() || null,
+            ...data,
+            details: data.details?.trim() || null,
         });
     };
 
@@ -157,64 +185,94 @@ export default function ReportButton({ postId }: ReportButtonProps) {
                         <p className="text-sm text-muted-foreground px-4 pb-3">
                             Pourquoi souhaitez-vous signaler cette annonce ?
                         </p>
-                        <div className="grid grid-cols-1 gap-2 px-4 pb-4">
-                            {reportTypes.map((type) => {
+                        <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 px-4 pb-4">
+                            {reportTypes.map((type, index) => {
                                 const {
                                     label,
                                     description,
                                     icon: Icon,
                                 } = reportTypeConfig[type];
+                                const lastSpan =
+                                    index === reportTypes.length - 1 &&
+                                    reportTypes.length % 2 !== 0;
                                 return (
                                     <Button
                                         key={type}
                                         variant="outline"
-                                        className="h-auto py-3 px-3 justify-start gap-4"
-                                        onClick={() => setSelectedType(type)}
+                                        className={`h-19 py-3 px-3 flex flex-col items-start justify-center text-left${lastSpan ? " xs:col-span-2" : ""}`}
+                                        onClick={() => handleSelectType(type)}
                                     >
-                                        <Icon className="shrink-0 text-muted-foreground" />
-                                        <div className="flex flex-col items-start">
+                                        <Icon className="shrink-0 text-muted-foreground mr-2" />
+                                        <div className="flex flex-col">
                                             <p className="font-medium leading-none">
                                                 {label}
                                             </p>
-                                            <p className="text-xs text-muted-foreground">
+                                            <p className="text-xs text-muted-foreground mt-1 text-wrap">
                                                 {description}
                                             </p>
                                         </div>
-                                        <ChevronRight className="hidden xs:block shrink-0 text-muted-foreground ml-1" />
                                     </Button>
                                 );
                             })}
                         </div>
                     </>
                 ) : (
-                    /* details  */
-                    <div className="px-4 pb-4 space-y-4">
+                    /* details */
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="px-4 pb-4 space-y-4"
+                    >
                         <p className="text-sm text-muted-foreground">
-                            {reportTypeConfig[selectedType].description}. <br />
-                            Ajoutez des détails supplémentaires si nécessaire.
+                            {reportTypeConfig[selectedType].description}.{" "}
+                            {selectedType === "OTHER"
+                                ? "Veuillez préciser la raison dans le champ ci-dessous."
+                                : "Ajoutez des détails supplémentaires si nécessaire."}
                         </p>
                         <div className="space-y-2">
                             <Label htmlFor="report-details">
                                 Détails{" "}
-                                <span className="text-muted-foreground font-normal">
-                                    (optionnel)
-                                </span>
+                                {selectedType === "OTHER" ? (
+                                    <span className="text-destructive font-normal">
+                                        (obligatoire)
+                                    </span>
+                                ) : (
+                                    <span className="text-muted-foreground font-normal">
+                                        (optionnel)
+                                    </span>
+                                )}
                             </Label>
                             <Textarea
                                 id="report-details"
                                 placeholder="Décrivez le problème en quelques mots..."
+                                {...register("details")}
                                 value={details}
-                                onChange={(e) => setDetails(e.target.value)}
-                                maxLength={500}
+                                onChange={(e) =>
+                                    setValue(
+                                        "details",
+                                        e.target.value || null,
+                                        { shouldValidate: true }
+                                    )
+                                }
                                 rows={4}
                                 disabled={isPending}
+                                aria-invalid={!!errors.details}
                             />
-                            <p className="text-xs text-muted-foreground text-right">
-                                {details.length}/500
-                            </p>
+                            <div className="flex justify-between items-center">
+                                {errors.details ? (
+                                    <p className="text-xs text-destructive">
+                                        {errors.details.message}
+                                    </p>
+                                ) : (
+                                    <span />
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                    {details.length}/500
+                                </p>
+                            </div>
                         </div>
                         <div className="flex gap-2 justify-end">
                             <Button
+                                type="button"
                                 variant="outline"
                                 onClick={handleClose}
                                 disabled={isPending}
@@ -222,14 +280,14 @@ export default function ReportButton({ postId }: ReportButtonProps) {
                                 Annuler
                             </Button>
                             <Button
-                                onClick={handleSubmit}
-                                disabled={isPending}
+                                type="submit"
+                                disabled={isPending || !isValid}
                                 loading={isPending}
                             >
                                 Signaler
                             </Button>
                         </div>
-                    </div>
+                    </form>
                 )}
             </DialogContent>
         </Dialog>

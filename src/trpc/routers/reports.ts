@@ -1,32 +1,18 @@
-import z from "zod";
 import { createTRPCRouter, privateProcedure, adminProcedure } from "../init";
 import { prisma } from "@/lib/prisma";
-import { REPORT_CONTENT, REPORT_TYPE, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import {
+    createReportSchema,
+    getReportsSchema,
+    getMyReportsSchema,
+} from "@/lib/schema/report";
+import { reasonLabel } from "@/lib/report";
+import z from "zod";
 
 export const reportsRouter = createTRPCRouter({
     getReports: adminProcedure
-        .input(
-            z.object({
-                type: z.enum(REPORT_CONTENT).default("POST"),
-                limit: z.number().min(1).max(100).default(10),
-                offset: z.number().min(0).default(0),
-                sortBy: z
-                    .enum(["reportedAt", "reason", "type"])
-                    .default("reportedAt"),
-                sortOrder: z.enum(["asc", "desc"]).default("desc"),
-                search: z.string().optional(),
-                searchField: z
-                    .enum([
-                        "details",
-                        "reporterEmail",
-                        "reporterName",
-                        "reportedUserName",
-                        "reportedUserEmail",
-                    ])
-                    .optional(),
-            })
-        )
+        .input(getReportsSchema)
         .query(async ({ input }) => {
             const { limit, offset, sortBy, sortOrder, search, searchField } =
                 input;
@@ -84,13 +70,7 @@ export const reportsRouter = createTRPCRouter({
         }),
 
     createReport: privateProcedure
-        .input(
-            z.object({
-                postId: z.cuid(),
-                reason: z.enum(REPORT_TYPE),
-                details: z.string().max(500).nullable(),
-            })
-        )
+        .input(createReportSchema)
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.postId },
@@ -136,5 +116,86 @@ export const reportsRouter = createTRPCRouter({
             });
 
             return report;
+        }),
+
+    deleteReport: adminProcedure
+        .input(z.object({ id: z.cuid() }))
+        .mutation(async ({ input }) => {
+            const report = await prisma.report.findUnique({
+                where: { id: input.id },
+            });
+
+            if (!report) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Signalement introuvable",
+                });
+            }
+
+            await prisma.report.delete({ where: { id: input.id } });
+            return { success: true };
+        }),
+
+    resolveReport: adminProcedure
+        .input(z.object({ id: z.cuid() }))
+        .mutation(async ({ input }) => {
+            const report = await prisma.report.findUnique({
+                where: { id: input.id },
+            });
+
+            if (!report) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Signalement introuvable",
+                });
+            }
+
+            if (report.type === "POST" && report.postId) {
+                await prisma.post.delete({ where: { id: report.postId } });
+            } else if (report.type === "REVIEW" && report.ratingId) {
+                await prisma.rating.delete({ where: { id: report.ratingId } });
+            } else {
+                await prisma.report.delete({ where: { id: input.id } });
+            }
+
+            return { success: true };
+        }),
+
+    getMyReports: privateProcedure
+        .input(getMyReportsSchema)
+        .query(async ({ ctx, input }) => {
+            const userId = ctx.session.user.id;
+
+            const [reports, totalCount] = await Promise.all([
+                prisma.report.findMany({
+                    where: { userId },
+                    skip: input.offset,
+                    take: input.limit,
+                    orderBy: { reportedAt: "desc" },
+                    include: {
+                        post: { select: { id: true, title: true } },
+                        rating: {
+                            select: {
+                                id: true,
+                                rating: true,
+                                comment: true,
+                                user: { select: { id: true, name: true } },
+                            },
+                        },
+                        reportedUser: {
+                            select: { id: true, name: true },
+                        },
+                    },
+                }),
+                prisma.report.count({ where: { userId } }),
+            ]);
+
+            return {
+                reports: reports.map((r) => ({
+                    ...r,
+                    reasonLabel: reasonLabel[r.reason],
+                })),
+                totalCount,
+            };
         }),
 });
