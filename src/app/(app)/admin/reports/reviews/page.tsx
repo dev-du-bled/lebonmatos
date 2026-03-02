@@ -3,14 +3,10 @@
 import * as React from "react";
 import { SortingState } from "@tanstack/react-table";
 import { trpc } from "@/trpc/client";
-import { useQueryClient } from "@tanstack/react-query";
-import { getQueryKey } from "@trpc/react-query";
 import { DataTable } from "./data-table";
-import { makeColumns } from "./columns";
+import { columns } from "./columns";
 
-export default function PostsReportsPage() {
-    const queryClient = useQueryClient();
-
+export default function ReviewsReportsPage() {
     const [pageIndex, setPageIndex] = React.useState(0);
     const [pageSize, setPageSize] = React.useState(10);
     const [sorting, setSorting] = React.useState<SortingState>([
@@ -35,22 +31,11 @@ export default function PostsReportsPage() {
         sortOrder,
     });
 
-    const handleMutationSuccess = React.useCallback(() => {
-        queryClient.invalidateQueries({
-            queryKey: getQueryKey(trpc.reports.getReports),
-        });
-    }, [queryClient]);
-
-    const columns = React.useMemo(
-        () => makeColumns(handleMutationSuccess),
-        [handleMutationSuccess]
-    );
-
     return (
         <div className="p-6 space-y-4">
             <div>
                 <h1 className="text-2xl font-semibold tracking-tight">
-                    Signalements d&apos;Annonces
+                    Siganlements d&apos;Annonces
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">
                     Gérez les signalements d&apos;annonces.

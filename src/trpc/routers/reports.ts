@@ -1,7 +1,8 @@
 import z from "zod";
 import { createTRPCRouter, privateProcedure } from "../init";
 import { prisma } from "@/lib/prisma";
-import { REPORT_CONTENT } from "@prisma/client";
+import { REPORT_CONTENT, REPORT_TYPE } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 
 export const reportsRouter = createTRPCRouter({
     getReports: privateProcedure
@@ -16,7 +17,14 @@ export const reportsRouter = createTRPCRouter({
                 sortOrder: z.enum(["asc", "desc"]).default("desc"),
             })
         )
-        .query(async ({ input }) => {
+        .query(async ({ ctx, input }) => {
+            if (ctx.session.user.role !== "admin") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "You do not have permission to view reports",
+                });
+            }
+
             const { limit, offset, sortBy, sortOrder } = input;
             const [reports, totalCount] = await Promise.all([
                 prisma.report.findMany({
@@ -32,5 +40,60 @@ export const reportsRouter = createTRPCRouter({
                 prisma.report.count({ where: { type: input.type } }),
             ]);
             return { reports, totalCount };
+        }),
+
+    createReport: privateProcedure
+        .input(
+            z.object({
+                postId: z.cuid(),
+                reason: z.enum(REPORT_TYPE),
+                details: z.string().max(500).nullable(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const post = await prisma.post.findUnique({
+                where: { id: input.postId },
+            });
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
+            }
+
+            if (ctx.session.user.id === post?.userId) {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "You cannot report your own post",
+                });
+            }
+
+            const existing = await prisma.report.findFirst({
+                where: {
+                    postId: input.postId,
+                    userId: ctx.session.user.id,
+                    type: "POST",
+                },
+            });
+
+            if (existing) {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "You have already reported this post",
+                });
+            }
+
+            const report = await prisma.report.create({
+                data: {
+                    reason: input.reason,
+                    details: input.details,
+                    type: "POST",
+                    postId: input.postId,
+                    userId: ctx.session.user.id,
+                },
+            });
+
+            return report;
         }),
 });

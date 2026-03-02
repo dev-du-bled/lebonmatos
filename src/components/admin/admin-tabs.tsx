@@ -17,6 +17,7 @@ export default function AdminTabs() {
             <TabsList variant="line" className="space-x-4">
                 <TabsTrigger value="posts">Annonces</TabsTrigger>
                 <TabsTrigger value="accounts">Profils</TabsTrigger>
+                <TabsTrigger value="reviews">Avis</TabsTrigger>
             </TabsList>
         </Tabs>
     );

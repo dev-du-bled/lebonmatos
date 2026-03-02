@@ -22,6 +22,7 @@ import PostMap from "@/components/post/post-map";
 import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
 import z from "zod";
+import ReportButton from "@/components/report/report-button";
 
 type Params = {
     id: string;
@@ -97,7 +98,8 @@ export default async function PostPage({
                             <CarouselNext className="right-4" />
                         </Carousel>
                         {/* Bouton favoris en haut à droite */}
-                        <div className="absolute top-4 right-4 z-10">
+                        <div className="absolute top-4 right-4 z-10 space-x-2">
+                            <ReportButton postId={post.id} />
                             <FavoriteButton
                                 post={{
                                     id: post.id,

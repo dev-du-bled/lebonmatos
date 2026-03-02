@@ -158,7 +158,7 @@ export function DataTable<TData, TValue>({
                                     colSpan={columns.length}
                                     className="h-24 text-center text-muted-foreground"
                                 >
-                                    Auncun signalement trouvé.
+                                    Aucun siganement trouvé.
                                 </TableCell>
                             </TableRow>
                         )}
@@ -169,13 +169,12 @@ export function DataTable<TData, TValue>({
             {/* Pagination */}
             <div className="flex items-center justify-between px-1">
                 <p className="text-sm text-muted-foreground">
-                    {totalCount} signalement
-                    {totalCount !== 1 ? "s totaux" : "total"}
+                    {totalCount} report{totalCount !== 1 ? "s" : ""} total
                 </p>
 
                 <div className="flex items-center gap-6 lg:gap-8">
                     <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">Lignes par page</p>
+                        <p className="text-sm font-medium">Rows per page</p>
                         <Select
                             value={`${pageSize}`}
                             onValueChange={(v) => {

@@ -1,6 +1,7 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import * as React from "react";
+import { Column, ColumnDef } from "@tanstack/react-table";
 import {
     ArrowDown,
     ArrowUp,
@@ -17,7 +18,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { REPORT_TYPE } from "@prisma/client";
+import { REPORT_TYPE } from "@prisma/client";
 
 export type ReportRow = {
     id: string;
@@ -30,6 +31,14 @@ export type ReportRow = {
     reportedAt: Date | string;
     post: { id: string; title: string | null } | null;
     user: { id: string; name: string | null; email: string | null } | null;
+};
+
+const reasonLabel: Record<REPORT_TYPE, string> = {
+    SPAM: "Spam",
+    INNAPPROPRIATE: "Inappropriate",
+    HARASSMENT: "Harassment",
+    SCAM: "Scam",
+    OTHER: "Other",
 };
 
 const reasonVariant: Record<
@@ -47,7 +56,7 @@ function SortableHeader({
     column,
     title,
 }: {
-    column: import("@tanstack/react-table").Column<ReportRow, unknown>;
+    column: Column<ReportRow, unknown>;
     title: string;
 }) {
     return (
@@ -69,134 +78,162 @@ function SortableHeader({
     );
 }
 
-export const columns: ColumnDef<ReportRow>[] = [
-    {
-        accessorKey: "reportedAt",
-        header: ({ column }) => <SortableHeader column={column} title="Date" />,
-        cell: ({ row }) =>
-            new Date(row.getValue("reportedAt")).toLocaleDateString("fr-FR", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-            }),
-    },
-    {
-        accessorKey: "reason",
-        header: ({ column }) => (
-            <SortableHeader column={column} title="Reason" />
-        ),
-        cell: ({ row }) => {
-            const reason = row.getValue<REPORT_TYPE>("reason");
-            return (
-                <Badge variant={reasonVariant[reason]} className="capitalize">
-                    {reason.toLowerCase()}
-                </Badge>
-            );
+function RowActions({
+    report,
+}: {
+    report: ReportRow;
+    onMutationSuccess: () => void;
+}) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem
+                    onClick={() => navigator.clipboard.writeText(report.id)}
+                >
+                    Copy report ID
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {report.post && (
+                    <DropdownMenuItem asChild>
+                        <a
+                            href={`/post/${report.post.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            View post
+                        </a>
+                    </DropdownMenuItem>
+                )}
+                {report.user && (
+                    <DropdownMenuItem asChild>
+                        <a
+                            href={`/profile/${report.user.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            View reporter
+                        </a>
+                    </DropdownMenuItem>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
+export function makeColumns(
+    onMutationSuccess: () => void
+): ColumnDef<ReportRow>[] {
+    return [
+        {
+            accessorKey: "reportedAt",
+            header: ({ column }) => (
+                <SortableHeader column={column} title="Date" />
+            ),
+            cell: ({ row }) =>
+                new Date(row.getValue("reportedAt")).toLocaleDateString(
+                    "fr-FR",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                    }
+                ),
         },
-    },
-    {
-        accessorKey: "post",
-        header: "Post",
-        cell: ({ row }) => {
-            const post = row.original.post;
-            if (!post)
-                return <span className="text-muted-foreground text-sm">—</span>;
-            return (
-                <span className="max-w-50 truncate block text-sm font-medium">
-                    {post.title ?? post.id}
-                </span>
-            );
-        },
-        enableSorting: false,
-    },
-    {
-        accessorKey: "user",
-        header: "Reporter",
-        cell: ({ row }) => {
-            const user = row.original.user;
-            if (!user)
-                return <span className="text-muted-foreground text-sm">—</span>;
-            return (
-                <div className="flex flex-col">
-                    <span className="text-sm font-medium">
-                        {user.name ?? "—"}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                        {user.email}
-                    </span>
-                </div>
-            );
-        },
-        enableSorting: false,
-    },
-    {
-        accessorKey: "details",
-        header: "Details",
-        cell: ({ row }) => {
-            const details = row.getValue<string | null>("details");
-            if (!details)
+        {
+            accessorKey: "reason",
+            header: ({ column }) => (
+                <SortableHeader column={column} title="Raison" />
+            ),
+            cell: ({ row }) => {
+                const reason = row.getValue<REPORT_TYPE>("reason");
                 return (
-                    <span className="text-muted-foreground text-sm italic">
-                        No details
+                    <Badge
+                        variant={reasonVariant[reason]}
+                        className="capitalize"
+                    >
+                        {reasonLabel[reason]}
+                    </Badge>
+                );
+            },
+        },
+        {
+            accessorKey: "post",
+            header: "Annonce",
+            cell: ({ row }) => {
+                const post = row.original.post;
+                if (!post)
+                    return (
+                        <span className="text-muted-foreground text-sm">—</span>
+                    );
+                return (
+                    <span className="max-w-50 truncate block text-sm font-medium">
+                        {post.title ?? post.id}
                     </span>
                 );
-            return (
-                <span
-                    className="max-w-62.5 truncate block text-sm"
-                    title={details}
-                >
-                    {details}
-                </span>
-            );
+            },
+            enableSorting: false,
         },
-        enableSorting: false,
-    },
-    {
-        id: "actions",
-        cell: ({ row }) => {
-            const report = row.original;
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() =>
-                                navigator.clipboard.writeText(report.id)
-                            }
-                        >
-                            Copy report ID
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {report.post && (
-                            <DropdownMenuItem asChild>
-                                <a
-                                    href={`/post/${report.post.id}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
-                                    View post
-                                </a>
-                            </DropdownMenuItem>
-                        )}
-                        {report.user && (
-                            <DropdownMenuItem asChild>
-                                <a
-                                    href={`/profile/${report.user.id}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
-                                    View reporter
-                                </a>
-                            </DropdownMenuItem>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            );
+        {
+            accessorKey: "user",
+            header: "Reporter",
+            cell: ({ row }) => {
+                const user = row.original.user;
+                if (!user)
+                    return (
+                        <span className="text-muted-foreground text-sm">—</span>
+                    );
+                return (
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium">
+                            {user.name ?? "—"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                            {user.email}
+                        </span>
+                    </div>
+                );
+            },
+            enableSorting: false,
         },
-    },
-];
+        {
+            accessorKey: "details",
+            header: "Détails",
+            cell: ({ row }) => {
+                const details = row.getValue<string | null>("details");
+                if (!details)
+                    return (
+                        <span className="text-muted-foreground text-sm italic">
+                            Aucun détail fourni
+                        </span>
+                    );
+                return (
+                    <span
+                        className="max-w-62.5 truncate block text-sm"
+                        title={details}
+                    >
+                        {details}
+                    </span>
+                );
+            },
+            enableSorting: false,
+        },
+        {
+            id: "actions",
+            cell: ({ row }) => (
+                <RowActions
+                    report={row.original}
+                    onMutationSuccess={onMutationSuccess}
+                />
+            ),
+        },
+    ];
+}
+
+export const columns: ColumnDef<ReportRow>[] = makeColumns(() => {});
