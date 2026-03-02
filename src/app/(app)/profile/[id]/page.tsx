@@ -1,22 +1,26 @@
 import { Metadata } from "next";
 import { cache } from "react";
+
 import { trpc } from "@/trpc/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
-import { Star, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 import { ListingCard } from "./listing-card";
+import { ReviewsDialog } from "./reviews-dialog";
 
 type Params = {
     id: string;
 };
 
-export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<Params>;
+}): Promise<Metadata> {
     const { id } = await params;
-
     const user = await getUser(id);
-
     return {
         title: `Profil de ${user?.username?.slice(0, 15) ?? "Utilisateur"}${(user?.username?.length ?? 0) > 15 ? "..." : ""}`,
         description: `Découvrez en détails le profil de ${user?.username ?? "cet utilisateur"}`,
@@ -24,8 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 const getUser = cache(async (id: string) => {
-    const user = await trpc.user.getPublicProfile({ userId: id });
-    return user;
+    return await trpc.user.getPublicProfile({ userId: id });
 });
 
 function ProfileHeaderSkeleton() {
@@ -39,12 +42,9 @@ function ProfileHeaderSkeleton() {
                         <Skeleton className="h-4 w-24" />
                     </div>
                     <Skeleton className="h-4 w-64" />
-                    <div className="flex items-center justify-center gap-2 md:justify-start">
-                        <Skeleton className="h-4 w-20" />
-                    </div>
+                    <Skeleton className="h-4 w-20" />
                 </div>
             </div>
-            <Skeleton className="h-10 w-32" />
         </div>
     );
 }
@@ -84,18 +84,11 @@ function ListingsSkeleton() {
     );
 }
 
-function ProfileHeader({
-    user,
-}: {
-    user: {
-        id: string;
-        username?: string | null;
-        image?: string | null;
-        bio?: string | null;
-        rating: { average?: number | null; count: number };
-    };
-}) {
-    const displayName = user.username ?? "Mon profil";
+async function ProfileHeader({ userId }: { userId: string }) {
+    const user = await getUser(userId);
+    if (!user) return null;
+
+    const displayName = user.username ?? "Utilisateur";
     const initials = displayName
         .split(/\s+/)
         .map((segment: string) => segment[0])
@@ -104,35 +97,48 @@ function ProfileHeader({
         .join("")
         .toUpperCase();
 
-    const ratingValue = user.rating.average ?? 0;
-    const ratingCount = user.rating.count;
+    const reviews = await trpc.user.getReceivedReviews({ userId: user.id });
+    const average =
+        reviews.length > 0
+            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+            : 0;
 
     return (
         <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
             <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
                 <Avatar className="size-24 border-4 border-background text-3xl font-semibold shadow-lg">
                     {user.image ? (
-                        <AvatarImage src={user.image} alt={`Avatar de ${displayName}`} className="object-cover" />
+                        <AvatarImage
+                            src={user.image}
+                            alt={`Avatar de ${displayName}`}
+                            className="object-cover"
+                        />
                     ) : null}
-                    <AvatarFallback className="bg-secondary text-muted-foreground">{initials}</AvatarFallback>
+                    <AvatarFallback className="bg-secondary text-muted-foreground">
+                        {initials}
+                    </AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
                     <div className="space-y-1">
-                        <h1 className="text-2xl font-semibold sm:text-3xl">{displayName}</h1>
+                        <h1 className="text-2xl font-semibold sm:text-3xl">
+                            {displayName}
+                        </h1>
                         {user.username && user.username !== displayName && (
-                            <p className="text-sm text-muted-foreground">@{user.username}</p>
+                            <p className="text-sm text-muted-foreground">
+                                @{user.username}
+                            </p>
                         )}
                     </div>
-
-                    {user.bio && <p className="max-w-md text-sm text-muted-foreground">{user.bio}</p>}
-
-                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground md:justify-start">
-                        <span className="flex items-center gap-1 font-medium text-foreground">
-                            {ratingValue > 0 ? ratingValue.toFixed(1) : "-"}
-                            <Star className="size-4 text-primary" fill="currentColor" />
-                        </span>
-                        <span>({ratingCount} avis)</span>
-                    </div>
+                    {user.bio && (
+                        <p className="max-w-md text-sm text-muted-foreground">
+                            {user.bio}
+                        </p>
+                    )}
+                    <ReviewsDialog
+                        reviews={reviews}
+                        average={average}
+                        username={displayName}
+                    />
                 </div>
             </div>
         </div>
@@ -168,26 +174,35 @@ async function ListingsContent({ userId }: { userId: string }) {
     );
 }
 
-export default async function ProfilePage({ params }: { params: Promise<Params> }) {
+export default async function ProfilePage({
+    params,
+}: {
+    params: Promise<Params>;
+}) {
     const { id } = await params;
-
     const user = await getUser(id);
 
     return (
         <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
             <div className="mb-8">
                 <Suspense fallback={<ProfileHeaderSkeleton />}>
-                    <ProfileHeader user={user} />
+                    <ProfileHeader userId={id} />
                 </Suspense>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4 mt-10">
                 <h2 className="text-xl font-semibold">Annonces</h2>
-                <p className="text-sm text-muted-foreground">Les annonces publiées par ce vendeur</p>
+                <p className="text-sm text-muted-foreground">
+                    Les annonces publiées par ce vendeur
+                </p>
             </div>
 
             <Suspense fallback={<ListingsSkeleton />}>
-                {user?.id ? <ListingsContent userId={user.id} /> : <EmptyState />}
+                {user?.id ? (
+                    <ListingsContent userId={user.id} />
+                ) : (
+                    <EmptyState />
+                )}
             </Suspense>
         </section>
     );

@@ -32,7 +32,9 @@ export function ListingCard({ listing }: ListingCardProps) {
                     className="relative h-40 w-full bg-secondary sm:h-40 sm:w-48 shrink-0"
                 >
                     <Image
-                        src={listing.thumbnail?.image || "/images/fallback.webp"}
+                        src={
+                            listing.thumbnail?.image || "/images/fallback.webp"
+                        }
                         alt={listing.thumbnail?.alt ?? listing.title}
                         fill
                         className="h-full w-full object-cover"
@@ -41,14 +43,20 @@ export function ListingCard({ listing }: ListingCardProps) {
                 <div className="flex flex-1 flex-col justify-between p-4 gap-4 h-full">
                     <Link href={`/post/${listing.id}`} className="space-y-1">
                         <div className="flex justify-between items-start gap-2">
-                            <CardTitle className="text-base line-clamp-1">{listing.title}</CardTitle>
+                            <CardTitle className="text-base line-clamp-1">
+                                {listing.title}
+                            </CardTitle>
                             <span className="text-lg font-bold dark:text-primary shrink-0">
                                 {listing.price.toLocaleString("fr-FR")} €
                             </span>
                         </div>
-                        <p className="text-xs text-muted-foreground">{listing.component.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                            {listing.component.name}
+                        </p>
                         {listing.description && (
-                            <CardDescription className="line-clamp-2 text-sm">{listing.description}</CardDescription>
+                            <CardDescription className="line-clamp-2 text-sm">
+                                {listing.description}
+                            </CardDescription>
                         )}
                     </Link>
                 </div>

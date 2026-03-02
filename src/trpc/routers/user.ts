@@ -129,6 +129,110 @@ export const userRouter = createTRPCRouter({
     getProfile: privateProcedure.query(async ({ ctx }) => {
         return buildProfilePayload(ctx.session!.user.id);
     }),
+    getReceivedReviews: publicProcedure
+        .input(z.object({ userId: z.string() }))
+        .query(async ({ input }) => {
+            const reviews = await prisma.rating.findMany({
+                where: { userId: input.userId },
+                orderBy: { createdAt: "desc" },
+                include: {
+                    rater: {
+                        select: {
+                            id: true,
+                            username: true,
+                            displayUsername: true,
+                            image: true,
+                        },
+                    },
+                },
+            });
+            return reviews.map((r) => ({
+                id: r.id,
+                rating: r.rating,
+                comment: r.comment,
+                createdAt: r.createdAt.toISOString(),
+                rater: r.rater,
+            }));
+        }),
+
+    getGivenReviews: privateProcedure.query(async ({ ctx }) => {
+        const raterId = ctx.session!.user.id;
+        const reviews = await prisma.rating.findMany({
+            where: { raterId },
+            orderBy: { createdAt: "desc" },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayUsername: true,
+                        image: true,
+                    },
+                },
+            },
+        });
+        return reviews.map((r) => ({
+            id: r.id,
+            rating: r.rating,
+            comment: r.comment,
+            createdAt: r.createdAt.toISOString(),
+            recipient: r.user,
+        }));
+    }),
+
+    addReview: privateProcedure
+        .input(
+            z.object({
+                userId: z.string(),
+                rating: z.number().int().min(1).max(5),
+                comment: z.string().max(500).optional(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const raterId = ctx.session!.user.id;
+
+            if (raterId === input.userId) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Vous ne pouvez pas vous noter vous-même.",
+                });
+            }
+
+            const target = await prisma.user.findUnique({
+                where: { id: input.userId },
+                select: { id: true },
+            });
+
+            if (!target) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Utilisateur introuvable.",
+                });
+            }
+
+            const existing = await prisma.rating.findFirst({
+                where: { userId: input.userId, raterId },
+            });
+
+            if (existing) {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message:
+                        "Vous avez déjà laissé un avis pour cet utilisateur.",
+                });
+            }
+
+            await prisma.rating.create({
+                data: {
+                    userId: input.userId,
+                    raterId,
+                    rating: input.rating,
+                    comment: input.comment ?? null,
+                },
+            });
+
+            return { success: true };
+        }),
 
     getPublicProfile: publicProcedure
         .input(z.object({ userId: z.string() }))
