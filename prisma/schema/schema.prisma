@@ -19,8 +19,8 @@ model User {
   accounts          Account[]
   posts             Post[]
   favorites         Favorite[]
-  reports           Report[]   @relation("reporter")
-  reportsReceived   Report[]   @relation("reportedUser")
+  reports           Report[]     @relation("reporter")
+  reportsReceived   Report[]     @relation("reportedUser")
   discussionsBuyer  Discussion[] @relation("discussionBuyer")
   discussionsSeller Discussion[] @relation("discussionSeller")
   messages          Message[]
@@ -156,20 +156,20 @@ enum REPORT_CONTENT {
 }
 
 model Report {
-  id               String         @id @default(cuid())
-  reason           REPORT_TYPE
-  details          String?
-  type             REPORT_CONTENT
-  postId           String?
-  post             Post?          @relation(fields: [postId], references: [id], onDelete: Cascade)
-  ratingId         String?
-  rating           Rating?        @relation(fields: [ratingId], references: [id], onDelete: Cascade)
-  userId           String?
-  user             User?          @relation("reporter", fields: [userId], references: [id], onDelete: Cascade)
-  reportedUserId   String?
-  reportedUser     User?          @relation("reportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
-  messageId        String?
-  reportedAt       DateTime       @default(now())
+  id             String         @id @default(cuid())
+  reason         REPORT_TYPE
+  details        String?
+  type           REPORT_CONTENT
+  postId         String?
+  post           Post?          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ratingId       String?
+  rating         Rating?        @relation(fields: [ratingId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?          @relation("reporter", fields: [userId], references: [id], onDelete: Cascade)
+  reportedUserId String?
+  reportedUser   User?          @relation("reportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  messageId      String?
+  reportedAt     DateTime       @default(now())
 
   @@map("report")
 }

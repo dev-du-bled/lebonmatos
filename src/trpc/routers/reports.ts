@@ -1,11 +1,11 @@
 import z from "zod";
-import { createTRPCRouter, privateProcedure } from "../init";
+import { createTRPCRouter, privateProcedure, adminProcedure } from "../init";
 import { prisma } from "@/lib/prisma";
 import { REPORT_CONTENT, REPORT_TYPE, Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 export const reportsRouter = createTRPCRouter({
-    getReports: privateProcedure
+    getReports: adminProcedure
         .input(
             z.object({
                 type: z.enum(REPORT_CONTENT).default("POST"),
@@ -27,14 +27,7 @@ export const reportsRouter = createTRPCRouter({
                     .optional(),
             })
         )
-        .query(async ({ ctx, input }) => {
-            if (ctx.session.user.role !== "admin") {
-                throw new TRPCError({
-                    code: "FORBIDDEN",
-                    message: "You do not have permission to view reports",
-                });
-            }
-
+        .query(async ({ input }) => {
             const { limit, offset, sortBy, sortOrder, search, searchField } =
                 input;
 
