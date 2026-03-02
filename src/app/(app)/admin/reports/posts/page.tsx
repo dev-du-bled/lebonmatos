@@ -1,21 +1,41 @@
 "use client";
 
-import * as React from "react";
 import { SortingState } from "@tanstack/react-table";
 import { trpc } from "@/trpc/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
-import { DataTable } from "./data-table";
+import { DataTable } from "@/components/admin/data-table";
 import { makeColumns } from "./columns";
+import { useState, useCallback, useMemo } from "react";
+
+const SEARCH_FIELDS = [
+    {
+        value: "details",
+        label: "Détails",
+        placeholder: "Rechercher dans les détails...",
+    },
+    {
+        value: "reporterEmail",
+        label: "Email reporter",
+        placeholder: "Rechercher par email...",
+    },
+    {
+        value: "reporterName",
+        label: "Nom reporter",
+        placeholder: "Rechercher par nom...",
+    },
+];
 
 export default function PostsReportsPage() {
     const queryClient = useQueryClient();
 
-    const [pageIndex, setPageIndex] = React.useState(0);
-    const [pageSize, setPageSize] = React.useState(10);
-    const [sorting, setSorting] = React.useState<SortingState>([
+    const [pageIndex, setPageIndex] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [sorting, setSorting] = useState<SortingState>([
         { id: "reportedAt", desc: true },
     ]);
+    const [search, setSearch] = useState("");
+    const [searchField, setSearchField] = useState("details");
 
     const sortField = sorting[0]?.id ?? "reportedAt";
     const sortOrder = sorting[0]?.desc === false ? "asc" : "desc";
@@ -33,18 +53,33 @@ export default function PostsReportsPage() {
         offset: pageIndex * pageSize,
         sortBy: safeSortBy,
         sortOrder,
+        ...(search
+            ? {
+                  search,
+                  searchField: searchField as
+                      | "details"
+                      | "reporterEmail"
+                      | "reporterName",
+              }
+            : {}),
     });
 
-    const handleMutationSuccess = React.useCallback(() => {
+    const handleMutationSuccess = useCallback(() => {
         queryClient.invalidateQueries({
             queryKey: getQueryKey(trpc.reports.getReports),
         });
     }, [queryClient]);
 
-    const columns = React.useMemo(
+    const columns = useMemo(
         () => makeColumns(handleMutationSuccess),
         [handleMutationSuccess]
     );
+
+    const handleSearch = useCallback((value: string, field: string) => {
+        setSearch(value);
+        setSearchField(field);
+        setPageIndex(0);
+    }, []);
 
     return (
         <div className="p-6 space-y-4">
@@ -68,6 +103,8 @@ export default function PostsReportsPage() {
                 onPageChange={setPageIndex}
                 onPageSizeChange={setPageSize}
                 onSortingChange={setSorting}
+                searchFields={SEARCH_FIELDS}
+                onSearch={handleSearch}
             />
         </div>
     );

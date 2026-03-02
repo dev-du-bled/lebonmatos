@@ -161,6 +161,8 @@ model Report {
   type       REPORT_CONTENT
   postId     String?
   post       Post?          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ratingId   String?
+  rating     Rating?        @relation(fields: [ratingId], references: [id], onDelete: Cascade)
   userId     String?
   user       User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   messageId  String?
@@ -206,6 +208,7 @@ model Rating {
   rating    Int      @db.SmallInt
   comment   String?
   createdAt DateTime @default(now())
+  reports   Report[]
 
   @@map("rating")
 }

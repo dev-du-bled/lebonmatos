@@ -6,6 +6,7 @@ import {
     ArrowUp,
     ChevronsUpDown,
     MoreHorizontal,
+    Star,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,8 +28,16 @@ export type ReportRow = {
     postId: string | null;
     userId: string | null;
     messageId: string | null;
+    ratingId: string | null;
     reportedAt: Date | string;
     post: { id: string; title: string | null } | null;
+    rating: {
+        id: string;
+        rating: number;
+        comment: string | null;
+        rater: { id: string; name: string | null } | null;
+        user: { id: string; name: string | null } | null;
+    } | null;
     user: { id: string; name: string | null; email: string | null } | null;
 };
 
@@ -95,16 +104,32 @@ export const columns: ColumnDef<ReportRow>[] = [
         },
     },
     {
-        accessorKey: "post",
-        header: "Post",
+        accessorKey: "rating",
+        header: "Avis signalé",
         cell: ({ row }) => {
-            const post = row.original.post;
-            if (!post)
+            const rating = row.original.rating;
+            if (!rating)
                 return <span className="text-muted-foreground text-sm">—</span>;
             return (
-                <span className="max-w-50 truncate block text-sm font-medium">
-                    {post.title ?? post.id}
-                </span>
+                <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1 text-sm font-medium">
+                        <Star className="h-3.5 w-3.5 fill-current text-yellow-500" />
+                        {rating.rating}/5
+                        {rating.rater && (
+                            <span className="text-muted-foreground font-normal">
+                                — {rating.rater.name ?? "—"}
+                            </span>
+                        )}
+                    </div>
+                    {rating.comment && (
+                        <span
+                            className="max-w-50 truncate block text-xs text-muted-foreground"
+                            title={rating.comment}
+                        >
+                            {rating.comment}
+                        </span>
+                    )}
+                </div>
             );
         },
         enableSorting: false,

@@ -1,7 +1,7 @@
 import z from "zod";
 import { createTRPCRouter, privateProcedure } from "../init";
 import { prisma } from "@/lib/prisma";
-import { REPORT_CONTENT, REPORT_TYPE } from "@prisma/client";
+import { REPORT_CONTENT, REPORT_TYPE, Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 export const reportsRouter = createTRPCRouter({
@@ -15,6 +15,10 @@ export const reportsRouter = createTRPCRouter({
                     .enum(["reportedAt", "reason", "type"])
                     .default("reportedAt"),
                 sortOrder: z.enum(["asc", "desc"]).default("desc"),
+                search: z.string().optional(),
+                searchField: z
+                    .enum(["details", "reporterEmail", "reporterName"])
+                    .optional(),
             })
         )
         .query(async ({ ctx, input }) => {
@@ -25,19 +29,46 @@ export const reportsRouter = createTRPCRouter({
                 });
             }
 
-            const { limit, offset, sortBy, sortOrder } = input;
+            const { limit, offset, sortBy, sortOrder, search, searchField } =
+                input;
+
+            const where: Prisma.ReportWhereInput = { type: input.type };
+
+            if (search && searchField) {
+                if (searchField === "details") {
+                    where.details = { contains: search, mode: "insensitive" };
+                } else if (searchField === "reporterEmail") {
+                    where.user = {
+                        email: { contains: search, mode: "insensitive" },
+                    };
+                } else if (searchField === "reporterName") {
+                    where.user = {
+                        name: { contains: search, mode: "insensitive" },
+                    };
+                }
+            }
+
             const [reports, totalCount] = await Promise.all([
                 prisma.report.findMany({
-                    where: { type: input.type },
+                    where,
                     skip: offset,
                     take: limit,
                     orderBy: { [sortBy]: sortOrder },
                     include: {
                         post: { select: { id: true, title: true } },
+                        rating: {
+                            select: {
+                                id: true,
+                                rating: true,
+                                comment: true,
+                                rater: { select: { id: true, name: true } },
+                                user: { select: { id: true, name: true } },
+                            },
+                        },
                         user: { select: { id: true, name: true, email: true } },
                     },
                 }),
-                prisma.report.count({ where: { type: input.type } }),
+                prisma.report.count({ where }),
             ]);
             return { reports, totalCount };
         }),

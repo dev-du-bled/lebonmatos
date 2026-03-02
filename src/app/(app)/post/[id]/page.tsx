@@ -23,6 +23,7 @@ import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
 import z from "zod";
 import ReportButton from "@/components/report/report-button";
+import { getUser } from "@/utils/getUser";
 
 type Params = {
     id: string;
@@ -61,6 +62,8 @@ export default async function PostPage({
 
     if (!post) notFound();
 
+    const user = await getUser();
+
     const similarPost = await trpc.posts.getSimilarPosts({
         id: post.id,
         type: post.component.type,
@@ -98,15 +101,17 @@ export default async function PostPage({
                             <CarouselNext className="right-4" />
                         </Carousel>
                         {/* Bouton favoris en haut à droite */}
-                        <div className="absolute top-4 right-4 z-10 space-x-2">
-                            <ReportButton postId={post.id} />
-                            <FavoriteButton
-                                post={{
-                                    id: post.id,
-                                    isFavorited: post.isFavorited,
-                                }}
-                            />
-                        </div>
+                        {post.seller?.id !== user?.id && (
+                            <div className="absolute top-4 right-4 z-10 space-x-2">
+                                <ReportButton postId={post.id} />
+                                <FavoriteButton
+                                    post={{
+                                        id: post.id,
+                                        isFavorited: post.isFavorited,
+                                    }}
+                                />
+                            </div>
+                        )}
                         <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-6 pt-20 pointer-events-none">
                             <h1 className="text-2xl md:text-4xl font-bold text-white">
                                 {post.title}

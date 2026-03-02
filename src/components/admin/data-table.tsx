@@ -35,7 +35,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useDebounce } from "use-debounce";
+
+export interface SearchField {
+    value: string;
+    label: string;
+    placeholder?: string;
+}
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -48,6 +55,10 @@ interface DataTableProps<TData, TValue> {
     onPageChange: (pageIndex: number) => void;
     onPageSizeChange: (pageSize: number) => void;
     onSortingChange: (sorting: SortingState) => void;
+    filterColumn?: string;
+    filterPlaceholder?: string;
+    searchFields?: SearchField[];
+    onSearch?: (value: string, field: string) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -61,11 +72,43 @@ export function DataTable<TData, TValue>({
     onPageChange,
     onPageSizeChange,
     onSortingChange,
+    filterColumn = "details",
+    filterPlaceholder = "Rechercher...",
+    searchFields,
+    onSearch,
 }: DataTableProps<TData, TValue>) {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
         {}
     );
+
+    const [inputValue, setInputValue] = useState("");
+    const [activeField, setActiveField] = useState<string>(
+        searchFields?.[0]?.value ?? ""
+    );
+
+    const [debouncedInput] = useDebounce(inputValue, 300);
+
+    useEffect(() => {
+        onSearch?.(debouncedInput, activeField);
+        onPageChange(0);
+    }, [debouncedInput, activeField, onSearch, onPageChange]);
+
+    const handleInputChange = (value: string) => {
+        setInputValue(value);
+        if (!value) {
+            onSearch?.("", activeField);
+            onPageChange(0);
+        }
+    };
+
+    const handleFieldChange = (field: string) => {
+        setActiveField(field);
+        if (inputValue) {
+            onSearch?.(inputValue, field);
+            onPageChange(0);
+        }
+    };
 
     const pageCount = Math.ceil(totalCount / pageSize);
 
@@ -93,20 +136,57 @@ export function DataTable<TData, TValue>({
         getFilteredRowModel: getFilteredRowModel(),
     });
 
+    const isServerSearch = !!searchFields;
+    const currentField = searchFields?.find((f) => f.value === activeField);
+    const activePlaceholder =
+        currentField?.placeholder ??
+        `Rechercher par ${currentField?.label ?? ""}...`;
+
     return (
         <div className="space-y-4">
             {/* Toolbar */}
-            <Input
-                placeholder="Rechercher par détails..."
-                value={
-                    (table.getColumn("details")?.getFilterValue() as string) ??
-                    ""
-                }
-                onChange={(e) =>
-                    table.getColumn("details")?.setFilterValue(e.target.value)
-                }
-                className="max-w-xs h-8"
-            />
+            {isServerSearch ? (
+                <div className="flex items-center gap-2">
+                    {searchFields.length > 1 && (
+                        <Select
+                            value={activeField}
+                            onValueChange={handleFieldChange}
+                        >
+                            <SelectTrigger className="h-8 w-36">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {searchFields.map((f) => (
+                                    <SelectItem key={f.value} value={f.value}>
+                                        {f.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                    <Input
+                        placeholder={activePlaceholder}
+                        value={inputValue}
+                        onChange={(e) => handleInputChange(e.target.value)}
+                        className="max-w-xs h-8"
+                    />
+                </div>
+            ) : (
+                <Input
+                    placeholder={filterPlaceholder}
+                    value={
+                        (table
+                            .getColumn(filterColumn)
+                            ?.getFilterValue() as string) ?? ""
+                    }
+                    onChange={(e) =>
+                        table
+                            .getColumn(filterColumn)
+                            ?.setFilterValue(e.target.value)
+                    }
+                    className="max-w-xs h-8"
+                />
+            )}
 
             {/* Table */}
             <div className="overflow-hidden rounded-md border">
@@ -158,7 +238,7 @@ export function DataTable<TData, TValue>({
                                     colSpan={columns.length}
                                     className="h-24 text-center text-muted-foreground"
                                 >
-                                    Aucun siganement trouvé.
+                                    Aucun résultat trouvé.
                                 </TableCell>
                             </TableRow>
                         )}
@@ -169,12 +249,12 @@ export function DataTable<TData, TValue>({
             {/* Pagination */}
             <div className="flex items-center justify-between px-1">
                 <p className="text-sm text-muted-foreground">
-                    {totalCount} report{totalCount !== 1 ? "s" : ""} total
+                    {totalCount} résultat{totalCount !== 1 ? "s" : ""}
                 </p>
 
                 <div className="flex items-center gap-6 lg:gap-8">
                     <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">Rows per page</p>
+                        <p className="text-sm font-medium">Lignes par page</p>
                         <Select
                             value={`${pageSize}`}
                             onValueChange={(v) => {
