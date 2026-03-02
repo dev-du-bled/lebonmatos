@@ -18,13 +18,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     const user = await getUser(id);
 
     return {
-        title: `Profil de ${user?.name.slice(0, 15)}${user?.name.length || 0 > 15 ? "..." : ""}`,
-        description: `Découvrez en détails le profil de ${user?.name}`,
+        title: `Profil de ${user?.username?.slice(0, 15) ?? "Utilisateur"}${(user?.username?.length ?? 0) > 15 ? "..." : ""}`,
+        description: `Découvrez en détails le profil de ${user?.username ?? "cet utilisateur"}`,
     };
 }
 
 const getUser = cache(async (id: string) => {
-    const user = await trpc.user.getProfile({ userId: id });
+    const user = await trpc.user.getPublicProfile({ userId: id });
     return user;
 });
 
@@ -90,13 +90,12 @@ function ProfileHeader({
     user: {
         id: string;
         username?: string | null;
-        name?: string | null;
         image?: string | null;
         bio?: string | null;
         rating: { average?: number | null; count: number };
     };
 }) {
-    const displayName = user.username ?? user.name ?? "Mon profil";
+    const displayName = user.username ?? "Mon profil";
     const initials = displayName
         .split(/\s+/)
         .map((segment: string) => segment[0])
