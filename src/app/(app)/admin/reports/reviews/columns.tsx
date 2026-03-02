@@ -100,7 +100,11 @@ function RowActions({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0" disabled={isPending}>
+                <Button
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                    disabled={isPending}
+                >
                     <MoreHorizontal className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
@@ -156,13 +160,18 @@ export function makeColumns(
     return [
         {
             accessorKey: "reportedAt",
-            header: ({ column }) => <SortableHeader column={column} title="Date" />,
+            header: ({ column }) => (
+                <SortableHeader column={column} title="Date" />
+            ),
             cell: ({ row }) =>
-                new Date(row.getValue("reportedAt")).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                }),
+                new Date(row.getValue("reportedAt")).toLocaleDateString(
+                    "fr-FR",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                    }
+                ),
         },
         {
             accessorKey: "reason",
@@ -172,7 +181,10 @@ export function makeColumns(
             cell: ({ row }) => {
                 const reason = row.getValue<REPORT_TYPE>("reason");
                 return (
-                    <Badge variant={reasonVariant[reason]} className="capitalize">
+                    <Badge
+                        variant={reasonVariant[reason]}
+                        className="capitalize"
+                    >
                         {reasonLabel[reason]}
                     </Badge>
                 );
@@ -184,7 +196,9 @@ export function makeColumns(
             cell: ({ row }) => {
                 const rating = row.original.rating;
                 if (!rating)
-                    return <span className="text-muted-foreground text-sm">—</span>;
+                    return (
+                        <span className="text-muted-foreground text-sm">—</span>
+                    );
                 return (
                     <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-1 text-sm font-medium">
@@ -215,7 +229,9 @@ export function makeColumns(
             cell: ({ row }) => {
                 const user = row.original.user;
                 if (!user)
-                    return <span className="text-muted-foreground text-sm">—</span>;
+                    return (
+                        <span className="text-muted-foreground text-sm">—</span>
+                    );
                 return (
                     <div className="flex flex-col">
                         <span className="text-sm font-medium">

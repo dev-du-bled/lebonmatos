@@ -112,7 +112,9 @@ function ReportCard({ report }: { report: MyReport }) {
             <CardContent className="flex flex-col gap-3 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline">{typeLabel[report.type]}</Badge>
+                        <Badge variant="outline">
+                            {typeLabel[report.type]}
+                        </Badge>
                         <Badge variant={reasonVariant[report.reason]}>
                             {reasonLabel[report.reason]}
                         </Badge>
@@ -125,7 +127,9 @@ function ReportCard({ report }: { report: MyReport }) {
                 {/* Cible du signalement */}
                 {report.type === "POST" && report.post && (
                     <div className="text-sm">
-                        <span className="text-muted-foreground">Annonce : </span>
+                        <span className="text-muted-foreground">
+                            Annonce :{" "}
+                        </span>
                         <Link
                             href={`/post/${report.post.id}`}
                             className="font-medium hover:underline"
@@ -138,7 +142,9 @@ function ReportCard({ report }: { report: MyReport }) {
                 {report.type === "REVIEW" && report.rating && (
                     <div className="flex flex-col gap-0.5 text-sm">
                         <div className="flex items-center gap-1">
-                            <span className="text-muted-foreground">Avis : </span>
+                            <span className="text-muted-foreground">
+                                Avis :{" "}
+                            </span>
                             <Star className="h-3.5 w-3.5 fill-current text-yellow-500" />
                             <span className="font-medium">
                                 {report.rating.rating}/5
@@ -189,7 +195,10 @@ function ReportCard({ report }: { report: MyReport }) {
 }
 
 async function ReportsContent() {
-    const { reports } = await trpc.reports.getMyReports({ limit: 50, offset: 0 });
+    const { reports } = await trpc.reports.getMyReports({
+        limit: 50,
+        offset: 0,
+    });
 
     if (reports.length === 0) {
         return <EmptyState />;

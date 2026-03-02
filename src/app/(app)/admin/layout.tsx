@@ -14,9 +14,5 @@ export default async function AdminRootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return (
-        <RequiredLogin requireAdmin>
-            {children}
-        </RequiredLogin>
-    );
+    return <RequiredLogin requireAdmin>{children}</RequiredLogin>;
 }

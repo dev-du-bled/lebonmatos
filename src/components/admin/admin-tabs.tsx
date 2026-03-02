@@ -10,8 +10,8 @@ export default function AdminTabs() {
     const defaultPath = path.includes("/posts")
         ? "posts"
         : path.includes("/reviews")
-        ? "reviews"
-        : "accounts";
+          ? "reviews"
+          : "accounts";
 
     return (
         <Tabs
