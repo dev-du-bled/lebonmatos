@@ -98,7 +98,7 @@ function ProfileHeaderSkeleton() {
 async function ProfileHeader() {
     const user = await trpc.user.getProfile();
 
-    const displayName = user.username ?? user.name ?? "Mon profil";
+    const displayName = user.username ?? "Mon profil";
     const initials = displayName
         .split(/\s+/)
         .map((segment: string) => segment[0])
