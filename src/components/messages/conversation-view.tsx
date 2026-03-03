@@ -379,7 +379,13 @@ function MessageBubble({
 
     if (type === "OFFER") {
         const messageId = "id" in msg ? msg.id : undefined;
-        const canAccept = isSeller && !isOwn && !isSold && !pending && messageId && acceptedPrice === null;
+        const canAccept =
+            isSeller &&
+            !isOwn &&
+            !isSold &&
+            !pending &&
+            messageId &&
+            acceptedPrice === null;
         return (
             <div
                 className={cn(
@@ -922,18 +928,23 @@ export default function ConversationView({
             toast.success("Offre acceptée");
         },
         onError: (error) => {
-            toast.error(error.message || "Erreur lors de l'acceptation de l'offre");
+            toast.error(
+                error.message || "Erreur lors de l'acceptation de l'offre"
+            );
         },
     });
-    const markAsSoldMutation = trpc.discussions.markAsSoldFromConversation.useMutation({
-        onSuccess: () => {
-            setIsSold(true);
-            toast.success("Article marqué comme vendu");
-        },
-        onError: (error) => {
-            toast.error(error.message || "Erreur lors du marquage comme vendu");
-        },
-    });
+    const markAsSoldMutation =
+        trpc.discussions.markAsSoldFromConversation.useMutation({
+            onSuccess: () => {
+                setIsSold(true);
+                toast.success("Article marqué comme vendu");
+            },
+            onError: (error) => {
+                toast.error(
+                    error.message || "Erreur lors du marquage comme vendu"
+                );
+            },
+        });
 
     const handleAcceptOffer = useCallback(
         (messageId: string) => {
@@ -1200,7 +1211,8 @@ export default function ConversationView({
                             {discussion.post.title}
                         </p>
                         <div className="flex items-center gap-2">
-                            {acceptedPrice !== null && acceptedPrice < discussion.post.price ? (
+                            {acceptedPrice !== null &&
+                            acceptedPrice < discussion.post.price ? (
                                 <>
                                     <span className="text-sm text-muted-foreground line-through">
                                         {discussion.post.price} €
@@ -1247,7 +1259,10 @@ export default function ConversationView({
                     <span className="text-xs text-muted-foreground">
                         Cet article a été vendu à cet utilisateur ?
                         {acceptedPrice !== null && (
-                            <span className="font-medium"> ({acceptedPrice} €)</span>
+                            <span className="font-medium">
+                                {" "}
+                                ({acceptedPrice} €)
+                            </span>
                         )}
                     </span>
                     <Button
@@ -1260,13 +1275,18 @@ export default function ConversationView({
                         <ShoppingBag className="size-3 mr-1" />
                         Marquer comme vendu
                     </Button>
-                    <Dialog open={soldDialogOpen} onOpenChange={setSoldDialogOpen}>
+                    <Dialog
+                        open={soldDialogOpen}
+                        onOpenChange={setSoldDialogOpen}
+                    >
                         <DialogContent showCloseButton={false}>
                             <DialogHeader>
                                 <DialogTitle>Marquer comme vendu ?</DialogTitle>
                             </DialogHeader>
                             <p className="text-sm text-muted-foreground">
-                                Cette action est irréversible. L&apos;annonce sera définitivement marquée comme vendue et ne sera plus disponible à l&apos;achat.
+                                Cette action est irréversible. L&apos;annonce
+                                sera définitivement marquée comme vendue et ne
+                                sera plus disponible à l&apos;achat.
                             </p>
                             <DialogFooter>
                                 <Button
@@ -1433,7 +1453,10 @@ export default function ConversationView({
                                 {(() => {
                                     const postPrice = discussion.post.price;
                                     const minPrice = Math.ceil(postPrice * 0.2);
-                                    const parsedPrice = parseInt(offerPrice, 10);
+                                    const parsedPrice = parseInt(
+                                        offerPrice,
+                                        10
+                                    );
                                     const isValidPrice =
                                         !isNaN(parsedPrice) &&
                                         parsedPrice >= minPrice &&
@@ -1457,16 +1480,23 @@ export default function ConversationView({
                                                         placeholder="Votre offre"
                                                         value={offerPrice}
                                                         onChange={(e) =>
-                                                            setOfferPrice(e.target.value)
+                                                            setOfferPrice(
+                                                                e.target.value
+                                                            )
                                                         }
                                                         min={minPrice}
                                                         max={postPrice - 1}
                                                         className={cn(
                                                             "pr-8",
-                                                            showError && "border-destructive"
+                                                            showError &&
+                                                                "border-destructive"
                                                         )}
                                                         onKeyDown={(e) => {
-                                                            if (e.key === "Enter" && isValidPrice)
+                                                            if (
+                                                                e.key ===
+                                                                    "Enter" &&
+                                                                isValidPrice
+                                                            )
                                                                 void handleSendOffer();
                                                         }}
                                                         autoFocus
@@ -1477,15 +1507,20 @@ export default function ConversationView({
                                                 </div>
                                                 {showError && (
                                                     <p className="text-xs text-destructive">
-                                                        L&apos;offre doit être entre {minPrice} € et{" "}
+                                                        L&apos;offre doit être
+                                                        entre {minPrice} € et{" "}
                                                         {postPrice - 1} €
                                                     </p>
                                                 )}
                                             </div>
                                             <DialogFooter>
                                                 <Button
-                                                    onClick={() => void handleSendOffer()}
-                                                    loading={sendOfferMutation.isPending}
+                                                    onClick={() =>
+                                                        void handleSendOffer()
+                                                    }
+                                                    loading={
+                                                        sendOfferMutation.isPending
+                                                    }
                                                     disabled={!isValidPrice}
                                                 >
                                                     <Tag className="size-4 mr-2" />

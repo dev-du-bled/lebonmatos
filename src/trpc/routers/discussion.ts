@@ -420,7 +420,11 @@ export const discussionRouter = createTRPCRouter({
 
             const discussion = await prisma.discussion.findUnique({
                 where: { id: input.discussionId },
-                select: { buyerId: true, sellerId: true, post: { select: { price: true } } },
+                select: {
+                    buyerId: true,
+                    sellerId: true,
+                    post: { select: { price: true } },
+                },
             });
 
             if (!discussion) {
@@ -435,7 +439,11 @@ export const discussionRouter = createTRPCRouter({
             }
 
             // Validation du prix pour les offres (entre 80% et < prix original)
-            if (input.type === "OFFER" && input.price !== undefined && discussion.post) {
+            if (
+                input.type === "OFFER" &&
+                input.price !== undefined &&
+                discussion.post
+            ) {
                 const postPrice = discussion.post.price;
                 const minPrice = Math.ceil(postPrice * 0.2);
                 if (input.price < minPrice || input.price >= postPrice) {
@@ -554,7 +562,10 @@ export const discussionRouter = createTRPCRouter({
             if (discussion.post) {
                 const postPrice = discussion.post.price;
                 const minPrice = Math.ceil(postPrice * 0.2);
-                if (offerMessage.price < minPrice || offerMessage.price >= postPrice) {
+                if (
+                    offerMessage.price < minPrice ||
+                    offerMessage.price >= postPrice
+                ) {
                     throw new TRPCError({
                         code: "BAD_REQUEST",
                         message: "Le prix de cette offre n'est plus valide",
@@ -577,7 +588,10 @@ export const discussionRouter = createTRPCRouter({
             const recipientId = discussion.buyerId;
             await publish(`inbox:${recipientId}`);
 
-            return { acceptedPrice: offerMessage.price, systemMessage: systemMsg };
+            return {
+                acceptedPrice: offerMessage.price,
+                systemMessage: systemMsg,
+            };
         }),
 
     markAsSoldFromConversation: privateProcedure
