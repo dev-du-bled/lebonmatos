@@ -166,12 +166,13 @@ enum REPORT_STATUS {
 }
 
 model Report {
-  id             String         @id @default(cuid())
-  reason         REPORT_TYPE
-  details        String?
-  type           REPORT_CONTENT
-  status         REPORT_STATUS  @default(PENDING)
-  postId         String?
+  id               String         @id @default(cuid())
+  reason           REPORT_TYPE
+  details          String?
+  type             REPORT_CONTENT
+  status           REPORT_STATUS  @default(PENDING)
+  contentSnapshot  String?
+  postId           String?
   post           Post?          @relation(fields: [postId], references: [id], onDelete: SetNull)
   ratingId       String?
   rating         Rating?        @relation(fields: [ratingId], references: [id], onDelete: SetNull)

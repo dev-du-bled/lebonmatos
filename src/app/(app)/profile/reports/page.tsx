@@ -22,6 +22,7 @@ type MyReport = {
     details: string | null;
     type: REPORT_CONTENT;
     status: REPORT_STATUS;
+    contentSnapshot: string | null;
     reportedAt: Date | string;
     post: { id: string; title: string | null } | null;
     rating: {
@@ -105,17 +106,26 @@ function ReportCard({ report }: { report: MyReport }) {
                 </div>
 
                 {/* Cible du signalement */}
-                {report.type === "POST" && report.post && (
+                {report.type === "POST" && (
                     <div className="text-sm">
                         <span className="text-muted-foreground">
                             Annonce :{" "}
                         </span>
-                        <Link
-                            href={`/post/${report.post.id}`}
-                            className="font-medium hover:underline"
-                        >
-                            {report.post.title ?? report.post.id}
-                        </Link>
+                        {report.post ? (
+                            <Link
+                                href={`/post/${report.post.id}`}
+                                className="font-medium hover:underline"
+                            >
+                                {report.post.title ?? report.post.id}
+                            </Link>
+                        ) : (
+                            <span className="font-medium text-muted-foreground italic">
+                                {report.contentSnapshot ?? "Contenu supprimé"}
+                                {report.status === "RESOLVED" && (
+                                    <span className="ml-1 not-italic">(supprimée suite au traitement)</span>
+                                )}
+                            </span>
+                        )}
                     </div>
                 )}
 

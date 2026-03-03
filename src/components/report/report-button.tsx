@@ -89,6 +89,7 @@ export default function ReportButton({ postId }: ReportButtonProps) {
     } = useForm<CreateReportInput>({
         resolver: zodResolver(createReportSchema),
         defaultValues: {
+            type: "POST",
             postId,
             reason: undefined,
             details: null,
@@ -121,7 +122,7 @@ export default function ReportButton({ postId }: ReportButtonProps) {
     const handleClose = () => {
         setOpen(false);
         setSelectedType(undefined);
-        reset({ postId, reason: undefined, details: null });
+        reset({ type: "POST", postId, reason: undefined, details: null });
     };
 
     const handleSelectType = (type: REPORT_TYPE) => {

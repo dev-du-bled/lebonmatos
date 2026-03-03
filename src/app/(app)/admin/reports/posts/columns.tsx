@@ -35,6 +35,7 @@ export type ReportRow = {
     status: REPORT_STATUS;
     details: string | null;
     type: string;
+    contentSnapshot: string | null;
     postId: string | null;
     userId: string | null;
     messageId: string | null;
@@ -194,9 +195,12 @@ export function makeColumns(
             header: "Annonce",
             cell: ({ row }) => {
                 const post = row.original.post;
+                const snapshot = row.original.contentSnapshot;
                 if (!post)
                     return (
-                        <span className="text-muted-foreground text-sm">—</span>
+                        <span className="text-muted-foreground text-sm italic">
+                            {snapshot ?? "—"}
+                        </span>
                     );
                 return (
                     <span className="max-w-50 truncate block text-sm font-medium">

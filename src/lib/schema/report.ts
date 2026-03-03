@@ -1,30 +1,42 @@
 import { z } from "zod";
 import { REPORT_CONTENT, REPORT_TYPE } from "@prisma/client";
 
-export const createReportSchema = z
-    .object({
-        postId: z.cuid(),
-        reason: z.enum(Object.values(REPORT_TYPE)),
-        details: z
-            .string()
-            .min(10, {
-                message:
-                    "Les détails doivent comporter au moins 10 caractères.",
-            })
-            .max(500, {
-                message: "Les détails ne peuvent dépasser 500 caractères.",
-            })
-            .nullable(),
-    })
-    .refine(
-        (data) =>
-            data.reason !== "OTHER" ||
-            (data.details !== null && data.details.trim().length > 0),
-        {
-            message: 'Les détails sont obligatoires pour le type "Autre"',
-            path: ["details"],
-        }
-    );
+const reportBaseSchema = z.object({
+    reason: z.enum(Object.values(REPORT_TYPE)),
+    details: z
+        .string()
+        .min(10, {
+            message: "Les détails doivent comporter au moins 10 caractères.",
+        })
+        .max(500, {
+            message: "Les détails ne peuvent dépasser 500 caractères.",
+        })
+        .nullable(),
+});
+
+const detailsRequiredForOther = (data: {
+    reason: string;
+    details: string | null;
+}) =>
+    data.reason !== "OTHER" ||
+    (data.details !== null && data.details.trim().length > 0);
+
+const detailsRequiredMsg = {
+    message: 'Les détails sont obligatoires pour le type "Autre"',
+    path: ["details"],
+};
+
+export const createReportSchema = z.discriminatedUnion("type", [
+    reportBaseSchema
+        .extend({ type: z.literal("POST"), postId: z.cuid() })
+        .refine(detailsRequiredForOther, detailsRequiredMsg),
+    reportBaseSchema
+        .extend({ type: z.literal("REVIEW"), ratingId: z.cuid() })
+        .refine(detailsRequiredForOther, detailsRequiredMsg),
+    reportBaseSchema
+        .extend({ type: z.literal("USER"), reportedUserId: z.cuid() })
+        .refine(detailsRequiredForOther, detailsRequiredMsg),
+]);
 
 export type CreateReportInput = z.infer<typeof createReportSchema>;
 

@@ -8,7 +8,7 @@ import {
     getReportsSchema,
     getMyReportsSchema,
 } from "@/lib/schema/report";
-import { reasonLabel } from "@/lib/report";
+import { reasonLabel, buildContentSnapshot } from "@/lib/report";
 import z from "zod";
 
 export const reportsRouter = createTRPCRouter({
@@ -73,50 +73,155 @@ export const reportsRouter = createTRPCRouter({
     createReport: privateProcedure
         .input(createReportSchema)
         .mutation(async ({ ctx, input }) => {
-            const post = await prisma.post.findUnique({
-                where: { id: input.postId },
+            const callerId = ctx.session.user.id;
+
+            if (input.type === "POST") {
+                const post = await prisma.post.findUnique({
+                    where: { id: input.postId },
+                    select: { userId: true, title: true },
+                });
+
+                if (!post) {
+                    throw new TRPCError({
+                        code: "NOT_FOUND",
+                        message: "Post not found",
+                    });
+                }
+                if (post.userId === callerId) {
+                    throw new TRPCError({
+                        code: "FORBIDDEN",
+                        message: "You cannot report your own post",
+                    });
+                }
+
+                const existing = await prisma.report.findFirst({
+                    where: {
+                        postId: input.postId,
+                        userId: callerId,
+                        type: "POST",
+                    },
+                });
+                if (existing) {
+                    throw new TRPCError({
+                        code: "CONFLICT",
+                        message: "You have already reported this post",
+                    });
+                }
+
+                return prisma.report.create({
+                    data: {
+                        reason: input.reason,
+                        details: input.details,
+                        type: "POST",
+                        postId: input.postId,
+                        userId: callerId,
+                        contentSnapshot: buildContentSnapshot({
+                            type: "POST",
+                            title: post.title,
+                        }),
+                    },
+                });
+            }
+
+            if (input.type === "REVIEW") {
+                const rating = await prisma.rating.findUnique({
+                    where: { id: input.ratingId },
+                    select: {
+                        userId: true,
+                        raterId: true,
+                        rating: true,
+                        comment: true,
+                    },
+                });
+
+                if (!rating) {
+                    throw new TRPCError({
+                        code: "NOT_FOUND",
+                        message: "Review not found",
+                    });
+                }
+                if (rating.raterId === callerId) {
+                    throw new TRPCError({
+                        code: "FORBIDDEN",
+                        message: "You cannot report your own review",
+                    });
+                }
+
+                const existing = await prisma.report.findFirst({
+                    where: {
+                        ratingId: input.ratingId,
+                        userId: callerId,
+                        type: "REVIEW",
+                    },
+                });
+                if (existing) {
+                    throw new TRPCError({
+                        code: "CONFLICT",
+                        message: "You have already reported this review",
+                    });
+                }
+
+                return prisma.report.create({
+                    data: {
+                        reason: input.reason,
+                        details: input.details,
+                        type: "REVIEW",
+                        ratingId: input.ratingId,
+                        userId: callerId,
+                        contentSnapshot: buildContentSnapshot({
+                            type: "REVIEW",
+                            rating: rating.rating,
+                            comment: rating.comment,
+                        }),
+                    },
+                });
+            }
+
+            const reportedUser = await prisma.user.findUnique({
+                where: { id: input.reportedUserId },
+                select: { username: true },
             });
 
-            if (!post) {
+            if (!reportedUser) {
                 throw new TRPCError({
                     code: "NOT_FOUND",
-                    message: "Post not found",
+                    message: "User not found",
                 });
             }
-
-            if (ctx.session.user.id === post?.userId) {
+            if (input.reportedUserId === callerId) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
-                    message: "You cannot report your own post",
+                    message: "You cannot report yourself",
                 });
             }
 
-            const existing = await prisma.report.findFirst({
+            const existingUser = await prisma.report.findFirst({
                 where: {
-                    postId: input.postId,
-                    userId: ctx.session.user.id,
-                    type: "POST",
+                    reportedUserId: input.reportedUserId,
+                    userId: callerId,
+                    type: "USER",
                 },
             });
-
-            if (existing) {
+            if (existingUser) {
                 throw new TRPCError({
                     code: "CONFLICT",
-                    message: "You have already reported this post",
+                    message: "You have already reported this user",
                 });
             }
 
-            const report = await prisma.report.create({
+            return prisma.report.create({
                 data: {
                     reason: input.reason,
                     details: input.details,
-                    type: "POST",
-                    postId: input.postId,
-                    userId: ctx.session.user.id,
+                    type: "USER",
+                    reportedUserId: input.reportedUserId,
+                    userId: callerId,
+                    contentSnapshot: buildContentSnapshot({
+                        type: "USER",
+                        username: reportedUser.username ?? "Unknown user",
+                    }),
                 },
             });
-
-            return report;
         }),
 
     deleteReport: adminProcedure

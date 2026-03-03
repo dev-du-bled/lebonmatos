@@ -1,4 +1,8 @@
-import type { REPORT_TYPE, REPORT_CONTENT, REPORT_STATUS } from "@prisma/client";
+import type {
+    REPORT_TYPE,
+    REPORT_CONTENT,
+    REPORT_STATUS,
+} from "@prisma/client";
 
 export const reasonLabel: Record<REPORT_TYPE, string> = {
     SPAM: "Spam",
@@ -39,3 +43,21 @@ export const statusVariant: Record<
     RESOLVED: "default",
     REJECTED: "outline",
 };
+
+/** allow us to save a string in the db if the related content is deleted so we have a feedback on the ui for the user */
+export function buildContentSnapshot(
+    content:
+        | { type: "POST"; title: string }
+        | { type: "REVIEW"; comment: string | null; rating: number }
+        | { type: "USER"; username: string }
+): string {
+    switch (content.type) {
+        case "POST":
+            return content.title;
+        case "REVIEW": {
+            return `${content.rating}/5${content.comment ? ` — ${content.comment}` : ""}`;
+        }
+        case "USER":
+            return content.username;
+    }
+}
