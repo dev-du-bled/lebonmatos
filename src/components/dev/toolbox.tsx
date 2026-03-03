@@ -8,7 +8,10 @@ import {
     MoonIcon,
     MonitorIcon,
     CircleHelp,
+    MessageSquareDiff,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { trpc } from "@/trpc/client";
 import {
     Dialog,
     DialogContent,
@@ -73,6 +76,18 @@ export function DevToolbox() {
     const { theme, setTheme } = useTheme();
     const [position, setPosition] = React.useState<Position>("bottom-right");
     const [isLoading, setIsLoading] = React.useState(false);
+    const pathname = usePathname();
+
+    // Extraire l'ID de discussion si on est sur /messages/[id]
+    const discussionId = React.useMemo(() => {
+        const match = pathname.match(/^\/messages\/([a-z0-9]+)$/);
+        return match?.[1] ?? null;
+    }, [pathname]);
+
+    const devSendSystemMessage = trpc.discussions.devSendSystemMessage.useMutation({
+        onSuccess: () => toast.success("Message système de test envoyé"),
+        onError: (e) => toast.error(e.message),
+    });
 
     // Charger la position depuis localStorage au montage
     React.useEffect(() => {
@@ -225,6 +240,80 @@ export function DevToolbox() {
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {/* Message système de test */}
+                    {discussionId && (
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                                <MessageSquareDiff className="size-4 text-orange-500" />
+                                Message système (conversation actuelle)
+                            </Label>
+                            <p className="text-xs text-muted-foreground font-mono truncate">
+                                ID : {discussionId}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={devSendSystemMessage.isPending}
+                                    onClick={() =>
+                                        devSendSystemMessage.mutate({
+                                            discussionId,
+                                            content: "Ceci est un message système de test",
+                                        })
+                                    }
+                                >
+                                    Simple
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={devSendSystemMessage.isPending}
+                                    onClick={() =>
+                                        devSendSystemMessage.mutate({
+                                            discussionId,
+                                            content: "Action requise",
+                                            buttonLabel: "Voir l'annonce",
+                                            buttonUrl: "/",
+                                        })
+                                    }
+                                >
+                                    Avec lien
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={devSendSystemMessage.isPending}
+                                    onClick={() =>
+                                        devSendSystemMessage.mutate({
+                                            discussionId,
+                                            content: "Confirmez votre action",
+                                            buttonLabel: "Confirmer",
+                                            buttonAction: "test_action",
+                                        })
+                                    }
+                                >
+                                    Avec action
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={devSendSystemMessage.isPending}
+                                    onClick={() =>
+                                        devSendSystemMessage.mutate({
+                                            discussionId,
+                                            content: "Nouveau message de LeBonMatos",
+                                            imageUrls: ["/logo-mini-dark.png"],
+                                            buttonLabel: "Voir",
+                                            buttonUrl: "/",
+                                        })
+                                    }
+                                >
+                                    Avec logo
+                                </Button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Utilisateur par défaut */}
                     <div className="space-y-2">

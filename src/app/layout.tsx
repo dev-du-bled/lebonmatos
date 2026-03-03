@@ -10,6 +10,7 @@ import { extractRouterConfig } from "uploadthing/server";
 import { lbmFileRouter } from "./api/uploadthing/core";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Lightbox } from "@/components/ui/lightbox";
 
 const DevToolbox = dynamic(() =>
     import("@/components/dev/toolbox").then((mod) => mod.DevToolbox)
@@ -70,9 +71,10 @@ export default function RootLayout({
                 >
                     <TRPCProvider>
                         <TooltipProvider>{children}</TooltipProvider>
+                        {process.env.NODE_ENV === "development" && <DevToolbox />}
                     </TRPCProvider>
+                    <Lightbox />
                     <Toaster />
-                    {process.env.NODE_ENV === "development" && <DevToolbox />}
                 </ThemeProvider>
             </body>
         </html>
