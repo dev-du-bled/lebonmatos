@@ -602,7 +602,7 @@ export default function ConversationView({
         discussion.acceptedPrice ?? null
     );
     const [isSold, setIsSold] = useState(discussion.isSold ?? false);
-    const [hasReview, setHasReview] = useState(discussion.hasReview ?? false);
+    const hasReview = discussion.hasReview ?? false;
     const [soldDialogOpen, setSoldDialogOpen] = useState(false);
 
     const isSeller = !discussion.isBuyer;
