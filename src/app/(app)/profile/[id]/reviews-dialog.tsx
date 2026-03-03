@@ -152,7 +152,7 @@ function ReviewCard({ review }: { review: Review }) {
                 </div>
                 <StarRating value={review.rating} />
                 {review.comment && (
-                    <p className="text-sm text-muted-foreground pt-0.5 break-words">
+                    <p className="text-sm text-muted-foreground pt-0.5 wrap-break-word">
                         {review.comment}
                     </p>
                 )}

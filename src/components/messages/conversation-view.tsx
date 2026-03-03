@@ -36,6 +36,7 @@ import {
     ImageIcon,
     X,
     Info,
+    ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type MessageEvent } from "@/lib/message-emitter";
@@ -303,6 +304,12 @@ function MessageBubble({
     showMeta = true,
     onSystemAction,
     discussionId,
+    isSeller,
+    isSold,
+    isBuyer,
+    onAcceptOffer,
+    hasReview,
+    acceptedPrice,
 }: {
     msg: MessageEvent | PendingMessage;
     isOwn: boolean;
@@ -310,6 +317,12 @@ function MessageBubble({
     showMeta?: boolean;
     onSystemAction?: (action: string, discussionId: string) => void;
     discussionId: string;
+    isSeller?: boolean;
+    isSold?: boolean;
+    isBuyer?: boolean;
+    onAcceptOffer?: (messageId: string) => void;
+    hasReview?: boolean;
+    acceptedPrice?: number | null;
 }) {
     const time = format(new Date(msg.sendedAt), "HH:mm", { locale: fr });
     const viewed = "viewed" in msg ? msg.viewed : false;
@@ -334,6 +347,8 @@ function MessageBubble({
                     </div>
                     {buttonLabel &&
                         (buttonUrl || buttonAction) &&
+                        !(buttonAction === "buyer_only" && !isBuyer) &&
+                        !(buttonAction === "buyer_only" && hasReview) &&
                         (buttonUrl ? (
                             <Link href={buttonUrl}>
                                 <Button
@@ -363,6 +378,14 @@ function MessageBubble({
     }
 
     if (type === "OFFER") {
+        const messageId = "id" in msg ? msg.id : undefined;
+        const canAccept =
+            isSeller &&
+            !isOwn &&
+            !isSold &&
+            !pending &&
+            messageId &&
+            acceptedPrice === null;
         return (
             <div
                 className={cn(
@@ -416,6 +439,17 @@ function MessageBubble({
                             </div>
                             <p className="text-2xl font-bold">{msg.price} €</p>
                         </div>
+                        {canAccept && (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full text-xs h-7 border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700"
+                                onClick={() => onAcceptOffer?.(messageId)}
+                            >
+                                <Check className="size-3 mr-1" />
+                                Accepter l&apos;offre
+                            </Button>
+                        )}
                     </div>
                 </div>
                 {showMeta && (
@@ -564,6 +598,15 @@ export default function ConversationView({
     const [text, setText] = useState("");
     const [offerPrice, setOfferPrice] = useState("");
     const [offerOpen, setOfferOpen] = useState(false);
+    const [acceptedPrice, setAcceptedPrice] = useState<number | null>(
+        discussion.acceptedPrice ?? null
+    );
+    const [isSold, setIsSold] = useState(discussion.isSold ?? false);
+    const hasReview = discussion.hasReview ?? false;
+    const [soldDialogOpen, setSoldDialogOpen] = useState(false);
+
+    const isSeller = !discussion.isBuyer;
+    const isBuyer = discussion.isBuyer;
     const [typingName, setTypingName] = useState<string | null>(null);
     const [pendingImageFiles, setPendingImageFiles] = useState<File[]>([]);
     const [pendingImagePreviews, setPendingImagePreviews] = useState<string[]>(
@@ -879,6 +922,40 @@ export default function ConversationView({
     const sendOfferMutation = trpc.discussions.sendMessage.useMutation();
     const sendTypingMutation = trpc.discussions.sendTyping.useMutation();
     const markAsReadMutation = trpc.discussions.markAsRead.useMutation();
+    const acceptOfferMutation = trpc.discussions.acceptOffer.useMutation({
+        onSuccess: (data) => {
+            setAcceptedPrice(data.acceptedPrice);
+            toast.success("Offre acceptée");
+        },
+        onError: (error) => {
+            toast.error(
+                error.message || "Erreur lors de l'acceptation de l'offre"
+            );
+        },
+    });
+    const markAsSoldMutation =
+        trpc.discussions.markAsSoldFromConversation.useMutation({
+            onSuccess: () => {
+                setIsSold(true);
+                toast.success("Article marqué comme vendu");
+            },
+            onError: (error) => {
+                toast.error(
+                    error.message || "Erreur lors du marquage comme vendu"
+                );
+            },
+        });
+
+    const handleAcceptOffer = useCallback(
+        (messageId: string) => {
+            acceptOfferMutation.mutate({ discussionId, messageId });
+        },
+        [acceptOfferMutation, discussionId]
+    );
+
+    const handleMarkAsSold = useCallback(() => {
+        markAsSoldMutation.mutate({ discussionId });
+    }, [markAsSoldMutation, discussionId]);
 
     const debouncedSendTyping = useDebouncedCallback(
         () => sendTypingMutation.mutate({ discussionId }),
@@ -1133,9 +1210,23 @@ export default function ConversationView({
                         <p className="font-semibold text-base line-clamp-1">
                             {discussion.post.title}
                         </p>
-                        <p className="text-lg font-bold text-primary">
-                            {discussion.post.price} €
-                        </p>
+                        <div className="flex items-center gap-2">
+                            {acceptedPrice !== null &&
+                            acceptedPrice < discussion.post.price ? (
+                                <>
+                                    <span className="text-sm text-muted-foreground line-through">
+                                        {discussion.post.price} €
+                                    </span>
+                                    <span className="text-lg font-bold text-primary">
+                                        {acceptedPrice} €
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="text-lg font-bold text-primary">
+                                    {discussion.post.price} €
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </Link>
 
@@ -1161,6 +1252,62 @@ export default function ConversationView({
                     </span>
                 </Link>
             </div>
+
+            {/* Bannière vendeur - marquer comme vendu */}
+            {isSeller && !isSold && (
+                <div className="flex items-center justify-between gap-3 px-4 py-1.5 border-b shrink-0">
+                    <span className="text-xs text-muted-foreground">
+                        Cet article a été vendu à cet utilisateur ?
+                        {acceptedPrice !== null && (
+                            <span className="font-medium">
+                                {" "}
+                                ({acceptedPrice} €)
+                            </span>
+                        )}
+                    </span>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className="shrink-0 text-xs h-6 text-muted-foreground hover:text-foreground"
+                        onClick={() => setSoldDialogOpen(true)}
+                        loading={markAsSoldMutation.isPending}
+                    >
+                        <ShoppingBag className="size-3 mr-1" />
+                        Marquer comme vendu
+                    </Button>
+                    <Dialog
+                        open={soldDialogOpen}
+                        onOpenChange={setSoldDialogOpen}
+                    >
+                        <DialogContent showCloseButton={false}>
+                            <DialogHeader>
+                                <DialogTitle>Marquer comme vendu ?</DialogTitle>
+                            </DialogHeader>
+                            <p className="text-sm text-muted-foreground">
+                                Cette action est irréversible. L&apos;annonce
+                                sera définitivement marquée comme vendue et ne
+                                sera plus disponible à l&apos;achat.
+                            </p>
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setSoldDialogOpen(false)}
+                                >
+                                    Annuler
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        setSoldDialogOpen(false);
+                                        handleMarkAsSold();
+                                    }}
+                                >
+                                    Confirmer
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            )}
 
             {/* Messages */}
             <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
@@ -1191,6 +1338,12 @@ export default function ConversationView({
                                     showMeta={showMeta}
                                     onSystemAction={onSystemAction}
                                     discussionId={discussionId}
+                                    isSeller={isSeller}
+                                    isSold={isSold}
+                                    isBuyer={isBuyer}
+                                    onAcceptOffer={handleAcceptOffer}
+                                    hasReview={hasReview}
+                                    acceptedPrice={acceptedPrice}
                                 />
                             </div>
                         )
@@ -1212,6 +1365,12 @@ export default function ConversationView({
                                     showMeta={showMeta}
                                     onSystemAction={onSystemAction}
                                     discussionId={discussionId}
+                                    isSeller={isSeller}
+                                    isSold={isSold}
+                                    isBuyer={isBuyer}
+                                    onAcceptOffer={handleAcceptOffer}
+                                    hasReview={hasReview}
+                                    acceptedPrice={acceptedPrice}
                                 />
                             </div>
                         )
@@ -1291,48 +1450,86 @@ export default function ConversationView({
                                 <DialogHeader>
                                     <DialogTitle>Faire une offre</DialogTitle>
                                 </DialogHeader>
-                                <div className="space-y-3">
-                                    <p className="text-sm text-muted-foreground">
-                                        Prix demandé :{" "}
-                                        <span className="font-semibold text-foreground">
-                                            {discussion.post.price} €
-                                        </span>
-                                    </p>
-                                    <div className="relative">
-                                        <Input
-                                            type="number"
-                                            placeholder="Votre offre"
-                                            value={offerPrice}
-                                            onChange={(e) =>
-                                                setOfferPrice(e.target.value)
-                                            }
-                                            min={1}
-                                            max={32767}
-                                            className="pr-8"
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter")
-                                                    void handleSendOffer();
-                                            }}
-                                            autoFocus
-                                        />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                                            €
-                                        </span>
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button
-                                        onClick={() => void handleSendOffer()}
-                                        loading={sendOfferMutation.isPending}
-                                        disabled={
-                                            !offerPrice ||
-                                            parseInt(offerPrice) < 1
-                                        }
-                                    >
-                                        <Tag className="size-4 mr-2" />
-                                        Envoyer l&apos;offre
-                                    </Button>
-                                </DialogFooter>
+                                {(() => {
+                                    const postPrice = discussion.post.price;
+                                    const minPrice = Math.ceil(postPrice * 0.2);
+                                    const parsedPrice = parseInt(
+                                        offerPrice,
+                                        10
+                                    );
+                                    const isValidPrice =
+                                        !isNaN(parsedPrice) &&
+                                        parsedPrice >= minPrice &&
+                                        parsedPrice < postPrice;
+                                    const showError =
+                                        offerPrice !== "" &&
+                                        !isNaN(parsedPrice) &&
+                                        !isValidPrice;
+                                    return (
+                                        <>
+                                            <div className="space-y-3">
+                                                <p className="text-sm text-muted-foreground">
+                                                    Prix demandé :{" "}
+                                                    <span className="font-semibold text-foreground">
+                                                        {postPrice} €
+                                                    </span>
+                                                </p>
+                                                <div className="relative">
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="Votre offre"
+                                                        value={offerPrice}
+                                                        onChange={(e) =>
+                                                            setOfferPrice(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        min={minPrice}
+                                                        max={postPrice - 1}
+                                                        className={cn(
+                                                            "pr-8",
+                                                            showError &&
+                                                                "border-destructive"
+                                                        )}
+                                                        onKeyDown={(e) => {
+                                                            if (
+                                                                e.key ===
+                                                                    "Enter" &&
+                                                                isValidPrice
+                                                            )
+                                                                void handleSendOffer();
+                                                        }}
+                                                        autoFocus
+                                                    />
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                                                        €
+                                                    </span>
+                                                </div>
+                                                {showError && (
+                                                    <p className="text-xs text-destructive">
+                                                        L&apos;offre doit être
+                                                        entre {minPrice} € et{" "}
+                                                        {postPrice - 1} €
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <DialogFooter>
+                                                <Button
+                                                    onClick={() =>
+                                                        void handleSendOffer()
+                                                    }
+                                                    loading={
+                                                        sendOfferMutation.isPending
+                                                    }
+                                                    disabled={!isValidPrice}
+                                                >
+                                                    <Tag className="size-4 mr-2" />
+                                                    Envoyer l&apos;offre
+                                                </Button>
+                                            </DialogFooter>
+                                        </>
+                                    );
+                                })()}
                             </DialogContent>
                         </Dialog>
                     </>
