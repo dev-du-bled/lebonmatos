@@ -1,16 +1,67 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { useSession } from "../auth/session-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { trpc } from "@/trpc/client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-export function BuyButtons() {
+interface PostButtonsProps {
+    postId: string;
+    sellerId: string;
+}
+
+export function ContactButton({ postId, sellerId }: PostButtonsProps) {
     const { session } = useSession();
+    const router = useRouter();
 
-    const user = session?.user;
+    const getOrCreate = trpc.discussions.getOrCreate.useMutation({
+        onSuccess: ({ discussionId }) => {
+            router.push(`/messages/${discussionId}`);
+        },
+        onError: () => {
+            toast.error("Une erreur est survenue. Veuillez réessayer.");
+        },
+    });
 
-    if (!user) return null;
+    if (!session?.user) return null;
+    if (session.user.id === sellerId) return null;
+
+    return (
+        <Button
+            onClick={() => getOrCreate.mutate({ postId, sellerId })}
+            loading={getOrCreate.isPending}
+        >
+            Contacter
+        </Button>
+    );
+}
+
+export function BuyButtons({ postId, sellerId }: PostButtonsProps) {
+    const { session } = useSession();
+    const router = useRouter();
+
+    const getOrCreate = trpc.discussions.getOrCreate.useMutation({
+        onSuccess: ({ discussionId }) => {
+            router.push(`/messages/${discussionId}`);
+        },
+        onError: () => {
+            toast.error("Une erreur est survenue. Veuillez réessayer.");
+        },
+    });
+
+    const getOrCreateOffer = trpc.discussions.getOrCreate.useMutation({
+        onSuccess: ({ discussionId }) => {
+            router.push(`/messages/${discussionId}?offer=true`);
+        },
+        onError: () => {
+            toast.error("Une erreur est survenue. Veuillez réessayer.");
+        },
+    });
+
+    if (!session?.user) return null;
+    if (session.user.id === sellerId) return null;
 
     return (
         <Card className="gap-3">
@@ -19,30 +70,25 @@ export function BuyButtons() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
                 <div className="flex gap-2">
-                    <Link href="#" className="flex-1">
-                        <Button variant={"outline"} className="w-full">
-                            Faire une offre
-                        </Button>
-                    </Link>
-                    <Link href="#" className="flex-1">
-                        <Button className="w-full">Acheter</Button>
-                    </Link>
+                    <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() =>
+                            getOrCreateOffer.mutate({ postId, sellerId })
+                        }
+                        loading={getOrCreateOffer.isPending}
+                    >
+                        Faire une offre
+                    </Button>
+                    <Button
+                        className="flex-1"
+                        onClick={() => getOrCreate.mutate({ postId, sellerId })}
+                        loading={getOrCreate.isPending}
+                    >
+                        Acheter
+                    </Button>
                 </div>
             </CardContent>
         </Card>
     );
-}
-
-export function ContactButton() {
-    const { session } = useSession();
-
-    const user = session?.user;
-
-    if (user) {
-        return (
-            <Link href={"#"}>
-                <Button>Contacter</Button>
-            </Link>
-        );
-    }
 }
