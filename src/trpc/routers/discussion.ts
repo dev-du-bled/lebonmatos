@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { TRPCError } from "@trpc/server";
 import {
     messageEmitter,
+    publish,
     type MessageEvent,
     type TypingEvent,
 } from "@/lib/message-emitter";
@@ -52,7 +53,7 @@ async function createSystemMessage(
         buttonAction: message.buttonAction,
     };
 
-    messageEmitter.emit(`message:${discussionId}`, payload);
+    await publish(`message:${discussionId}`, payload);
     return payload;
 }
 
@@ -259,7 +260,7 @@ export const discussionRouter = createTRPCRouter({
 
             // Notifier l'expéditeur que ses messages ont été lus
             if (updated.count > 0) {
-                messageEmitter.emit(`read:${input.discussionId}`);
+                await publish(`read:${input.discussionId}`);
             }
 
             const rawMessages = await prisma.message.findMany({
@@ -361,7 +362,7 @@ export const discussionRouter = createTRPCRouter({
             });
 
             if (updated.count > 0) {
-                messageEmitter.emit(`read:${input.discussionId}`);
+                await publish(`read:${input.discussionId}`);
             }
 
             return { count: updated.count };
@@ -449,7 +450,7 @@ export const discussionRouter = createTRPCRouter({
             };
 
             // Notifier la conversation
-            messageEmitter.emit(`message:${input.discussionId}`, payload);
+            await publish(`message:${input.discussionId}`, payload);
 
             // Notifier la boîte de réception du destinataire
             const recipientId =
@@ -457,7 +458,7 @@ export const discussionRouter = createTRPCRouter({
                     ? discussion.sellerId
                     : discussion.buyerId;
             if (recipientId) {
-                messageEmitter.emit(`inbox:${recipientId}`);
+                await publish(`inbox:${recipientId}`);
             }
 
             return payload;
@@ -483,7 +484,7 @@ export const discussionRouter = createTRPCRouter({
             }
 
             const event: TypingEvent = { userId, name };
-            messageEmitter.emit(`typing:${input.discussionId}`, event);
+            await publish(`typing:${input.discussionId}`, event);
             return { ok: true };
         }),
 

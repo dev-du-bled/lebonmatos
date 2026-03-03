@@ -1,4 +1,3 @@
-import { EventEmitter } from "events";
 import { Prisma } from "@prisma/client";
 
 export type MessageEvent = Omit<
@@ -13,13 +12,4 @@ export type TypingEvent = {
     name: string;
 };
 
-const globalForEmitter = global as unknown as { messageEmitter: EventEmitter };
-
-export const messageEmitter =
-    globalForEmitter.messageEmitter || new EventEmitter();
-
-messageEmitter.setMaxListeners(200);
-
-if (process.env.NODE_ENV !== "production") {
-    globalForEmitter.messageEmitter = messageEmitter;
-}
+export { messageEmitter, publish } from "./pg-pubsub";

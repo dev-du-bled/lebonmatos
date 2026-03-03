@@ -977,6 +977,7 @@ export default function ConversationView({
             `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
         const blobUrls = [...pendingImagePreviews];
+        const filesToRestore = [...pendingImageFiles];
         setText("");
         setPendingImageFiles([]);
         setPendingImagePreviews([]);
@@ -1027,6 +1028,10 @@ export default function ConversationView({
                 prev.filter((p) => p.tempId !== tempId)
             );
             setText(content);
+            if (blobUrls.length > 0) {
+                setPendingImageFiles(filesToRestore);
+                setPendingImagePreviews(blobUrls);
+            }
         }
     };
 
