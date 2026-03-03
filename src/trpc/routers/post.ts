@@ -514,6 +514,9 @@ export const postRouter = createTRPCRouter({
                 query: z.string().optional(),
                 componentId: z.string().optional(),
                 location: z.object({ lat: z.number(), lon: z.number() }).optional(),
+                priceMin: z.number().min(0).optional(),
+                priceMax: z.number().min(0).optional(),
+                colors: z.array(z.string()).optional(),
                 limit: z.number().min(1).max(50).default(20),
                 offset: z.number().min(0).default(0),
             })
@@ -527,6 +530,16 @@ export const postRouter = createTRPCRouter({
             }
             if (input.location) {
                 filters.push(`_geoRadius(${input.location.lat}, ${input.location.lon}, 30000)`);
+            }
+            if (input.priceMin !== undefined) {
+                filters.push(`price >= ${input.priceMin}`);
+            }
+            if (input.priceMax !== undefined) {
+                filters.push(`price <= ${input.priceMax}`);
+            }
+            if (input.colors && input.colors.length > 0) {
+                const colorFilters = input.colors.map((c) => `componentColor = "${c}"`).join(" OR ");
+                filters.push(`(${colorFilters})`);
             }
 
             const results = await index.search(input.query ?? "", {

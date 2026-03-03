@@ -45,7 +45,7 @@ try {
             await wrappMeiliTask(
                 meilisearch
                     .index(index)
-                    .updateFilterableAttributes(["componentType", "componentId", "locationCity", "_geo"])
+                    .updateFilterableAttributes(["componentType", "componentId", "locationCity", "_geo", "price", "componentColor"])
             );
         }
 
