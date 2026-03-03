@@ -98,11 +98,17 @@ export default async function PostPage({
                     </Carousel>
                     {/* Bouton favoris en haut à droite */}
                     <div className="absolute top-4 right-4 z-10 space-x-2">
-                        <ReportButton postId={post.id} />
+                        <ReportButton
+                            postId={post.id}
+                            sellerId={post.seller?.id}
+                        />
                         <FavoriteButton
                             post={{
                                 id: post.id,
                                 isFavorited: post.isFavorited,
+                                seller: post.seller
+                                    ? { id: post.seller.id }
+                                    : undefined,
                             }}
                         />
                     </div>

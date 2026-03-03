@@ -67,9 +67,10 @@ const reportTypeConfig: Record<
 
 interface ReportButtonProps {
     postId: string;
+    sellerId?: string;
 }
 
-export default function ReportButton({ postId }: ReportButtonProps) {
+export default function ReportButton({ postId, sellerId }: ReportButtonProps) {
     const { session } = useSession();
     const [open, setOpen] = useState(false);
     const [selectedType, setSelectedType] = useState<REPORT_TYPE | undefined>(
@@ -137,7 +138,7 @@ export default function ReportButton({ postId }: ReportButtonProps) {
         });
     };
 
-    if (!session) return null;
+    if (!session || (sellerId && session.user?.id === sellerId)) return null;
 
     return (
         <Dialog
