@@ -1,9 +1,8 @@
 import { Metadata } from "next";
 import { cache } from "react";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { trpc } from "@/trpc/server";
-import { TRPCClientError } from "@trpc/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { ReviewsDialog } from "./reviews-dialog";
 import { ListingsGrid } from "./listings-grid";
 import ReportButton from "@/components/report/report-button";
-import { TRPCError } from "@trpc/server";
 
 type Params = {
     id: string;
@@ -26,6 +24,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
     const { id } = await params;
     const user = await getUser(id);
+    if (!user) {
+        return {
+            title: "Utilisateur non trouvé",
+            description: "L'utilisateur que vous recherchez n'existe pas.",
+        };
+    }
+
     return {
         title: `Profil de ${user?.username?.slice(0, 15) ?? "Utilisateur"}${(user?.username?.length ?? 0) > 15 ? "..." : ""}`,
         description: `Découvrez en détails le profil de ${user?.username ?? "cet utilisateur"}`,
@@ -35,14 +40,8 @@ export async function generateMetadata({
 const getUser = cache(async (id: string) => {
     try {
         return await trpc.user.getPublicProfile({ userId: id });
-    } catch (error) {
-        if (
-            error instanceof TRPCClientError &&
-            error.data?.code === "NOT_FOUND"
-        ) {
-            notFound();
-        }
-        throw error;
+    } catch {
+        return null;
     }
 });
 
@@ -269,20 +268,9 @@ export default async function ProfilePage({
 }) {
     const { id } = await params;
 
-    let user;
-    try {
-        user = await getUser(id);
-    } catch (error) {
-        if (error instanceof TRPCError) {
-            if (error.code === "UNAUTHORIZED") {
-                redirect("/login?next=/profile/edit");
-            }
-            if (error.code === "NOT_FOUND") {
-                notFound();
-            }
-        }
-        throw error;
-    }
+    const user = await getUser(id);
+
+    if (!user) notFound();
 
     return (
         <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
