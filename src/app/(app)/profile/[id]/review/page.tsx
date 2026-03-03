@@ -7,13 +7,7 @@ import { Metadata } from "next";
 import { trpc } from "@/trpc/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ReviewForm } from "./review-form";
 
@@ -27,11 +21,7 @@ const getUser = cache(async (id: string) => {
     }
 });
 
-export async function generateMetadata({
-    params,
-}: {
-    params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
     const { id } = await params;
     const user = await getUser(id);
     const name = user?.username ?? "cet utilisateur";
@@ -43,10 +33,14 @@ export async function generateMetadata({
 
 export default async function ReviewPage({
     params,
+    searchParams,
 }: {
     params: Promise<Params>;
+    searchParams: Promise<{ from?: string }>;
 }) {
     const { id } = await params;
+    const { from } = await searchParams;
+    const backHref = from ?? `/profile/${id}`;
     const user = await getUser(id);
 
     if (!user) return notFound();
@@ -65,21 +59,14 @@ export default async function ReviewPage({
             {/* Header */}
             <div className="mb-8 flex items-center gap-3">
                 <Link
-                    href={`/profile/${id}`}
-                    className={cn(
-                        buttonVariants({ variant: "outline", size: "icon" }),
-                        "shrink-0 rounded-full"
-                    )}
+                    href={backHref}
+                    className={cn(buttonVariants({ variant: "outline", size: "icon" }), "shrink-0 rounded-full")}
                 >
                     <ArrowLeft className="size-4" />
                 </Link>
                 <div>
-                    <h1 className="text-xl font-semibold tracking-tight">
-                        Laisser un avis
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Partagez votre expérience avec ce vendeur
-                    </p>
+                    <h1 className="text-xl font-semibold tracking-tight">Laisser un avis</h1>
+                    <p className="text-sm text-muted-foreground">Partagez votre expérience avec ce vendeur</p>
                 </div>
             </div>
 
@@ -87,11 +74,7 @@ export default async function ReviewPage({
             <div className="mb-5 flex items-center gap-4 rounded-2xl border bg-muted/40 px-5 py-4">
                 <Avatar className="size-11 shrink-0 ring-2 ring-background shadow-sm">
                     {user.image ? (
-                        <AvatarImage
-                            src={user.image}
-                            alt={`Avatar de ${displayName}`}
-                            className="object-cover"
-                        />
+                        <AvatarImage src={user.image} alt={`Avatar de ${displayName}`} className="object-cover" />
                     ) : null}
                     <AvatarFallback className="bg-secondary text-muted-foreground font-medium">
                         {initials}
@@ -100,13 +83,9 @@ export default async function ReviewPage({
                 <div className="min-w-0">
                     <p className="font-semibold truncate">{displayName}</p>
                     {user.bio ? (
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                            {user.bio}
-                        </p>
+                        <p className="text-sm text-muted-foreground line-clamp-1">{user.bio}</p>
                     ) : (
-                        <p className="text-sm text-muted-foreground">
-                            Membre LeBonMatos
-                        </p>
+                        <p className="text-sm text-muted-foreground">Membre LeBonMatos</p>
                     )}
                 </div>
             </div>
@@ -116,12 +95,11 @@ export default async function ReviewPage({
                 <CardHeader className="pb-4">
                     <CardTitle className="text-base">Votre avis</CardTitle>
                     <CardDescription>
-                        Votre avis sera public et visible sur le profil de cet
-                        utilisateur.
+                        Votre avis sera public et visible sur le profil de cet utilisateur.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ReviewForm userId={user.id} />
+                    <ReviewForm userId={user.id} backHref={backHref} />
                 </CardContent>
             </Card>
         </section>
