@@ -4,7 +4,7 @@ import { profileImageSchema } from "./images";
 
 // Schéma de base User (Prisma)
 export const userBaseSchema = z.object({
-    id: z.string(),
+    id: z.uuid(),
     name: z.string().min(2).max(80),
     email: z.email(),
     emailVerified: z.boolean().default(false),

@@ -1,6 +1,7 @@
-import RequiredLogin from "@/components/required-login";
+import RequiredLogin from "@/components/auth/required-login";
+import { Metadata } from "next";
 
-export const metadata = { title: "Mes messages" };
+export const metadata: Metadata = { title: "Mes messages" };
 
 export default async function MessagesLayout({
     children,

@@ -94,7 +94,7 @@ model Verification {
 }
 
 model Post {
-  id                 String              @id @default(cuid())
+  id                 String              @id @default(uuid())
   userId             String
   title              String              @db.VarChar(50)
   description        String?
@@ -116,7 +116,7 @@ model Post {
 }
 
 model Location {
-  id          String  @id @default(cuid())
+  id          String  @id @default(uuid())
   lat         Float
   lon         Float
   name        String
@@ -135,7 +135,7 @@ model Location {
 }
 
 model Favorite {
-  id     String @id @default(cuid())
+  id     String @id @default(uuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   postId String
@@ -166,28 +166,28 @@ enum REPORT_STATUS {
 }
 
 model Report {
-  id               String         @id @default(cuid())
-  reason           REPORT_TYPE
-  details          String?
-  type             REPORT_CONTENT
-  status           REPORT_STATUS  @default(PENDING)
-  contentSnapshot  String?
-  postId           String?
-  post           Post?          @relation(fields: [postId], references: [id], onDelete: SetNull)
-  ratingId       String?
-  rating         Rating?        @relation(fields: [ratingId], references: [id], onDelete: SetNull)
-  userId         String?
-  user           User?          @relation("reporter", fields: [userId], references: [id], onDelete: Cascade)
-  reportedUserId String?
-  reportedUser   User?          @relation("reportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
-  messageId      String?
-  reportedAt     DateTime       @default(now())
+  id              String         @id @default(uuid())
+  reason          REPORT_TYPE
+  details         String?
+  type            REPORT_CONTENT
+  status          REPORT_STATUS  @default(PENDING)
+  contentSnapshot String?
+  postId          String?
+  post            Post?          @relation(fields: [postId], references: [id], onDelete: SetNull)
+  ratingId        String?
+  rating          Rating?        @relation(fields: [ratingId], references: [id], onDelete: SetNull)
+  userId          String?
+  user            User?          @relation("reporter", fields: [userId], references: [id], onDelete: Cascade)
+  reportedUserId  String?
+  reportedUser    User?          @relation("reportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  messageId       String?
+  reportedAt      DateTime       @default(now())
 
   @@map("report")
 }
 
 model Discussion {
-  id        String    @id @default(cuid())
+  id        String    @id @default(uuid())
   buyerId   String
   buyer     User      @relation("discussionBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
   postId    String
@@ -208,7 +208,7 @@ enum MessageType {
 }
 
 model Message {
-  id           String      @id @default(cuid())
+  id           String      @id @default(uuid())
   discussionId String
   discussion   Discussion  @relation(fields: [discussionId], references: [id], onDelete: Cascade)
   type         MessageType @default(TEXT)
@@ -227,7 +227,7 @@ model Message {
 }
 
 model Rating {
-  id      String @id @default(cuid())
+  id      String @id @default(uuid())
   userId  String
   user    User   @relation("ratee", fields: [userId], references: [id], onDelete: Cascade)
   raterId String
@@ -243,7 +243,7 @@ model Rating {
 }
 
 model Configuration {
-  id        String              @id @default(cuid())
+  id        String              @id @default(uuid())
   name      String              @db.VarChar(100)
   userId    String?
   user      User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -256,7 +256,7 @@ model Configuration {
 }
 
 model ConfigurationItem {
-  id              String        @id @default(cuid())
+  id              String        @id @default(uuid())
   configurationId String
   configuration   Configuration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
   componentType   ComponentType

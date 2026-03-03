@@ -31,7 +31,7 @@ export const postBaseSchema = z.object({
  * Schéma pour la création d'un post (serveur/API)
  */
 export const postCreateSchema = postBaseSchema.extend({
-    componentId: z.string().min(1, {
+    componentId: z.uuid({
         error: "Vous devez sélectionner un composant",
     }),
     images: z

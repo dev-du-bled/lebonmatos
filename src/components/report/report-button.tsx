@@ -66,11 +66,20 @@ const reportTypeConfig: Record<
 };
 
 interface ReportButtonProps {
-    postId: string;
-    sellerId?: string;
+    type: "POST" | "USER" | "REVIEW";
+    width: "full" | "icon";
+    reportedId: string;
+    userId?: string; // userId props to hidde button if users try to report themselves, their own post or review
+    tooltipText?: string;
 }
 
-export default function ReportButton({ postId, sellerId }: ReportButtonProps) {
+export default function ReportButton({
+    type,
+    width,
+    reportedId,
+    userId,
+    tooltipText,
+}: ReportButtonProps) {
     const { session } = useSession();
     const [open, setOpen] = useState(false);
     const [selectedType, setSelectedType] = useState<REPORT_TYPE | undefined>(
@@ -80,18 +89,18 @@ export default function ReportButton({ postId, sellerId }: ReportButtonProps) {
     const reportTypes = Object.values(REPORT_TYPE);
 
     const {
-        formState: { isValid },
+        formState: { isValid, errors },
         register,
         handleSubmit,
         watch,
         setValue,
         reset,
-        formState: { errors },
     } = useForm<CreateReportInput>({
         resolver: zodResolver(createReportSchema),
+        mode: "onChange",
         defaultValues: {
-            type: "POST",
-            postId,
+            type,
+            reportedId,
             reason: undefined,
             details: null,
         },
@@ -123,12 +132,17 @@ export default function ReportButton({ postId, sellerId }: ReportButtonProps) {
     const handleClose = () => {
         setOpen(false);
         setSelectedType(undefined);
-        reset({ type: "POST", postId, reason: undefined, details: null });
+        reset({
+            type,
+            reportedId,
+            reason: undefined,
+            details: null,
+        });
     };
 
     const handleSelectType = (type: REPORT_TYPE) => {
         setSelectedType(type);
-        setValue("reason", type, { shouldValidate: false });
+        setValue("reason", type, { shouldValidate: true });
     };
 
     const onSubmit = (data: CreateReportInput) => {
@@ -138,24 +152,29 @@ export default function ReportButton({ postId, sellerId }: ReportButtonProps) {
         });
     };
 
-    if (!session || (sellerId && session.user?.id === sellerId)) return null;
+    if (!session || session.user?.id === userId) return null;
 
     return (
         <Dialog
             open={open}
             onOpenChange={(v) => (v ? setOpen(true) : handleClose())}
         >
-            <DialogTrigger asChild>
-                <Tooltip>
-                    {/* need to manually add on click cause seems that ref arent passing down correctly */}
-                    <TooltipTrigger asChild onClick={() => setOpen(!open)}>
-                        <Button size="icon-sm" className="gap-2">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
+                        <Button
+                            size={width === "full" ? "default" : "icon-sm"}
+                            className="gap-2"
+                        >
                             <Flag className="h-4 w-4" />
+                            {width === "full" && "Signaler"}
                         </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Signaler cette annonce</TooltipContent>
-                </Tooltip>
-            </DialogTrigger>
+                    </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                    {tooltipText || "Signaler cette annonce"}
+                </TooltipContent>
+            </Tooltip>
 
             <DialogContent className="sm:max-w-md p-0 gap-0">
                 <DialogHeader className="px-4 pt-4 pb-2">
@@ -249,11 +268,9 @@ export default function ReportButton({ postId, sellerId }: ReportButtonProps) {
                                 {...register("details")}
                                 value={details}
                                 onChange={(e) =>
-                                    setValue(
-                                        "details",
-                                        e.target.value || null,
-                                        { shouldValidate: true }
-                                    )
+                                    setValue("details", e.target.value, {
+                                        shouldValidate: true,
+                                    })
                                 }
                                 rows={4}
                                 disabled={isPending}

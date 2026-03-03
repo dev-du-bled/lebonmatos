@@ -102,10 +102,11 @@ export const reportsRouter = createTRPCRouter({
         .input(createReportSchema)
         .mutation(async ({ ctx, input }) => {
             const callerId = ctx.session.user.id;
+            const { type, reportedId, reason, details } = input;
 
-            if (input.type === "POST") {
+            if (type === "POST") {
                 const post = await prisma.post.findUnique({
-                    where: { id: input.postId },
+                    where: { id: reportedId },
                     select: { userId: true, title: true },
                 });
 
@@ -124,7 +125,7 @@ export const reportsRouter = createTRPCRouter({
 
                 const existing = await prisma.report.findFirst({
                     where: {
-                        postId: input.postId,
+                        postId: reportedId,
                         userId: callerId,
                         type: "POST",
                     },
@@ -138,10 +139,10 @@ export const reportsRouter = createTRPCRouter({
 
                 return prisma.report.create({
                     data: {
-                        reason: input.reason,
-                        details: input.details,
+                        reason,
+                        details,
                         type: "POST",
-                        postId: input.postId,
+                        postId: reportedId,
                         userId: callerId,
                         contentSnapshot: buildContentSnapshot({
                             type: "POST",
@@ -151,9 +152,9 @@ export const reportsRouter = createTRPCRouter({
                 });
             }
 
-            if (input.type === "REVIEW") {
+            if (type === "REVIEW") {
                 const rating = await prisma.rating.findUnique({
-                    where: { id: input.ratingId },
+                    where: { id: reportedId },
                     select: {
                         userId: true,
                         raterId: true,
@@ -177,7 +178,7 @@ export const reportsRouter = createTRPCRouter({
 
                 const existing = await prisma.report.findFirst({
                     where: {
-                        ratingId: input.ratingId,
+                        ratingId: reportedId,
                         userId: callerId,
                         type: "REVIEW",
                     },
@@ -191,10 +192,10 @@ export const reportsRouter = createTRPCRouter({
 
                 return prisma.report.create({
                     data: {
-                        reason: input.reason,
-                        details: input.details,
+                        reason,
+                        details,
                         type: "REVIEW",
-                        ratingId: input.ratingId,
+                        ratingId: reportedId,
                         userId: callerId,
                         contentSnapshot: buildContentSnapshot({
                             type: "REVIEW",
@@ -206,7 +207,7 @@ export const reportsRouter = createTRPCRouter({
             }
 
             const reportedUser = await prisma.user.findUnique({
-                where: { id: input.reportedUserId },
+                where: { id: reportedId },
                 select: { username: true },
             });
 
@@ -216,7 +217,7 @@ export const reportsRouter = createTRPCRouter({
                     message: "User not found",
                 });
             }
-            if (input.reportedUserId === callerId) {
+            if (reportedId === callerId) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
                     message: "You cannot report yourself",
@@ -225,7 +226,7 @@ export const reportsRouter = createTRPCRouter({
 
             const existingUser = await prisma.report.findFirst({
                 where: {
-                    reportedUserId: input.reportedUserId,
+                    reportedUserId: reportedId,
                     userId: callerId,
                     type: "USER",
                 },
@@ -239,10 +240,10 @@ export const reportsRouter = createTRPCRouter({
 
             return prisma.report.create({
                 data: {
-                    reason: input.reason,
-                    details: input.details,
+                    reason,
+                    details,
                     type: "USER",
-                    reportedUserId: input.reportedUserId,
+                    reportedUserId: reportedId,
                     userId: callerId,
                     contentSnapshot: buildContentSnapshot({
                         type: "USER",
@@ -253,7 +254,7 @@ export const reportsRouter = createTRPCRouter({
         }),
 
     deleteReport: adminProcedure
-        .input(z.object({ id: z.cuid() }))
+        .input(z.object({ id: z.uuid() }))
         .mutation(async ({ input }) => {
             const report = await prisma.report.findUnique({
                 where: { id: input.id },
@@ -271,7 +272,7 @@ export const reportsRouter = createTRPCRouter({
         }),
 
     resolveReport: adminProcedure
-        .input(z.object({ id: z.cuid() }))
+        .input(z.object({ id: z.uuid() }))
         .mutation(async ({ input }) => {
             const report = await prisma.report.findUnique({
                 where: { id: input.id },
@@ -306,7 +307,7 @@ export const reportsRouter = createTRPCRouter({
         }),
 
     rejectReport: adminProcedure
-        .input(z.object({ id: z.cuid() }))
+        .input(z.object({ id: z.uuid() }))
         .mutation(async ({ input }) => {
             const report = await prisma.report.findUnique({
                 where: { id: input.id },

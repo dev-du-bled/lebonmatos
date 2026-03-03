@@ -26,17 +26,12 @@ const detailsRequiredMsg = {
     path: ["details"],
 };
 
-export const createReportSchema = z.discriminatedUnion("type", [
-    reportBaseSchema
-        .extend({ type: z.literal("POST"), postId: z.cuid() })
-        .refine(detailsRequiredForOther, detailsRequiredMsg),
-    reportBaseSchema
-        .extend({ type: z.literal("REVIEW"), ratingId: z.cuid() })
-        .refine(detailsRequiredForOther, detailsRequiredMsg),
-    reportBaseSchema
-        .extend({ type: z.literal("USER"), reportedUserId: z.cuid() })
-        .refine(detailsRequiredForOther, detailsRequiredMsg),
-]);
+export const createReportSchema = reportBaseSchema
+    .extend({
+        type: z.enum(["POST", "USER", "REVIEW"]),
+        reportedId: z.uuid(),
+    })
+    .refine(detailsRequiredForOther, detailsRequiredMsg);
 
 export type CreateReportInput = z.infer<typeof createReportSchema>;
 

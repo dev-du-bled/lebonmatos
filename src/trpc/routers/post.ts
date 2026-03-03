@@ -47,7 +47,7 @@ const getComponentDetails = (
 
 export const postRouter = createTRPCRouter({
     getUserListings: publicProcedure
-        .input(z.object({ userId: z.string() }))
+        .input(z.object({ userId: z.uuid() }))
         .query(async ({ input }) => {
             const posts = await prisma.post.findMany({
                 where: { userId: input.userId },
@@ -105,7 +105,7 @@ export const postRouter = createTRPCRouter({
     }),
 
     deletePost: privateProcedure
-        .input(z.object({ id: z.cuid() }))
+        .input(z.object({ id: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.id },
@@ -177,7 +177,7 @@ export const postRouter = createTRPCRouter({
         }),
 
     editPost: privateProcedure
-        .input(postCreateSchema.extend({ id: z.cuid() }))
+        .input(postCreateSchema.extend({ id: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.id },
@@ -235,7 +235,7 @@ export const postRouter = createTRPCRouter({
         }),
 
     favoritePost: privateProcedure
-        .input(z.object({ postId: z.cuid() }))
+        .input(z.object({ postId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.postId },
@@ -289,7 +289,7 @@ export const postRouter = createTRPCRouter({
         }),
 
     buyPost: privateProcedure
-        .input(z.object({ postId: z.cuid() }))
+        .input(z.object({ postId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const buyerId = ctx.session.user.id;
 
@@ -344,7 +344,7 @@ export const postRouter = createTRPCRouter({
     getPost: publicProcedure
         .input(
             z.object({
-                postId: z.cuid(),
+                postId: z.uuid(),
                 sellerData: z.boolean().default(true),
             })
         )
@@ -486,7 +486,7 @@ export const postRouter = createTRPCRouter({
     getSimilarPosts: publicProcedure
         .input(
             z.object({
-                id: z.cuid(),
+                id: z.uuid(),
                 type: z.enum(ComponentType),
             })
         )

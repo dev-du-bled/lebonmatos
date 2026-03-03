@@ -113,11 +113,13 @@ export default async function PostPage({
                         <CarouselPrevious className="left-4" />
                         <CarouselNext className="right-4" />
                     </Carousel>
-                    {/* Bouton favoris en haut à droite */}
+                    {/* Bouton favoris/report en haut à droite */}
                     <div className="absolute top-4 right-4 z-10 space-x-2">
                         <ReportButton
-                            postId={post.id}
-                            sellerId={post.seller?.id}
+                            type="POST"
+                            width="icon"
+                            reportedId={post.id}
+                            userId={post.seller?.id}
                         />
                         <FavoriteButton
                             post={{
