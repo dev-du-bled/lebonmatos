@@ -15,7 +15,9 @@ import {
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
-const UserMenu = dynamic(() => import("./user-menu").then((m) => m.UserMenu), { ssr: false });
+const UserMenu = dynamic(() => import("./user-menu").then((m) => m.UserMenu), {
+    ssr: false,
+});
 
 export function MobileHeader() {
     const [open, setOpen] = useState(false);

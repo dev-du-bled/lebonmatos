@@ -71,7 +71,9 @@ export default function RootLayout({
                 >
                     <TRPCProvider>
                         <TooltipProvider>{children}</TooltipProvider>
-                        {process.env.NODE_ENV === "development" && <DevToolbox />}
+                        {process.env.NODE_ENV === "development" && (
+                            <DevToolbox />
+                        )}
                     </TRPCProvider>
                     <Lightbox />
                     <Toaster />

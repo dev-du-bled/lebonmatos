@@ -84,10 +84,11 @@ export function DevToolbox() {
         return match?.[1] ?? null;
     }, [pathname]);
 
-    const devSendSystemMessage = trpc.discussions.devSendSystemMessage.useMutation({
-        onSuccess: () => toast.success("Message système de test envoyé"),
-        onError: (e) => toast.error(e.message),
-    });
+    const devSendSystemMessage =
+        trpc.discussions.devSendSystemMessage.useMutation({
+            onSuccess: () => toast.success("Message système de test envoyé"),
+            onError: (e) => toast.error(e.message),
+        });
 
     // Charger la position depuis localStorage au montage
     React.useEffect(() => {
@@ -259,7 +260,8 @@ export function DevToolbox() {
                                     onClick={() =>
                                         devSendSystemMessage.mutate({
                                             discussionId,
-                                            content: "Ceci est un message système de test",
+                                            content:
+                                                "Ceci est un message système de test",
                                         })
                                     }
                                 >
@@ -302,7 +304,8 @@ export function DevToolbox() {
                                     onClick={() =>
                                         devSendSystemMessage.mutate({
                                             discussionId,
-                                            content: "Nouveau message de LeBonMatos",
+                                            content:
+                                                "Nouveau message de LeBonMatos",
                                             imageUrls: ["/logo-mini-dark.png"],
                                             buttonLabel: "Voir",
                                             buttonUrl: "/",

@@ -23,7 +23,9 @@ export default async function ConversationPage({
         <div className="mt-4">
             <div
                 className="wide-lock-wider flex overflow-hidden bg-background border-x border-t rounded-t-xl"
-                style={{ height: "calc(100svh - var(--header-height, 76px) - 1rem)" }}
+                style={{
+                    height: "calc(100svh - var(--header-height, 76px) - 1rem)",
+                }}
             >
                 {/* Sidebar — cachée sur mobile */}
                 <ConversationList

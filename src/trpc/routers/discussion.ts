@@ -82,11 +82,17 @@ export const discussionRouter = createTRPCRouter({
             });
 
             if (!post) {
-                throw new TRPCError({ code: "NOT_FOUND", message: "Annonce introuvable" });
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Annonce introuvable",
+                });
             }
 
             if (post.userId !== input.sellerId) {
-                throw new TRPCError({ code: "FORBIDDEN", message: "Vendeur invalide" });
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Vendeur invalide",
+                });
             }
 
             const discussion = await prisma.discussion.upsert({
@@ -271,7 +277,9 @@ export const discussionRouter = createTRPCRouter({
             });
 
             const hasMore = rawMessages.length > input.limit;
-            const messages = (hasMore ? rawMessages.slice(0, -1) : rawMessages).reverse();
+            const messages = (
+                hasMore ? rawMessages.slice(0, -1) : rawMessages
+            ).reverse();
             const nextCursor = hasMore ? messages[0]?.id : undefined;
 
             const isBuyer = discussion.buyerId === userId;
@@ -370,13 +378,18 @@ export const discussionRouter = createTRPCRouter({
                     imageUrls: z.array(z.string().url()).max(8).default([]),
                 })
                 .refine(
-                    (d) => d.type !== "TEXT" || d.content !== undefined || d.imageUrls.length > 0,
-                    { message: "Un message texte doit avoir du contenu ou des images" }
+                    (d) =>
+                        d.type !== "TEXT" ||
+                        d.content !== undefined ||
+                        d.imageUrls.length > 0,
+                    {
+                        message:
+                            "Un message texte doit avoir du contenu ou des images",
+                    }
                 )
-                .refine(
-                    (d) => d.type !== "OFFER" || d.price !== undefined,
-                    { message: "Une offre doit avoir un prix" }
-                )
+                .refine((d) => d.type !== "OFFER" || d.price !== undefined, {
+                    message: "Une offre doit avoir un prix",
+                })
         )
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session.user.id;
@@ -473,7 +486,6 @@ export const discussionRouter = createTRPCRouter({
             messageEmitter.emit(`typing:${input.discussionId}`, event);
             return { ok: true };
         }),
-
 
     onMessage: privateProcedure
         .input(z.object({ discussionId: z.cuid() }))

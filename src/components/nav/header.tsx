@@ -7,7 +7,9 @@ import { SearchIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import dynamic from "next/dynamic";
 
-const UserMenu = dynamic(() => import("./user-menu").then((m) => m.UserMenu), { ssr: false });
+const UserMenu = dynamic(() => import("./user-menu").then((m) => m.UserMenu), {
+    ssr: false,
+});
 import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
@@ -23,7 +25,10 @@ export default function Header({ className }: { className?: string }) {
             const h =
                 (mobileRef.current?.offsetHeight ?? 0) ||
                 (desktopRef.current?.offsetHeight ?? 0);
-            document.documentElement.style.setProperty("--header-height", `${h}px`);
+            document.documentElement.style.setProperty(
+                "--header-height",
+                `${h}px`
+            );
         };
         update();
         const observer = new ResizeObserver(update);
