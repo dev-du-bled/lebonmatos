@@ -30,7 +30,10 @@ export function ContactButton({ postId, sellerId }: PostButtonsProps) {
     if (session.user.id === sellerId) return null;
 
     return (
-        <Button onClick={() => getOrCreate.mutate({ postId, sellerId })} loading={getOrCreate.isPending}>
+        <Button
+            onClick={() => getOrCreate.mutate({ postId, sellerId })}
+            loading={getOrCreate.isPending}
+        >
             Contacter
         </Button>
     );
@@ -71,7 +74,9 @@ export function BuyButtons({ postId, sellerId }: PostButtonsProps) {
                     <Button
                         variant="outline"
                         className="flex-1"
-                        onClick={() => getOrCreateOffer.mutate({ postId, sellerId })}
+                        onClick={() =>
+                            getOrCreateOffer.mutate({ postId, sellerId })
+                        }
                         loading={getOrCreateOffer.isPending}
                     >
                         Faire une offre
