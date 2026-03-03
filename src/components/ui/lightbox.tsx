@@ -138,7 +138,7 @@ function LightboxOverlay() {
 
     return (
         <div
-            className="fixed inset-0 z-[200] flex flex-col items-center justify-center gap-4 bg-black/92 backdrop-blur-sm"
+            className="fixed inset-0 z-200 flex flex-col items-center justify-center gap-4 bg-black/92 backdrop-blur-sm"
             onClick={close}
         >
             {/* Barre supérieure */}

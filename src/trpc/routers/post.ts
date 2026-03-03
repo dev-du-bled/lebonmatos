@@ -104,6 +104,43 @@ export const postRouter = createTRPCRouter({
         }));
     }),
 
+    markAsSold: privateProcedure
+        .input(z.object({ id: z.cuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const post = await prisma.post.findUnique({
+                where: { id: input.id },
+                select: { userId: true, isSold: true },
+            });
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
+            }
+
+            if (post.userId !== ctx.session.user.id) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "You are not authorized to update this post",
+                });
+            }
+
+            if (post.isSold) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "This post is already marked as sold",
+                });
+            }
+
+            await prisma.post.update({
+                where: { id: input.id },
+                data: { isSold: true },
+            });
+
+            return { success: true };
+        }),
+
     deletePost: privateProcedure
         .input(z.object({ id: z.cuid() }))
         .mutation(async ({ ctx, input }) => {
