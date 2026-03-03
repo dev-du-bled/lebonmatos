@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Star, X } from "lucide-react";
+import { Star, X, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -20,8 +21,10 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { trpc } from "@/trpc/client";
 
-type Review = {
+export type Review = {
     id: string;
     rating: number;
     comment: string | null;
@@ -35,8 +38,11 @@ type Review = {
 };
 
 type ReviewsDialogProps = {
-    reviews: Review[];
+    userId: string;
+    initialReviews: Review[];
+    initialNextCursor: string | undefined;
     average: number;
+    count: number;
     username: string;
 };
 
@@ -79,13 +85,12 @@ function ReviewsTrigger({
 }
 
 function ReviewsSummary({
-    reviews,
     average,
+    count,
 }: {
-    reviews: Review[];
     average: number;
+    count: number;
 }) {
-    const count = reviews.length;
     if (count === 0) return null;
     return (
         <div className="flex items-center gap-3 mt-2">
@@ -100,9 +105,90 @@ function ReviewsSummary({
     );
 }
 
-function ReviewsList({ reviews }: { reviews: Review[] }) {
-    const count = reviews.length;
-    if (count === 0) {
+function ReviewCard({ review }: { review: Review }) {
+    const displayName =
+        review.rater.displayUsername ??
+        review.rater.username ??
+        "Utilisateur supprimé";
+    const initials = displayName
+        .split(/\s+/)
+        .map((s) => s[0])
+        .filter(Boolean)
+        .slice(0, 2)
+        .join("")
+        .toUpperCase();
+    const date = new Date(review.createdAt).toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    });
+    return (
+        <div className="flex items-start gap-4 px-6 py-4">
+            <Link href={`/profile/${review.rater.id}`} className="shrink-0">
+                <Avatar className="size-10">
+                    {review.rater.image ? (
+                        <AvatarImage
+                            src={review.rater.image}
+                            alt={`Avatar de ${displayName}`}
+                            className="object-cover"
+                        />
+                    ) : null}
+                    <AvatarFallback className="bg-secondary text-muted-foreground text-sm">
+                        {initials}
+                    </AvatarFallback>
+                </Avatar>
+            </Link>
+            <div className="flex-1 space-y-1">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Link
+                        href={`/profile/${review.rater.id}`}
+                        className="font-semibold text-sm hover:underline"
+                    >
+                        {displayName}
+                    </Link>
+                    <span className="text-xs text-muted-foreground">
+                        {date}
+                    </span>
+                </div>
+                <StarRating value={review.rating} />
+                {review.comment && (
+                    <p className="text-sm text-muted-foreground pt-0.5">
+                        {review.comment}
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function ReviewsList({
+    userId,
+    initialReviews,
+    initialNextCursor,
+}: {
+    userId: string;
+    initialReviews: Review[];
+    initialNextCursor: string | undefined;
+}) {
+    const [reviews, setReviews] = useState<Review[]>(initialReviews);
+    const [cursor, setCursor] = useState<string | undefined>(initialNextCursor);
+
+    const query = trpc.user.getReceivedReviews.useQuery(
+        { userId, cursor, limit: 10 },
+        {
+            enabled: false, // only fired manually via refetch()
+        }
+    );
+
+    async function loadMore() {
+        const result = await query.refetch();
+        if (result.data) {
+            setReviews((prev) => [...prev, ...result.data.reviews]);
+            setCursor(result.data.nextCursor);
+        }
+    }
+
+    if (reviews.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-center px-6">
                 <Star className="size-10 text-muted-foreground" />
@@ -112,83 +198,43 @@ function ReviewsList({ reviews }: { reviews: Review[] }) {
             </div>
         );
     }
+
     return (
         <div className="divide-y">
-            {reviews.map((review) => {
-                const displayName =
-                    review.rater.displayUsername ??
-                    review.rater.username ??
-                    "Utilisateur supprimé";
-                const initials = displayName
-                    .split(/\s+/)
-                    .map((s) => s[0])
-                    .filter(Boolean)
-                    .slice(0, 2)
-                    .join("")
-                    .toUpperCase();
-                const date = new Date(review.createdAt).toLocaleDateString(
-                    "fr-FR",
-                    {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                    }
-                );
-                return (
-                    <div
-                        key={review.id}
-                        className="flex items-start gap-4 px-6 py-4"
+            {reviews.map((review) => (
+                <ReviewCard key={review.id} review={review} />
+            ))}
+            {cursor && (
+                <div className="flex justify-center px-6 py-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={loadMore}
+                        disabled={query.isFetching}
                     >
-                        <Link
-                            href={`/profile/${review.rater.id}`}
-                            className="shrink-0"
-                        >
-                            <Avatar className="size-10">
-                                {review.rater.image ? (
-                                    <AvatarImage
-                                        src={review.rater.image}
-                                        alt={`Avatar de ${displayName}`}
-                                        className="object-cover"
-                                    />
-                                ) : null}
-                                <AvatarFallback className="bg-secondary text-muted-foreground text-sm">
-                                    {initials}
-                                </AvatarFallback>
-                            </Avatar>
-                        </Link>
-                        <div className="flex-1 space-y-1">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <Link
-                                    href={`/profile/${review.rater.id}`}
-                                    className="font-semibold text-sm hover:underline"
-                                >
-                                    {displayName}
-                                </Link>
-                                <span className="text-xs text-muted-foreground">
-                                    {date}
-                                </span>
-                            </div>
-                            <StarRating value={review.rating} />
-                            {review.comment && (
-                                <p className="text-sm text-muted-foreground pt-0.5">
-                                    {review.comment}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                );
-            })}
+                        {query.isFetching ? (
+                            <>
+                                <Loader2 className="size-4 animate-spin" />
+                                Chargement...
+                            </>
+                        ) : (
+                            "Charger plus"
+                        )}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
 
 export function ReviewsDialog({
-    reviews,
+    userId,
+    initialReviews,
+    initialNextCursor,
     average,
+    count,
     username,
 }: ReviewsDialogProps) {
-    const count = reviews.length;
-
     return (
         <>
             {/* Desktop — Dialog (hidden on mobile) */}
@@ -201,10 +247,14 @@ export function ReviewsDialog({
                 <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
                     <DialogHeader className="px-6 pt-6 pb-4 border-b">
                         <DialogTitle>Avis reçus par {username}</DialogTitle>
-                        <ReviewsSummary reviews={reviews} average={average} />
+                        <ReviewsSummary average={average} count={count} />
                     </DialogHeader>
                     <ScrollArea className="max-h-[60vh]">
-                        <ReviewsList reviews={reviews} />
+                        <ReviewsList
+                            userId={userId}
+                            initialReviews={initialReviews}
+                            initialNextCursor={initialNextCursor}
+                        />
                     </ScrollArea>
                 </DialogContent>
             </Dialog>
@@ -225,10 +275,14 @@ export function ReviewsDialog({
                                 <span className="sr-only">Fermer</span>
                             </DrawerClose>
                         </div>
-                        <ReviewsSummary reviews={reviews} average={average} />
+                        <ReviewsSummary average={average} count={count} />
                     </DrawerHeader>
                     <ScrollArea className="max-h-[70svh] overflow-y-auto">
-                        <ReviewsList reviews={reviews} />
+                        <ReviewsList
+                            userId={userId}
+                            initialReviews={initialReviews}
+                            initialNextCursor={initialNextCursor}
+                        />
                     </ScrollArea>
                 </DrawerContent>
             </Drawer>

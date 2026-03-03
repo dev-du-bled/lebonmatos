@@ -1,7 +1,9 @@
 import { Metadata } from "next";
 import { cache } from "react";
+import { notFound } from "next/navigation";
 
 import { trpc } from "@/trpc/server";
+import { TRPCClientError } from "@trpc/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +16,11 @@ type Params = {
     id: string;
 };
 
-export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<Params>;
+}): Promise<Metadata> {
     const { id } = await params;
     const user = await getUser(id);
     return {
@@ -24,7 +30,17 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 const getUser = cache(async (id: string) => {
-    return await trpc.user.getPublicProfile({ userId: id });
+    try {
+        return await trpc.user.getPublicProfile({ userId: id });
+    } catch (error) {
+        if (
+            error instanceof TRPCClientError &&
+            error.data?.code === "NOT_FOUND"
+        ) {
+            notFound();
+        }
+        throw error;
+    }
 });
 
 function ProfileHeaderSkeleton() {
@@ -93,30 +109,50 @@ async function ProfileHeader({ userId }: { userId: string }) {
         .join("")
         .toUpperCase();
 
-    const reviews = await trpc.user.getReceivedReviews({ userId: user.id });
-    const average =
-        reviews.length > 0
-            ? reviews.reduce((sum: number, r: (typeof reviews)[number]) => sum + r.rating, 0) / reviews.length
-            : 0;
+    const [stats, firstPage] = await Promise.all([
+        trpc.user.getReviewStats({ userId: user.id }),
+        trpc.user.getReceivedReviews({ userId: user.id, limit: 10 }),
+    ]);
 
     return (
         <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
             <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
                 <Avatar className="size-24 border-4 border-background text-3xl font-semibold shadow-lg">
                     {user.image ? (
-                        <AvatarImage src={user.image} alt={`Avatar de ${displayName}`} className="object-cover" />
+                        <AvatarImage
+                            src={user.image}
+                            alt={`Avatar de ${displayName}`}
+                            className="object-cover"
+                        />
                     ) : null}
-                    <AvatarFallback className="bg-secondary text-muted-foreground">{initials}</AvatarFallback>
+                    <AvatarFallback className="bg-secondary text-muted-foreground">
+                        {initials}
+                    </AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
                     <div className="space-y-1">
-                        <h1 className="text-2xl font-semibold sm:text-3xl">{displayName}</h1>
+                        <h1 className="text-2xl font-semibold sm:text-3xl">
+                            {displayName}
+                        </h1>
                         {user.username && user.username !== displayName && (
-                            <p className="text-sm text-muted-foreground">@{user.username}</p>
+                            <p className="text-sm text-muted-foreground">
+                                @{user.username}
+                            </p>
                         )}
                     </div>
-                    {user.bio && <p className="max-w-md text-sm text-muted-foreground">{user.bio}</p>}
-                    <ReviewsDialog reviews={reviews} average={average} username={displayName} />
+                    {user.bio && (
+                        <p className="max-w-md text-sm text-muted-foreground">
+                            {user.bio}
+                        </p>
+                    )}
+                    <ReviewsDialog
+                        userId={user.id}
+                        initialReviews={firstPage.reviews}
+                        initialNextCursor={firstPage.nextCursor}
+                        average={stats.average}
+                        count={stats.count}
+                        username={displayName}
+                    />
                 </div>
             </div>
         </div>
@@ -152,7 +188,11 @@ async function ListingsContent({ userId }: { userId: string }) {
     );
 }
 
-export default async function ProfilePage({ params }: { params: Promise<Params> }) {
+export default async function ProfilePage({
+    params,
+}: {
+    params: Promise<Params>;
+}) {
     const { id } = await params;
     const user = await getUser(id);
 
@@ -166,11 +206,17 @@ export default async function ProfilePage({ params }: { params: Promise<Params> 
 
             <div className="mb-4 mt-10">
                 <h2 className="text-xl font-semibold">Annonces</h2>
-                <p className="text-sm text-muted-foreground">Les annonces publiées par ce vendeur</p>
+                <p className="text-sm text-muted-foreground">
+                    Les annonces publiées par ce vendeur
+                </p>
             </div>
 
             <Suspense fallback={<ListingsSkeleton />}>
-                {user?.id ? <ListingsContent userId={user.id} /> : <EmptyState />}
+                {user?.id ? (
+                    <ListingsContent userId={user.id} />
+                ) : (
+                    <EmptyState />
+                )}
             </Suspense>
         </section>
     );

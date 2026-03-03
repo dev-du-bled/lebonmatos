@@ -1,10 +1,23 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LucideIcon } from "lucide-react";
-import { AlertTriangle, Cpu, FileText, Heart, MessageSquare, Settings, ShoppingBag } from "lucide-react";
+import {
+    AlertTriangle,
+    Cpu,
+    FileText,
+    Heart,
+    MessageSquare,
+    Settings,
+    ShoppingBag,
+} from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { PublicProfileDialog } from "@/components/profile/public-profile-dialog";
 import { ReviewsDialog } from "@/app/(app)/profile/[id]/reviews-dialog";
@@ -90,7 +103,10 @@ function ProfileHeaderSkeleton() {
 
 async function ProfileHeader() {
     const user = await trpc.user.getProfile();
-    const reviews = await trpc.user.getReceivedReviews({ userId: user.id });
+    const [stats, firstPage] = await Promise.all([
+        trpc.user.getReviewStats({ userId: user.id }),
+        trpc.user.getReceivedReviews({ userId: user.id, limit: 10 }),
+    ]);
 
     const displayName = user.username ?? "Mon profil";
     const initials = displayName
@@ -101,31 +117,47 @@ async function ProfileHeader() {
         .join("")
         .toUpperCase();
 
-    const average =
-        reviews.length > 0
-            ? reviews.reduce((sum: number, r: (typeof reviews)[number]) => sum + r.rating, 0) / reviews.length
-            : 0;
-
     return (
         <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
             <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
                 <Avatar className="size-24 border-4 border-background text-3xl font-semibold shadow-lg">
                     {user.image ? (
-                        <AvatarImage src={user.image} alt={`Avatar de ${displayName}`} className="object-cover" />
+                        <AvatarImage
+                            src={user.image}
+                            alt={`Avatar de ${displayName}`}
+                            className="object-cover"
+                        />
                     ) : null}
-                    <AvatarFallback className="bg-secondary text-muted-foreground">{initials}</AvatarFallback>
+                    <AvatarFallback className="bg-secondary text-muted-foreground">
+                        {initials}
+                    </AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
                     <div className="space-y-1">
-                        <h1 className="text-2xl font-semibold sm:text-3xl">{displayName}</h1>
+                        <h1 className="text-2xl font-semibold sm:text-3xl">
+                            {displayName}
+                        </h1>
                         {user.username && user.username !== displayName && (
-                            <p className="text-sm text-muted-foreground">@{user.username}</p>
+                            <p className="text-sm text-muted-foreground">
+                                @{user.username}
+                            </p>
                         )}
                     </div>
 
-                    {user.bio && <p className="max-w-md text-sm text-muted-foreground">{user.bio}</p>}
+                    {user.bio && (
+                        <p className="max-w-md text-sm text-muted-foreground">
+                            {user.bio}
+                        </p>
+                    )}
 
-                    <ReviewsDialog reviews={reviews} average={average} username={displayName} />
+                    <ReviewsDialog
+                        userId={user.id}
+                        initialReviews={firstPage.reviews}
+                        initialNextCursor={firstPage.nextCursor}
+                        average={stats.average}
+                        count={stats.count}
+                        username={displayName}
+                    />
                 </div>
             </div>
 
@@ -143,7 +175,12 @@ export default function ProfilePage() {
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {QUICK_ACTIONS.map(({ title, description, href, Icon }) => (
-                    <Link key={title} href={href} className="group" prefetch={false}>
+                    <Link
+                        key={title}
+                        href={href}
+                        className="group"
+                        prefetch={false}
+                    >
                         <Card className="h-full gap-3 border-transparent bg-secondary/40 p-5 transition hover:border-primary hover:bg-background hover:shadow-md">
                             <CardContent className="flex h-full flex-col gap-4 p-0">
                                 <div className="flex items-center gap-3">
@@ -153,7 +190,9 @@ export default function ProfilePage() {
                                     >
                                         <Icon className="size-5" />
                                     </span>
-                                    <CardTitle className="text-base font-semibold">{title}</CardTitle>
+                                    <CardTitle className="text-base font-semibold">
+                                        {title}
+                                    </CardTitle>
                                 </div>
                                 <CardDescription className="text-sm text-muted-foreground">
                                     {description}

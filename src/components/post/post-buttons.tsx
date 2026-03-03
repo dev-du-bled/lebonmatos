@@ -33,6 +33,7 @@ export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
     const { session } = useSession();
     const router = useRouter();
     const [isPending, setIsPending] = useState(false);
+    const [open, setOpen] = useState(false);
 
     const mutation = trpc.posts.buyPost.useMutation();
 
@@ -44,9 +45,11 @@ export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
         setIsPending(true);
         try {
             await mutation.mutateAsync({ postId });
+            setOpen(false);
             toast.success("Achat effectué avec succès !");
             router.refresh();
         } catch (error) {
+            setOpen(false);
             if (error instanceof TRPCClientError) {
                 toast.error(error.message);
             } else {
@@ -79,9 +82,18 @@ export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
                             </Button>
                         </Link>
 
-                        <AlertDialog>
+                        <AlertDialog
+                            open={open}
+                            onOpenChange={(v) => {
+                                if (!isPending) setOpen(v);
+                            }}
+                        >
                             <AlertDialogTrigger asChild>
-                                <Button className="flex-1" disabled={isSold}>
+                                <Button
+                                    className="flex-1"
+                                    disabled={isSold}
+                                    onClick={() => setOpen(true)}
+                                >
                                     Acheter
                                 </Button>
                             </AlertDialogTrigger>
@@ -105,10 +117,7 @@ export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
                                     </AlertDialogCancel>
                                     <AlertDialogAction
                                         disabled={isPending}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            handleBuy();
-                                        }}
+                                        onClick={handleBuy}
                                     >
                                         {isPending ? (
                                             <>
