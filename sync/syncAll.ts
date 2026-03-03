@@ -31,6 +31,18 @@ async function syncAll() {
     await client.connect();
 
     try {
+        console.log("Fetching all components...");
+        const { rows: components } = await client.query(
+            `SELECT id, name, type FROM component`
+        );
+        if (components.length > 0) {
+            console.log(`Syncing ${components.length} components to Meilisearch...`);
+            const compTask = await wrappMeiliTask(
+                meilisearch.index("components").addDocuments(components)
+            );
+            console.log(`Synced components at ${compTask.finishedAt}`);
+        }
+
         console.log("Fetching all posts...");
         const { rows: posts } = await client.query(POST_QUERY_BASE);
 

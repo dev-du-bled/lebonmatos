@@ -43,8 +43,7 @@ import { trpc } from "@/trpc/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
-// Mapping des icônes pour chaque type de composant
-const componentTypeIcons: Record<ComponentType, LucideIcon> = {
+export const componentTypeIcons: Record<ComponentType, LucideIcon> = {
     CPU: Cpu,
     GPU: MonitorUp,
     MOTHERBOARD: CircuitBoard,
@@ -64,6 +63,9 @@ interface ComponentSelectorProps {
     setSelectedComponent: (component?: ReturnedComponent) => void;
     disabled?: boolean;
     errored: boolean;
+    hideHelperText?: boolean;
+    className?: string;
+    variant?: "default" | "inline";
 }
 
 export default function ComponentSelector({
@@ -71,6 +73,9 @@ export default function ComponentSelector({
     setSelectedComponent,
     disabled,
     errored,
+    hideHelperText,
+    className,
+    variant = "default",
 }: ComponentSelectorProps) {
     const [open, setOpen] = useState(false);
     const [selectedType, setSelectedType] = useState<ComponentType | undefined>(
@@ -126,9 +131,13 @@ export default function ComponentSelector({
         debouncedSetQuery(value);
     };
 
+    const SelectedIcon = selectedComponent
+        ? componentTypeIcons[selectedComponent.type]
+        : null;
+
     return (
-        <div className="flex flex-col gap-2">
-            {!selectedComponent && !errored && (
+        <div className={cn("flex flex-col gap-2", className)}>
+            {(variant === "inline" || (!selectedComponent && !errored)) && (
                 <>
                     {/* Trigger Button */}
                     <Dialog open={open} onOpenChange={setOpen}>
@@ -137,15 +146,37 @@ export default function ComponentSelector({
                                 disabled={disabled}
                                 variant="outline"
                                 className={cn(
-                                    "w-full justify-start h-auto min-h-12 px-4 py-3 text-left font-normal",
+                                    "w-full justify-start h-12 px-4 py-3 text-left font-normal [&>span]:w-full",
                                     !selectedComponent &&
                                         "text-muted-foreground",
                                     errored &&
                                         "border-destructive ring-1 ring-destructive/50"
                                 )}
                             >
-                                <Package className="h-5 w-5 mr-3 shrink-0 text-muted-foreground" />
-                                <span>Sélectionner un composant...</span>
+                                {variant === "inline" && selectedComponent && SelectedIcon ? (
+                                    <SelectedIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
+                                ) : (
+                                    <Package className="h-5 w-5 shrink-0 text-muted-foreground" />
+                                )}
+                                <span className={cn("truncate flex-1", variant === "inline" && selectedComponent ? "text-foreground" : "text-muted-foreground")}>
+                                    {variant === "inline" && selectedComponent
+                                        ? selectedComponent.name
+                                        : "Sélectionner un composant..."}
+                                </span>
+                                {variant === "inline" && selectedComponent && (
+                                    <button
+                                        type="button"
+                                        disabled={disabled}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            clearSelection();
+                                        }}
+                                        className="p-0.5 rounded hover:bg-muted transition-colors shrink-0 disabled:opacity-50"
+                                        aria-label="Supprimer le composant"
+                                    >
+                                        <X className="h-4 w-4 text-muted-foreground" />
+                                    </button>
+                                )}
                             </Button>
                         </DialogTrigger>
 
@@ -327,8 +358,8 @@ export default function ComponentSelector({
                     </Dialog>
                 </>
             )}
-            {/* Selected component details */}
-            {selectedComponent && (
+            {/* Selected component details (default variant only) */}
+            {variant === "default" && selectedComponent && (
                 <div className="p-3 rounded-md bg-muted/50 border">
                     <div className="flex items-start gap-2">
                         <div className="flex-1 min-w-0">
@@ -365,7 +396,7 @@ export default function ComponentSelector({
                 </div>
             )}
 
-            {!selectedComponent && (
+            {!selectedComponent && !hideHelperText && variant === "default" && (
                 <p className="text-[0.8rem] text-muted-foreground">
                     Recherchez votre composant dans notre base de données.
                 </p>

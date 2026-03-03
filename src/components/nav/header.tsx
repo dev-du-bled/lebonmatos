@@ -10,19 +10,17 @@ import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
 import { SearchModal } from "./search-modal";
+import { useHotkey, formatForDisplay } from "@tanstack/react-hotkeys";
 
 export default function Header({ className }: { className?: string }) {
     const [isScrolled, setIsScrolled] = useState(false);
-    const [modifierKey, setModifierKey] = useState<string | null>(null);
     const [searchOpen, setSearchOpen] = useState(false);
 
+    useHotkey("Mod+K", () => {
+        setSearchOpen((open) => !open);
+    });
+
     useEffect(() => {
-        setModifierKey(
-            typeof window !== "undefined" &&
-                /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
-                ? "⌘"
-                : "Ctrl"
-        );
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 0);
         };
@@ -30,21 +28,6 @@ export default function Header({ className }: { className?: string }) {
         handleScroll();
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    useEffect(() => {
-        const down = (e: KeyboardEvent) => {
-            if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                setSearchOpen((open) => !open);
-            }
-            if (e.key === "Escape") {
-                setSearchOpen(false);
-            }
-        };
-
-        document.addEventListener("keydown", down);
-        return () => document.removeEventListener("keydown", down);
     }, []);
 
     return (
@@ -65,9 +48,7 @@ export default function Header({ className }: { className?: string }) {
                     </Link>
                     <div className="flex items-center gap-2 w-full justify-end">
                         <Link href="/create-post">
-                            <Button className="hover:cursor-pointer">
-                                Publier
-                            </Button>
+                            <Button className="hover:cursor-pointer">Publier</Button>
                         </Link>
                         <button
                             onClick={() => setSearchOpen(true)}
@@ -77,9 +58,7 @@ export default function Header({ className }: { className?: string }) {
                                 <SearchIcon className="size-4 shrink-0 opacity-50" />
                                 <span>Rechercher</span>
                             </div>
-                            {modifierKey && (
-                                <Kbd className="border">{modifierKey}+K</Kbd>
-                            )}
+                            <Kbd className="border">{formatForDisplay("Mod+K")}</Kbd>
                         </button>
                         <UserMenu />
                     </div>
