@@ -62,6 +62,8 @@ export const postRouter = createTRPCRouter({
                 title: post.title,
                 description: post.description,
                 price: post.price,
+                isSold: post.isSold,
+                createdAt: post.id,
                 component: {
                     id: post.component.id,
                     name: post.component.name,

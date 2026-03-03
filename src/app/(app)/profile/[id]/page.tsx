@@ -10,14 +10,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 import { FileText, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ListingCard } from "./listing-card";
 import { ReviewsDialog } from "./reviews-dialog";
+import { ListingsGrid } from "./listings-grid";
 
 type Params = {
     id: string;
 };
 
-export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<Params>;
+}): Promise<Metadata> {
     const { id } = await params;
     const user = await getUser(id);
     return {
@@ -30,7 +34,10 @@ const getUser = cache(async (id: string) => {
     try {
         return await trpc.user.getPublicProfile({ userId: id });
     } catch (error) {
-        if (error instanceof TRPCClientError && error.data?.code === "NOT_FOUND") {
+        if (
+            error instanceof TRPCClientError &&
+            error.data?.code === "NOT_FOUND"
+        ) {
             notFound();
         }
         throw error;
@@ -60,12 +67,28 @@ function getMemberSince(createdAt: Date): { label: string; tier: MemberTier } {
     // Bronze < 6 months — Silver 6m–2y — Gold 2y–5y — Diamond 5y+
     const tier: MemberTier =
         diffYears >= 5
-            ? { color: "text-sky-400", bg: "bg-sky-400/10 border-sky-400/30", label: "Diamant" }
+            ? {
+                  color: "text-sky-400",
+                  bg: "bg-sky-400/10 border-sky-400/30",
+                  label: "Diamant",
+              }
             : diffYears >= 2
-              ? { color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/30", label: "Or" }
+              ? {
+                    color: "text-yellow-400",
+                    bg: "bg-yellow-400/10 border-yellow-400/30",
+                    label: "Or",
+                }
               : diffMonths >= 6
-                ? { color: "text-slate-400", bg: "bg-slate-400/10 border-slate-400/30", label: "Argent" }
-                : { color: "text-amber-700", bg: "bg-amber-700/10 border-amber-700/30", label: "Bronze" };
+                ? {
+                      color: "text-slate-400",
+                      bg: "bg-slate-400/10 border-slate-400/30",
+                      label: "Argent",
+                  }
+                : {
+                      color: "text-amber-700",
+                      bg: "bg-amber-700/10 border-amber-700/30",
+                      label: "Bronze",
+                  };
 
     return { label, tier };
 }
@@ -141,25 +164,41 @@ async function ProfileHeader({ userId }: { userId: string }) {
         trpc.user.getReceivedReviews({ userId: user.id, limit: 10 }),
     ]);
 
-    const { label: memberLabel, tier } = getMemberSince(new Date(user.createdAt));
+    const { label: memberLabel, tier } = getMemberSince(
+        new Date(user.createdAt)
+    );
 
     return (
         <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
             <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
                 <Avatar className="size-24 border-4 border-background text-3xl font-semibold shadow-lg">
                     {user.image ? (
-                        <AvatarImage src={user.image} alt={`Avatar de ${displayName}`} className="object-cover" />
+                        <AvatarImage
+                            src={user.image}
+                            alt={`Avatar de ${displayName}`}
+                            className="object-cover"
+                        />
                     ) : null}
-                    <AvatarFallback className="bg-secondary text-muted-foreground">{initials}</AvatarFallback>
+                    <AvatarFallback className="bg-secondary text-muted-foreground">
+                        {initials}
+                    </AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
                     <div className="space-y-1">
-                        <h1 className="text-2xl font-semibold sm:text-3xl">{displayName}</h1>
+                        <h1 className="text-2xl font-semibold sm:text-3xl">
+                            {displayName}
+                        </h1>
                         {user.username && user.username !== displayName && (
-                            <p className="text-sm text-muted-foreground">@{user.username}</p>
+                            <p className="text-sm text-muted-foreground">
+                                @{user.username}
+                            </p>
                         )}
                     </div>
-                    {user.bio && <p className="max-w-md text-sm text-muted-foreground">{user.bio}</p>}
+                    {user.bio && (
+                        <p className="max-w-md text-sm text-muted-foreground">
+                            {user.bio}
+                        </p>
+                    )}
                     <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
                         <ReviewsDialog
                             userId={user.id}
@@ -169,7 +208,9 @@ async function ProfileHeader({ userId }: { userId: string }) {
                             count={stats.count}
                             username={displayName}
                         />
-                        <span className="text-muted-foreground/40 hidden sm:inline select-none">·</span>
+                        <span className="text-muted-foreground/40 hidden sm:inline select-none">
+                            ·
+                        </span>
                         <span
                             title={`Membre ${tier.label} — inscrit depuis ${memberLabel}`}
                             className={cn(
@@ -178,7 +219,9 @@ async function ProfileHeader({ userId }: { userId: string }) {
                             )}
                         >
                             <Medal className={cn("size-3.5", tier.color)} />
-                            <span className={tier.color}>Membre depuis {memberLabel}</span>
+                            <span className={tier.color}>
+                                Membre depuis {memberLabel}
+                            </span>
                         </span>
                     </div>
                 </div>
@@ -207,16 +250,14 @@ async function ListingsContent({ userId }: { userId: string }) {
         return <EmptyState />;
     }
 
-    return (
-        <div className="grid gap-4">
-            {listings.map((listing: (typeof listings)[number]) => (
-                <ListingCard key={listing.id} listing={listing} />
-            ))}
-        </div>
-    );
+    return <ListingsGrid listings={listings} />;
 }
 
-export default async function ProfilePage({ params }: { params: Promise<Params> }) {
+export default async function ProfilePage({
+    params,
+}: {
+    params: Promise<Params>;
+}) {
     const { id } = await params;
     const user = await getUser(id);
 
@@ -230,11 +271,17 @@ export default async function ProfilePage({ params }: { params: Promise<Params> 
 
             <div className="mb-4 mt-10">
                 <h2 className="text-xl font-semibold">Annonces</h2>
-                <p className="text-sm text-muted-foreground">Les annonces publiées par ce vendeur</p>
+                <p className="text-sm text-muted-foreground">
+                    Les annonces publiées par ce vendeur
+                </p>
             </div>
 
             <Suspense fallback={<ListingsSkeleton />}>
-                {user?.id ? <ListingsContent userId={user.id} /> : <EmptyState />}
+                {user?.id ? (
+                    <ListingsContent userId={user.id} />
+                ) : (
+                    <EmptyState />
+                )}
             </Suspense>
         </section>
     );
