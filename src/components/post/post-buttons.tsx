@@ -49,13 +49,21 @@ export function ContactButton({ postId, sellerId }: PostButtonsProps) {
     if (session.user.id === sellerId) return null;
 
     return (
-        <Button onClick={() => getOrCreate.mutate({ postId, sellerId })} loading={getOrCreate.isPending}>
+        <Button
+            onClick={() => getOrCreate.mutate({ postId, sellerId })}
+            loading={getOrCreate.isPending}
+        >
             Contacter
         </Button>
     );
 }
 
-export function BuyButtons({ postId, sellerId, price, isSold }: BuyButtonsProps) {
+export function BuyButtons({
+    postId,
+    sellerId,
+    price,
+    isSold,
+}: BuyButtonsProps) {
     const { session } = useSession();
     const router = useRouter();
     const [isPending, setIsPending] = useState(false);
@@ -109,7 +117,9 @@ export function BuyButtons({ postId, sellerId, price, isSold }: BuyButtonsProps)
                         <Button
                             variant="outline"
                             className="flex-1"
-                            onClick={() => getOrCreateOffer.mutate({ postId, sellerId })}
+                            onClick={() =>
+                                getOrCreateOffer.mutate({ postId, sellerId })
+                            }
                             loading={getOrCreateOffer.isPending}
                         >
                             Faire une offre
@@ -122,15 +132,21 @@ export function BuyButtons({ postId, sellerId, price, isSold }: BuyButtonsProps)
                             }}
                         >
                             <AlertDialogTrigger asChild>
-                                <Button className="flex-1" onClick={() => setOpen(true)}>
+                                <Button
+                                    className="flex-1"
+                                    onClick={() => setOpen(true)}
+                                >
                                     Acheter
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>Confirmer l&apos;achat</AlertDialogTitle>
+                                    <AlertDialogTitle>
+                                        Confirmer l&apos;achat
+                                    </AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Vous êtes sur le point d&apos;acheter cet article pour{" "}
+                                        Vous êtes sur le point d&apos;acheter
+                                        cet article pour{" "}
                                         <span className="font-semibold text-foreground">
                                             {price.toLocaleString("fr-FR")} €
                                         </span>
@@ -138,8 +154,13 @@ export function BuyButtons({ postId, sellerId, price, isSold }: BuyButtonsProps)
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel disabled={isPending}>Annuler</AlertDialogCancel>
-                                    <AlertDialogAction disabled={isPending} onClick={handleBuy}>
+                                    <AlertDialogCancel disabled={isPending}>
+                                        Annuler
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        disabled={isPending}
+                                        onClick={handleBuy}
+                                    >
                                         {isPending ? (
                                             <>
                                                 <Loader2 className="size-4 animate-spin" />
