@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
     Carousel,
     CarouselContent,
@@ -10,10 +11,10 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { trpc } from "@/trpc/server";
+import { getUser } from "@/utils/getUser";
 import { getComponentSpecs, getEnumDisplay } from "@/utils/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
-import { Star } from "lucide-react";
 import PostCard from "@/components/post/post-card";
 import { BuyButtons, ContactButton } from "@/components/post/post-buttons";
 import { Metadata } from "next";
@@ -22,12 +23,12 @@ import PostMap from "@/components/post/post-map";
 import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
 import z from "zod";
+import Link from "next/link";
+import { ReviewsDialog } from "@/app/(app)/profile/[id]/reviews-dialog";
 
 type Params = {
     id: string;
 };
-
-export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
     params,
@@ -62,6 +63,20 @@ export default async function PostPage({
 
     if (!post) notFound();
 
+    const currentUser = await getUser(false);
+    const [sellerStats, sellerFirstPage] = post.seller?.id
+        ? await Promise.all([
+              trpc.user.getReviewStats({ userId: post.seller.id }),
+              trpc.user.getReceivedReviews({
+                  userId: post.seller.id,
+                  limit: 10,
+              }),
+          ])
+        : [
+              { average: 0, count: 0 },
+              { reviews: [], nextCursor: undefined },
+          ];
+
     const similarPost = await trpc.posts.getSimilarPosts({
         id: post.id,
         type: post.component.type,
@@ -77,7 +92,7 @@ export default async function PostPage({
                             {(post.images.length > 0
                                 ? post.images
                                 : ["/images/fallback.webp"]
-                            ).map((image, index) => (
+                            ).map((image: string, index: number) => (
                                 <CarouselItem key={index} className="pl-0">
                                     <AspectRatio ratio={4 / 3}>
                                         <Image
@@ -115,7 +130,7 @@ export default async function PostPage({
                 </div>
 
                 {/* Sidebar (Actions + Specs) - mobile: 2e, desktop: col 3 rows 1-4 sticky */}
-                <div className="lg:col-start-3 lg:row-start-1 lg:row-span-4 space-y-6 lg:sticky lg:top-24">
+                <div className="lg:col-start-3 lg:row-start-1 lg:row-span-3 space-y-6 lg:sticky lg:top-24">
                     {/* Actions */}
                     <BuyButtons
                         postId={post.id}
@@ -163,27 +178,57 @@ export default async function PostPage({
                 </div>
 
                 {/* Vendeur - mobile: 3e, desktop: col 1-2 row 2 */}
-                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-2 flex items-center gap-4">
-                    <Avatar className="h-14 w-14 border">
-                        <AvatarImage src="" />
-                        <AvatarFallback className="bg-muted text-lg">
-                            {(post.seller?.username ?? "?").charAt(0)}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                        <p className="font-semibold text-lg">
-                            {post.seller?.username ?? "Utilisateur supprimé"}
-                        </p>
-                        {post.seller?.rating &&
-                            post.seller.rating.count > 0 && (
-                                <div className="flex items-center gap-1 mt-0.5">
-                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="text-sm text-muted-foreground">
-                                        {post.seller.rating.avg.toFixed(1)} (
-                                        {post.seller.rating.count} avis)
-                                    </span>
-                                </div>
+                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-2 flex items-center justify-between gap-4">
+                    {/* Infos vendeur */}
+                    <div className="flex items-center gap-3 min-w-0">
+                        <Link
+                            href={
+                                post.seller?.id === currentUser?.id
+                                    ? "/profile"
+                                    : `/profile/${post.seller?.id}`
+                            }
+                            className="shrink-0"
+                        >
+                            <Avatar className="h-14 w-14 border">
+                                {post.seller?.image ? (
+                                    <AvatarImage
+                                        src={post.seller.image}
+                                        alt={`Avatar de ${post.seller.username ?? "vendeur"}`}
+                                        className="object-cover"
+                                    />
+                                ) : null}
+                                <AvatarFallback className="bg-muted text-lg">
+                                    {(post.seller?.username ?? "?").charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                        </Link>
+                        <div className="min-w-0">
+                            <Link
+                                href={
+                                    post.seller?.id === currentUser?.id
+                                        ? "/profile"
+                                        : `/profile/${post.seller?.id}`
+                                }
+                                className="font-semibold text-lg hover:underline underline-offset-2"
+                            >
+                                {post.seller?.username ??
+                                    "Utilisateur supprimé"}
+                            </Link>
+                            {post.seller && (
+                                <ReviewsDialog
+                                    userId={post.seller.id}
+                                    initialReviews={sellerFirstPage.reviews}
+                                    initialNextCursor={
+                                        sellerFirstPage.nextCursor
+                                    }
+                                    average={sellerStats.average}
+                                    count={sellerStats.count}
+                                    username={
+                                        post.seller.username ?? "Utilisateur"
+                                    }
+                                />
                             )}
+                        </div>
                     </div>
                     <div className="hidden sm:block">
                         <ContactButton
@@ -215,14 +260,16 @@ export default async function PostPage({
                     </h2>
                     <Carousel className="w-full">
                         <CarouselContent className="-ml-4">
-                            {similarPost.map((p) => (
-                                <CarouselItem
-                                    key={p.id}
-                                    className="pl-4 basis-4/5 sm:basis-1/2 lg:basis-1/4"
-                                >
-                                    <PostCard {...p} />
-                                </CarouselItem>
-                            ))}
+                            {similarPost.map(
+                                (p: (typeof similarPost)[number]) => (
+                                    <CarouselItem
+                                        key={p.id}
+                                        className="pl-4 basis-4/5 sm:basis-1/2 lg:basis-1/4"
+                                    >
+                                        <PostCard {...p} />
+                                    </CarouselItem>
+                                )
+                            )}
                         </CarouselContent>
                         <CarouselPrevious className="-left-4" />
                         <CarouselNext className="-right-4" />

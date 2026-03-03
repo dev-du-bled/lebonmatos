@@ -214,6 +214,7 @@ model Rating {
   comment   String?
   createdAt DateTime @default(now())
 
+  @@unique([userId, raterId])
   @@map("rating")
 }
 

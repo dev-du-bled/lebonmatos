@@ -17,10 +17,10 @@ import {
     MessageSquare,
     Settings,
     ShoppingBag,
-    Star,
 } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { PublicProfileDialog } from "@/components/profile/public-profile-dialog";
+import { ReviewsDialog } from "@/app/(app)/profile/[id]/reviews-dialog";
 import { Metadata } from "next";
 
 type QuickAction = {
@@ -69,7 +69,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     },
     {
         title: "Avis",
-        description: "Comment les utilisateurs ont perçu mes interactions",
+        description: "Voir les avis que j'ai posté",
         href: "/profile/reviews",
         Icon: MessageSquare,
     },
@@ -103,6 +103,10 @@ function ProfileHeaderSkeleton() {
 
 async function ProfileHeader() {
     const user = await trpc.user.getProfile();
+    const [stats, firstPage] = await Promise.all([
+        trpc.user.getReviewStats({ userId: user.id }),
+        trpc.user.getReceivedReviews({ userId: user.id, limit: 10 }),
+    ]);
 
     const displayName = user.username ?? "Mon profil";
     const initials = displayName
@@ -112,9 +116,6 @@ async function ProfileHeader() {
         .slice(0, 2)
         .join("")
         .toUpperCase();
-
-    const ratingValue = user.rating.average ?? 0;
-    const ratingCount = user.rating.count;
 
     return (
         <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
@@ -149,16 +150,14 @@ async function ProfileHeader() {
                         </p>
                     )}
 
-                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground md:justify-start">
-                        <span className="flex items-center gap-1 font-medium text-foreground">
-                            {ratingValue > 0 ? ratingValue.toFixed(1) : "-"}
-                            <Star
-                                className="size-4 text-primary"
-                                fill="currentColor"
-                            />
-                        </span>
-                        <span>({ratingCount} avis)</span>
-                    </div>
+                    <ReviewsDialog
+                        userId={user.id}
+                        initialReviews={firstPage.reviews}
+                        initialNextCursor={firstPage.nextCursor}
+                        average={stats.average}
+                        count={stats.count}
+                        username={displayName}
+                    />
                 </div>
             </div>
 
