@@ -130,7 +130,7 @@ export default async function PostPage({
                 </div>
 
                 {/* Sidebar (Actions + Specs) - mobile: 2e, desktop: col 3 rows 1-4 sticky */}
-                <div className="lg:col-start-3 lg:row-start-1 lg:row-span-4 space-y-6 lg:sticky lg:top-24">
+                <div className="lg:col-start-3 lg:row-start-1 lg:row-span-3 space-y-6 lg:sticky lg:top-24">
                     {/* Actions */}
                     <BuyButtons
                         postId={post.id}
@@ -239,15 +239,15 @@ export default async function PostPage({
                 </div>
 
                 {/* Description - mobile: 4e, desktop: col 1-2 row 3 */}
-                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-4 py-4">
+                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-3 py-4">
                     <h2 className="text-2xl font-semibold mb-4">Description</h2>
                     <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-line">
                         {post.description}
                     </p>
                 </div>
 
-                {/* Carte - mobile: 5e (sous specs), desktop: col 1-2 row 5 */}
-                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-5">
+                {/* Carte - mobile: 5e (sous specs), desktop: col 1-2 row 4 */}
+                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-4">
                     <PostMap location={post.location} />
                 </div>
             </div>
