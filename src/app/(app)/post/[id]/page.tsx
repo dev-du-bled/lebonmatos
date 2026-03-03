@@ -27,6 +27,8 @@ type Params = {
     id: string;
 };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
     params,
 }: {
@@ -125,7 +127,10 @@ export default async function PostPage({
                 {/* Sidebar (Actions + Specs) - mobile: 2e, desktop: col 3 rows 1-4 sticky */}
                 <div className="lg:col-start-3 lg:row-start-1 lg:row-span-4 space-y-6 lg:sticky lg:top-24">
                     {/* Actions */}
-                    <BuyButtons />
+                    <BuyButtons
+                        postId={post.id}
+                        sellerId={post.seller?.id ?? ""}
+                    />
 
                     {/* Spécifications */}
                     <Card className="gap-0">
@@ -191,7 +196,10 @@ export default async function PostPage({
                             )}
                     </div>
                     <div className="hidden sm:block">
-                        <ContactButton />
+                        <ContactButton
+                            postId={post.id}
+                            sellerId={post.seller?.id ?? ""}
+                        />
                     </div>
                 </div>
 

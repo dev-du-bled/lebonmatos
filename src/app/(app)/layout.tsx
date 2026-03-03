@@ -1,5 +1,5 @@
 import Header from "@/components/nav/header";
-import Footer from "@/components/nav/footer";
+import { ConditionalFooter } from "@/components/nav/conditional-footer";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { SessionProvider } from "@/components/auth/session-provider";
@@ -19,7 +19,7 @@ export default async function AppLayout({
             <main className="flex min-h-svh flex-col">
                 <Header />
                 <div className="flex-1">{children}</div>
-                <Footer />
+                <ConditionalFooter />
             </main>
         </SessionProvider>
     );

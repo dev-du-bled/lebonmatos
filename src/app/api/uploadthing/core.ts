@@ -44,6 +44,9 @@ export const lbmFileRouter = {
             // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
             return { alt: file.name, source: file.ufsUrl };
         }),
+    messageImageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 8 } })
+        .middleware(authMiddleware)
+        .onUploadComplete(async ({ file }) => ({ source: file.ufsUrl })),
 } satisfies FileRouter;
 
 export type LbmFileRouter = typeof lbmFileRouter;

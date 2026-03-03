@@ -3,6 +3,7 @@ import { userRouter } from "./user";
 import { componentRouter } from "./components";
 import { postRouter } from "./post";
 import { configurationRouter } from "./configuration";
+import { discussionRouter } from "./discussion";
 import { reportsRouter } from "./reports";
 import { adminRouter } from "./admin";
 export const appRouter = createTRPCRouter({
@@ -10,6 +11,7 @@ export const appRouter = createTRPCRouter({
     components: componentRouter,
     posts: postRouter,
     configuration: configurationRouter,
+    discussions: discussionRouter,
     reports: reportsRouter,
     admin: adminRouter,
 });
