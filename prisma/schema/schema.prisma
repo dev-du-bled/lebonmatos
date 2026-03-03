@@ -159,15 +159,22 @@ enum REPORT_CONTENT {
   REVIEW
 }
 
+enum REPORT_STATUS {
+  PENDING
+  RESOLVED
+  REJECTED
+}
+
 model Report {
   id             String         @id @default(cuid())
   reason         REPORT_TYPE
   details        String?
   type           REPORT_CONTENT
+  status         REPORT_STATUS  @default(PENDING)
   postId         String?
-  post           Post?          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post           Post?          @relation(fields: [postId], references: [id], onDelete: SetNull)
   ratingId       String?
-  rating         Rating?        @relation(fields: [ratingId], references: [id], onDelete: Cascade)
+  rating         Rating?        @relation(fields: [ratingId], references: [id], onDelete: SetNull)
   userId         String?
   user           User?          @relation("reporter", fields: [userId], references: [id], onDelete: Cascade)
   reportedUserId String?

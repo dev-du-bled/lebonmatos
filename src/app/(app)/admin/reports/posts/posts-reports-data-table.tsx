@@ -40,7 +40,7 @@ export function PostsReportsDataTable() {
     const sortField = sorting[0]?.id ?? "reportedAt";
     const sortOrder = sorting[0]?.desc === false ? "asc" : "desc";
 
-    const validSortFields = ["reportedAt", "reason", "type"] as const;
+    const validSortFields = ["reportedAt", "reason", "status"] as const;
     const safeSortBy = validSortFields.includes(
         sortField as (typeof validSortFields)[number]
     )

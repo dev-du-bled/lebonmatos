@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { postCreateSchema } from "@/lib/schema/post";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
-import { utapi } from "@/lib/utapi";
+import { deleteUploadThingImages } from "@/lib/utapi";
 import { ComponentType } from "@prisma/client";
 import { Components } from "@/utils/components";
 import { CityData } from "@/utils/location";
@@ -121,14 +121,7 @@ export const postRouter = createTRPCRouter({
                 });
             }
 
-            if (post.images.length > 0) {
-                const keys = post.images.map((img) => {
-                    const url = new URL(img);
-                    const pathname = url.pathname.split("/").pop();
-                    return pathname?.split("?")[0] ?? img;
-                });
-                await utapi.deleteFiles(keys);
-            }
+            await deleteUploadThingImages(post.images);
 
             await prisma.post.delete({
                 where: { id: input.id },

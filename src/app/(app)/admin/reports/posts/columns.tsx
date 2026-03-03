@@ -18,14 +18,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { REPORT_TYPE } from "@prisma/client";
+import { REPORT_TYPE, REPORT_STATUS } from "@prisma/client";
 import Link from "next/link";
-import { reasonLabel, reasonVariant } from "@/lib/report";
+import { reasonLabel, reasonVariant, statusLabel, statusVariant } from "@/lib/report";
 import { trpc } from "@/trpc/client";
+import { ResolveReportDialog } from "@/components/admin/resolve-report-dialog";
 
 export type ReportRow = {
     id: string;
     reason: REPORT_TYPE;
+    status: REPORT_STATUS;
     details: string | null;
     type: string;
     postId: string | null;
@@ -69,14 +71,15 @@ function RowActions({
     report: ReportRow;
     onMutationSuccess: () => void;
 }) {
-    const resolve = trpc.reports.resolveReport.useMutation({
+    const reject = trpc.reports.rejectReport.useMutation({
         onSuccess: onMutationSuccess,
     });
     const remove = trpc.reports.deleteReport.useMutation({
         onSuccess: onMutationSuccess,
     });
 
-    const isPending = resolve.isPending || remove.isPending;
+    const isPending = reject.isPending || remove.isPending;
+    const isSettled = report.status === "RESOLVED" || report.status === "REJECTED";
 
     return (
         <DropdownMenu>
@@ -115,12 +118,21 @@ function RowActions({
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                    disabled={isPending}
-                    onClick={() => resolve.mutate({ id: report.id })}
-                >
-                    Marquer comme résolu
-                </DropdownMenuItem>
+                {!isSettled && (
+                    <>
+                        <ResolveReportDialog
+                            reportId={report.id}
+                            contentType="POST"
+                            onSuccess={onMutationSuccess}
+                        />
+                        <DropdownMenuItem
+                            disabled={isPending}
+                            onClick={() => reject.mutate({ id: report.id })}
+                        >
+                            Rejeter
+                        </DropdownMenuItem>
+                    </>
+                )}
                 <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
                     disabled={isPending}
@@ -229,6 +241,20 @@ export function makeColumns(
                 );
             },
             enableSorting: false,
+        },
+        {
+            accessorKey: "status",
+            header: ({ column }) => (
+                <SortableHeader column={column} title="Statut" />
+            ),
+            cell: ({ row }) => {
+                const status = row.getValue<REPORT_STATUS>("status");
+                return (
+                    <Badge variant={statusVariant[status]}>
+                        {statusLabel[status]}
+                    </Badge>
+                );
+            },
         },
         {
             id: "actions",

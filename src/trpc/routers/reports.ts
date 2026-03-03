@@ -1,5 +1,6 @@
 import { createTRPCRouter, privateProcedure, adminProcedure } from "../init";
 import { prisma } from "@/lib/prisma";
+import { deleteUploadThingImages } from "@/lib/utapi";
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import {
@@ -151,12 +152,44 @@ export const reportsRouter = createTRPCRouter({
             }
 
             if (report.type === "POST" && report.postId) {
+                const post = await prisma.post.findUnique({
+                    where: { id: report.postId },
+                    select: { images: true },
+                });
+                if (post && post.images.length > 0) {
+                    await deleteUploadThingImages(post.images);
+                }
                 await prisma.post.delete({ where: { id: report.postId } });
             } else if (report.type === "REVIEW" && report.ratingId) {
                 await prisma.rating.delete({ where: { id: report.ratingId } });
-            } else {
-                await prisma.report.delete({ where: { id: input.id } });
             }
+
+            await prisma.report.update({
+                where: { id: input.id },
+                data: { status: "RESOLVED" },
+            });
+
+            return { success: true };
+        }),
+
+    rejectReport: adminProcedure
+        .input(z.object({ id: z.cuid() }))
+        .mutation(async ({ input }) => {
+            const report = await prisma.report.findUnique({
+                where: { id: input.id },
+            });
+
+            if (!report) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Signalement introuvable",
+                });
+            }
+
+            await prisma.report.update({
+                where: { id: input.id },
+                data: { status: "REJECTED" },
+            });
 
             return { success: true };
         }),

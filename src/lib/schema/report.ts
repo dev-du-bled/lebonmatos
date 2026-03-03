@@ -32,7 +32,7 @@ export const getReportsSchema = z.object({
     type: z.enum(Object.values(REPORT_CONTENT)).default("POST"),
     limit: z.number().min(1).max(100).default(10),
     offset: z.number().min(0).default(0),
-    sortBy: z.enum(["reportedAt", "reason", "type"]).default("reportedAt"),
+    sortBy: z.enum(["reportedAt", "reason", "status"]).default("reportedAt"),
     sortOrder: z.enum(["asc", "desc"]).default("desc"),
     search: z.string().optional(),
     searchField: z
