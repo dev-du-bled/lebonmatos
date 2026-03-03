@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { TRPCClientError } from "@trpc/client";
@@ -23,13 +22,40 @@ import {
 import { useSession } from "../auth/session-provider";
 import { trpc } from "@/trpc/client";
 
-type BuyButtonsProps = {
+interface PostButtonsProps {
     postId: string;
+    sellerId: string;
+}
+
+type BuyButtonsProps = PostButtonsProps & {
     price: number;
     isSold: boolean;
 };
 
-export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
+export function ContactButton({ postId, sellerId }: PostButtonsProps) {
+    const { session } = useSession();
+    const router = useRouter();
+
+    const getOrCreate = trpc.discussions.getOrCreate.useMutation({
+        onSuccess: ({ discussionId }) => {
+            router.push(`/messages/${discussionId}`);
+        },
+        onError: () => {
+            toast.error("Une erreur est survenue. Veuillez réessayer.");
+        },
+    });
+
+    if (!session?.user) return null;
+    if (session.user.id === sellerId) return null;
+
+    return (
+        <Button onClick={() => getOrCreate.mutate({ postId, sellerId })} loading={getOrCreate.isPending}>
+            Contacter
+        </Button>
+    );
+}
+
+export function BuyButtons({ postId, sellerId, price, isSold }: BuyButtonsProps) {
     const { session } = useSession();
     const router = useRouter();
     const [isPending, setIsPending] = useState(false);
@@ -37,9 +63,17 @@ export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
 
     const mutation = trpc.posts.buyPost.useMutation();
 
-    const user = session?.user;
+    const getOrCreateOffer = trpc.discussions.getOrCreate.useMutation({
+        onSuccess: ({ discussionId }) => {
+            router.push(`/messages/${discussionId}?offer=true`);
+        },
+        onError: () => {
+            toast.error("Une erreur est survenue. Veuillez réessayer.");
+        },
+    });
 
-    if (!user) return null;
+    if (!session?.user) return null;
+    if (session.user.id === sellerId) return null;
 
     async function handleBuy() {
         setIsPending(true);
@@ -72,15 +106,14 @@ export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
                     </p>
                 ) : (
                     <div className="flex gap-2">
-                        <Link href="#" className="flex-1">
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                disabled={isSold}
-                            >
-                                Faire une offre
-                            </Button>
-                        </Link>
+                        <Button
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => getOrCreateOffer.mutate({ postId, sellerId })}
+                            loading={getOrCreateOffer.isPending}
+                        >
+                            Faire une offre
+                        </Button>
 
                         <AlertDialog
                             open={open}
@@ -89,22 +122,15 @@ export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
                             }}
                         >
                             <AlertDialogTrigger asChild>
-                                <Button
-                                    className="flex-1"
-                                    disabled={isSold}
-                                    onClick={() => setOpen(true)}
-                                >
+                                <Button className="flex-1" onClick={() => setOpen(true)}>
                                     Acheter
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                        Confirmer l&apos;achat
-                                    </AlertDialogTitle>
+                                    <AlertDialogTitle>Confirmer l&apos;achat</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Vous êtes sur le point d&apos;acheter
-                                        cet article pour{" "}
+                                        Vous êtes sur le point d&apos;acheter cet article pour{" "}
                                         <span className="font-semibold text-foreground">
                                             {price.toLocaleString("fr-FR")} €
                                         </span>
@@ -112,13 +138,8 @@ export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel disabled={isPending}>
-                                        Annuler
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                        disabled={isPending}
-                                        onClick={handleBuy}
-                                    >
+                                    <AlertDialogCancel disabled={isPending}>Annuler</AlertDialogCancel>
+                                    <AlertDialogAction disabled={isPending} onClick={handleBuy}>
                                         {isPending ? (
                                             <>
                                                 <Loader2 className="size-4 animate-spin" />
@@ -136,18 +157,4 @@ export function BuyButtons({ postId, price, isSold }: BuyButtonsProps) {
             </CardContent>
         </Card>
     );
-}
-
-export function ContactButton() {
-    const { session } = useSession();
-
-    const user = session?.user;
-
-    if (user) {
-        return (
-            <Link href="#">
-                <Button>Contacter</Button>
-            </Link>
-        );
-    }
 }
