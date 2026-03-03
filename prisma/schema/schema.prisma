@@ -187,15 +187,16 @@ model Report {
 }
 
 model Discussion {
-  id        String    @id @default(uuid())
-  buyerId   String
-  buyer     User      @relation("discussionBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
-  postId    String
-  post      Post?     @relation(fields: [postId], references: [id])
-  messages  Message[]
-  sellerId  String?
-  seller    User?     @relation("discussionSeller", fields: [sellerId], references: [id])
-  createdAt DateTime  @default(now())
+  id            String    @id @default(uuid())
+  buyerId       String
+  buyer         User      @relation("discussionBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  postId        String
+  post          Post?     @relation(fields: [postId], references: [id])
+  messages      Message[]
+  sellerId      String?
+  seller        User?     @relation("discussionSeller", fields: [sellerId], references: [id])
+  createdAt     DateTime  @default(now())
+  acceptedPrice Int?      @db.SmallInt
 
   @@unique([postId, buyerId])
   @@map("discussion")

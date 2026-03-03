@@ -135,9 +135,14 @@ export default async function PostPage({
                         <h1 className="text-2xl md:text-4xl font-bold text-white">
                             {post.title}
                         </h1>
-                        <p className="text-2xl font-semibold text-primary mt-2">
-                            {post.price} €
-                        </p>
+                        <div className="flex items-center gap-3 mt-2">
+                            <p className="text-2xl font-semibold text-primary">
+                                {post.price} €
+                            </p>
+                            {post.isSold && (
+                                <Badge variant="destructive">Vendu</Badge>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -147,6 +152,7 @@ export default async function PostPage({
                     <BuyButtons
                         postId={post.id}
                         sellerId={post.seller?.id ?? ""}
+                        isSold={post.isSold}
                     />
 
                     {/* Spécifications */}
@@ -246,6 +252,7 @@ export default async function PostPage({
                         <ContactButton
                             postId={post.id}
                             sellerId={post.seller?.id ?? ""}
+                            isSold={post.isSold}
                         />
                     </div>
                 </div>
