@@ -17,7 +17,12 @@ const userSelect = {
     banExpires: true,
 } satisfies Prisma.UserSelect;
 
-const ALLOWED_SORT_FIELDS = ["createdAt", "name", "email", "updatedAt"] as const;
+const ALLOWED_SORT_FIELDS = [
+    "createdAt",
+    "name",
+    "email",
+    "updatedAt",
+] as const;
 type SortField = (typeof ALLOWED_SORT_FIELDS)[number];
 
 export const adminRouter = createTRPCRouter({

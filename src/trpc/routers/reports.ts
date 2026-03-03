@@ -20,11 +20,15 @@ export const reportsRouter = createTRPCRouter({
             const where: Prisma.ReportWhereInput = { type: input.type };
 
             if (input.reasons && input.reasons.length > 0) {
-                where.reason = { in: input.reasons as Prisma.EnumREPORT_TYPEFilter["in"] };
+                where.reason = {
+                    in: input.reasons as Prisma.EnumREPORT_TYPEFilter["in"],
+                };
             }
 
             if (input.statuses && input.statuses.length > 0) {
-                where.status = { in: input.statuses as Prisma.EnumREPORT_STATUSFilter["in"] };
+                where.status = {
+                    in: input.statuses as Prisma.EnumREPORT_STATUSFilter["in"],
+                };
             }
 
             if (search) {

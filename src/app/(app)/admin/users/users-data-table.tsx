@@ -29,7 +29,12 @@ export function UsersDataTable() {
     const sortField = sorting[0]?.id ?? "createdAt";
     const sortOrder = sorting[0]?.desc === false ? "asc" : "desc";
 
-    const validSortFields = ["createdAt", "name", "email", "updatedAt"] as const;
+    const validSortFields = [
+        "createdAt",
+        "name",
+        "email",
+        "updatedAt",
+    ] as const;
     const safeSortBy = validSortFields.includes(
         sortField as (typeof validSortFields)[number]
     )
