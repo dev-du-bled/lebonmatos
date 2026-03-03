@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
 import { useState } from "react";
 import Link from "next/link";
+import { useSession } from "@/components/auth/session-provider";
 
 export type UserRow = {
     id: string;
@@ -69,6 +70,7 @@ function RowActions({
     user: UserRow;
     onMutationSuccess: () => void;
 }) {
+    const { session } = useSession();
     const [isPending, setIsPending] = useState(false);
 
     const handleBan = async () => {
@@ -94,6 +96,8 @@ function RowActions({
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link
                         href={`/profile/${user.id}`}
@@ -109,14 +113,14 @@ function RowActions({
                 {user.banned ? (
                     <DropdownMenuItem
                         onClick={handleUnban}
-                        disabled={isPending}
+                        disabled={isPending || session?.user.id === user.id}
                     >
                         Débannir
                     </DropdownMenuItem>
                 ) : (
                     <DropdownMenuItem
                         onClick={handleBan}
-                        disabled={isPending}
+                        disabled={isPending || session?.user.id === user.id}
                         className="text-destructive focus:text-destructive"
                     >
                         Bannir

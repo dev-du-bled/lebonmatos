@@ -20,7 +20,12 @@ import {
 import type { REPORT_TYPE, REPORT_STATUS } from "@prisma/client";
 import Link from "next/link";
 import { trpc } from "@/trpc/client";
-import { reasonLabel, reasonVariant, statusLabel, statusVariant } from "@/lib/report";
+import {
+    reasonLabel,
+    reasonVariant,
+    statusLabel,
+    statusVariant,
+} from "@/lib/report";
 import { ResolveReportDialog } from "@/components/admin/resolve-report-dialog";
 
 export type UserReportRow = {
@@ -78,7 +83,8 @@ function RowActions({
     });
 
     const isPending = reject.isPending || remove.isPending;
-    const isSettled = report.status === "RESOLVED" || report.status === "REJECTED";
+    const isSettled =
+        report.status === "RESOLVED" || report.status === "REJECTED";
 
     return (
         <DropdownMenu>
@@ -93,6 +99,8 @@ function RowActions({
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 {report.user && (
                     <DropdownMenuItem asChild>
                         <Link
@@ -116,10 +124,10 @@ function RowActions({
                     </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 {!isSettled && (
                     <>
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
                         <ResolveReportDialog
                             reportId={report.id}
                             contentType="USER"
