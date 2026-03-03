@@ -1,15 +1,19 @@
 "use client";
 
 import { SortingState } from "@tanstack/react-table";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { authClient } from "@/lib/auth-client";
+import { trpc } from "@/trpc/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 import { DataTable } from "@/components/admin/data-table";
 import { makeColumns } from "./columns";
 import { useState, useCallback, useMemo } from "react";
 
 const SEARCH_FIELDS = [
-    { value: "email", label: "Email", placeholder: "Rechercher par email..." },
-    { value: "name", label: "Nom", placeholder: "Rechercher par nom..." },
+    {
+        value: "search",
+        label: "Rechercher",
+        placeholder: "Rechercher par nom, email, téléphone...",
+    },
 ];
 
 export function UsersDataTable() {
@@ -21,47 +25,29 @@ export function UsersDataTable() {
         { id: "createdAt", desc: true },
     ]);
     const [searchValue, setSearchValue] = useState("");
-    const [searchField, setSearchField] = useState<"email" | "name">("email");
 
     const sortField = sorting[0]?.id ?? "createdAt";
     const sortOrder = sorting[0]?.desc === false ? "asc" : "desc";
 
-    const queryKey = [
-        "admin",
-        "users",
-        pageIndex,
-        pageSize,
-        sortField,
-        sortOrder,
-        searchField,
-        searchValue,
-    ];
+    const validSortFields = ["createdAt", "name", "email", "updatedAt"] as const;
+    const safeSortBy = validSortFields.includes(
+        sortField as (typeof validSortFields)[number]
+    )
+        ? (sortField as (typeof validSortFields)[number])
+        : "createdAt";
 
-    const { data, isFetching } = useQuery({
-        queryKey,
-        queryFn: async () => {
-            const result = await authClient.admin.listUsers({
-                query: {
-                    limit: pageSize,
-                    offset: pageIndex * pageSize,
-                    sortBy: sortField,
-                    sortDirection: sortOrder,
-                    ...(searchValue
-                        ? {
-                              searchValue,
-                              searchField,
-                              searchOperator: "contains" as const,
-                          }
-                        : {}),
-                },
-            });
-            if (result.error) throw result.error;
-            return result.data;
-        },
+    const { data, isFetching } = trpc.admin.listUsers.useQuery({
+        limit: pageSize,
+        offset: pageIndex * pageSize,
+        sortBy: safeSortBy,
+        sortDirection: sortOrder,
+        ...(searchValue ? { search: searchValue } : {}),
     });
 
     const handleMutationSuccess = useCallback(() => {
-        queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+        queryClient.invalidateQueries({
+            queryKey: getQueryKey(trpc.admin.listUsers),
+        });
     }, [queryClient]);
 
     const columns = useMemo(
@@ -69,9 +55,9 @@ export function UsersDataTable() {
         [handleMutationSuccess]
     );
 
-    const handleSearch = useCallback((value: string, field: string) => {
+    const handleSearch = useCallback((value: string) => {
         setSearchValue(value);
-        setSearchField(field as "email" | "name");
+        setPageIndex(0);
     }, []);
 
     return (

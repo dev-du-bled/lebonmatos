@@ -29,12 +29,12 @@ export type UserRow = {
     email: string;
     emailVerified: boolean;
     image?: string | null;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: Date | string;
+    updatedAt: Date | string;
     role?: string | null;
     banned: boolean | null;
     banReason?: string | null;
-    banExpires?: Date | null;
+    banExpires?: Date | string | null;
 };
 
 function SortableHeader({

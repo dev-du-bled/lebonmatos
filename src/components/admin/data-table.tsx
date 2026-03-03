@@ -35,7 +35,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 
 export interface SearchField {
@@ -59,6 +59,7 @@ interface DataTableProps<TData, TValue> {
     filterPlaceholder?: string;
     searchFields?: SearchField[];
     onSearch?: (value: string, field: string) => void;
+    toolbar?: React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -76,6 +77,7 @@ export function DataTable<TData, TValue>({
     filterPlaceholder = "Rechercher...",
     searchFields,
     onSearch,
+    toolbar,
 }: DataTableProps<TData, TValue>) {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
@@ -168,8 +170,9 @@ export function DataTable<TData, TValue>({
                         placeholder={activePlaceholder}
                         value={inputValue}
                         onChange={(e) => handleInputChange(e.target.value)}
-                        className="max-w-xs h-8"
+                        className="h-8 max-w-xs flex-1"
                     />
+                    {toolbar}
                 </div>
             ) : (
                 <Input

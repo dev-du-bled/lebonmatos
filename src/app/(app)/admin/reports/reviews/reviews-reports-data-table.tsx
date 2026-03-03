@@ -5,26 +5,28 @@ import { trpc } from "@/trpc/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { DataTable } from "@/components/admin/data-table";
+import { ReportFilters } from "@/components/admin/report-filters";
 import { makeColumns } from "./columns";
 import { useState, useCallback, useMemo } from "react";
+import { REPORT_TYPE, REPORT_STATUS } from "@prisma/client";
 
 const SEARCH_FIELDS = [
     {
-        value: "details",
-        label: "Détails",
-        placeholder: "Rechercher dans les détails...",
-    },
-    {
-        value: "reporterEmail",
-        label: "Email Initiateur",
-        placeholder: "Rechercher par email...",
-    },
-    {
-        value: "reporterName",
-        label: "Nom Initiateur",
-        placeholder: "Rechercher par nom...",
+        value: "search",
+        label: "Rechercher",
+        placeholder: "Rechercher par nom, email, détails...",
     },
 ];
+
+function parseFilters(filters: string[]) {
+    const reasons = filters
+        .filter((f) => f.startsWith("reason:"))
+        .map((f) => f.slice("reason:".length) as REPORT_TYPE);
+    const statuses = filters
+        .filter((f) => f.startsWith("status:"))
+        .map((f) => f.slice("status:".length) as REPORT_STATUS);
+    return { reasons, statuses };
+}
 
 export function ReviewsReportsDataTable() {
     const queryClient = useQueryClient();
@@ -35,7 +37,7 @@ export function ReviewsReportsDataTable() {
         { id: "reportedAt", desc: true },
     ]);
     const [search, setSearch] = useState("");
-    const [searchField, setSearchField] = useState("details");
+    const [filters, setFilters] = useState<string[]>([]);
 
     const sortField = sorting[0]?.id ?? "reportedAt";
     const sortOrder = sorting[0]?.desc === false ? "asc" : "desc";
@@ -47,21 +49,17 @@ export function ReviewsReportsDataTable() {
         ? (sortField as (typeof validSortFields)[number])
         : "reportedAt";
 
+    const { reasons, statuses } = parseFilters(filters);
+
     const { data, isFetching } = trpc.reports.getReports.useQuery({
         type: "REVIEW",
         limit: pageSize,
         offset: pageIndex * pageSize,
         sortBy: safeSortBy,
         sortOrder,
-        ...(search
-            ? {
-                  search,
-                  searchField: searchField as
-                      | "details"
-                      | "reporterEmail"
-                      | "reporterName",
-              }
-            : {}),
+        ...(search ? { search } : {}),
+        ...(reasons.length > 0 ? { reasons } : {}),
+        ...(statuses.length > 0 ? { statuses } : {}),
     });
 
     const handleMutationSuccess = useCallback(() => {
@@ -75,9 +73,13 @@ export function ReviewsReportsDataTable() {
         [handleMutationSuccess]
     );
 
-    const handleSearch = useCallback((value: string, field: string) => {
+    const handleSearch = useCallback((value: string) => {
         setSearch(value);
-        setSearchField(field);
+        setPageIndex(0);
+    }, []);
+
+    const handleFiltersChange = useCallback((value: string[]) => {
+        setFilters(value);
         setPageIndex(0);
     }, []);
 
@@ -95,6 +97,9 @@ export function ReviewsReportsDataTable() {
             onSortingChange={setSorting}
             searchFields={SEARCH_FIELDS}
             onSearch={handleSearch}
+            toolbar={
+                <ReportFilters value={filters} onChange={handleFiltersChange} />
+            }
         />
     );
 }

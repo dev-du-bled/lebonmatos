@@ -15,31 +15,55 @@ export const reportsRouter = createTRPCRouter({
     getReports: adminProcedure
         .input(getReportsSchema)
         .query(async ({ input }) => {
-            const { limit, offset, sortBy, sortOrder, search, searchField } =
-                input;
+            const { limit, offset, sortBy, sortOrder, search } = input;
 
             const where: Prisma.ReportWhereInput = { type: input.type };
 
-            if (search && searchField) {
-                if (searchField === "details") {
-                    where.details = { contains: search, mode: "insensitive" };
-                } else if (searchField === "reporterEmail") {
-                    where.user = {
-                        email: { contains: search, mode: "insensitive" },
-                    };
-                } else if (searchField === "reporterName") {
-                    where.user = {
-                        name: { contains: search, mode: "insensitive" },
-                    };
-                } else if (searchField === "reportedUserName") {
-                    where.reportedUser = {
-                        name: { contains: search, mode: "insensitive" },
-                    };
-                } else if (searchField === "reportedUserEmail") {
-                    where.reportedUser = {
-                        email: { contains: search, mode: "insensitive" },
-                    };
+            if (input.reasons && input.reasons.length > 0) {
+                where.reason = { in: input.reasons as Prisma.EnumREPORT_TYPEFilter["in"] };
+            }
+
+            if (input.statuses && input.statuses.length > 0) {
+                where.status = { in: input.statuses as Prisma.EnumREPORT_STATUSFilter["in"] };
+            }
+
+            if (search) {
+                const searchConditions: Prisma.ReportWhereInput["OR"] = [
+                    { details: { contains: search, mode: "insensitive" } },
+                    {
+                        user: {
+                            name: { contains: search, mode: "insensitive" },
+                        },
+                    },
+                    {
+                        user: {
+                            email: { contains: search, mode: "insensitive" },
+                        },
+                    },
+                ];
+
+                if (input.type === "USER") {
+                    searchConditions.push(
+                        {
+                            reportedUser: {
+                                name: {
+                                    contains: search,
+                                    mode: "insensitive",
+                                },
+                            },
+                        },
+                        {
+                            reportedUser: {
+                                email: {
+                                    contains: search,
+                                    mode: "insensitive",
+                                },
+                            },
+                        }
+                    );
                 }
+
+                where.OR = searchConditions;
             }
 
             const [reports, totalCount] = await Promise.all([

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { REPORT_CONTENT, REPORT_TYPE } from "@prisma/client";
+import { REPORT_CONTENT, REPORT_TYPE, REPORT_STATUS } from "@prisma/client";
 
 const reportBaseSchema = z.object({
     reason: z.enum(Object.values(REPORT_TYPE)),
@@ -47,15 +47,8 @@ export const getReportsSchema = z.object({
     sortBy: z.enum(["reportedAt", "reason", "status"]).default("reportedAt"),
     sortOrder: z.enum(["asc", "desc"]).default("desc"),
     search: z.string().optional(),
-    searchField: z
-        .enum([
-            "details",
-            "reporterEmail",
-            "reporterName",
-            "reportedUserName",
-            "reportedUserEmail",
-        ])
-        .optional(),
+    reasons: z.array(z.enum(REPORT_TYPE)).optional(),
+    statuses: z.array(z.enum(REPORT_STATUS)).optional(),
 });
 
 export type GetReportsInput = z.infer<typeof getReportsSchema>;
