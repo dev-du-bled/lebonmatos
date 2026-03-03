@@ -1,14 +1,33 @@
-import { Suspense } from "react";
-import { AlertTriangle, Star } from "lucide-react";
+import React, { Suspense } from "react";
+import {
+    AlertTriangle,
+    Star,
+    FileText,
+    User,
+    MessageSquare,
+    Clock,
+    CheckCircle,
+    XCircle,
+    ExternalLink,
+} from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import NavBack from "@/components/nav/nav-back";
 import Link from "next/link";
 import type { Metadata } from "next";
-import type { REPORT_TYPE, REPORT_CONTENT, REPORT_STATUS } from "@prisma/client";
-import { reasonLabel, reasonVariant, typeLabel, statusLabel, statusVariant } from "@/lib/report";
+import type {
+    REPORT_TYPE,
+    REPORT_CONTENT,
+    REPORT_STATUS,
+} from "@prisma/client";
+import {
+    reasonLabel,
+    typeLabel,
+    statusLabel,
+    statusVariant,
+} from "@/lib/report";
+import { Separator } from "@/components/ui/separator";
 
 export const metadata: Metadata = {
     title: "Mes signalements",
@@ -36,19 +55,20 @@ type MyReport = {
 
 function ReportCardSkeleton() {
     return (
-        <Card>
-            <CardContent className="flex flex-col gap-3 p-4">
+        <div className="flex overflow-hidden rounded-xl border bg-card shadow-sm">
+            <div className="flex flex-1 flex-col gap-3 p-4">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex gap-2">
-                        <Skeleton className="h-5 w-20" />
-                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                        <Skeleton className="h-5 w-20 rounded-full" />
                     </div>
                     <Skeleton className="h-4 w-24 shrink-0" />
                 </div>
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
@@ -78,6 +98,18 @@ function EmptyState() {
     );
 }
 
+const typeIcon: Record<REPORT_CONTENT, React.ReactNode> = {
+    POST: <FileText className="size-4" />,
+    USER: <User className="size-4" />,
+    REVIEW: <MessageSquare className="size-4" />,
+};
+
+const statusIcon: Record<REPORT_STATUS, React.ReactNode> = {
+    PENDING: <Clock className="size-3.5" />,
+    RESOLVED: <CheckCircle className="size-3.5" />,
+    REJECTED: <XCircle className="size-3.5" />,
+};
+
 function ReportCard({ report }: { report: MyReport }) {
     const date = new Date(report.reportedAt).toLocaleDateString("fr-FR", {
         day: "2-digit",
@@ -86,101 +118,114 @@ function ReportCard({ report }: { report: MyReport }) {
     });
 
     return (
-        <Card>
-            <CardContent className="flex flex-col gap-3 p-4">
-                <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md">
+            <div className="flex flex-1 flex-col gap-3 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                            {typeIcon[report.type]}
                             {typeLabel[report.type]}
-                        </Badge>
-                        <Badge variant={reasonVariant[report.reason]}>
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
                             {reasonLabel[report.reason]}
                         </Badge>
-                        <Badge variant={statusVariant[report.status]}>
+                        <Badge
+                            variant={statusVariant[report.status]}
+                            className="inline-flex items-center gap-1 text-xs"
+                        >
+                            {statusIcon[report.status]}
                             {statusLabel[report.status]}
                         </Badge>
                     </div>
-                    <span className="text-xs text-muted-foreground shrink-0">
+                    <time
+                        className="text-xs text-muted-foreground shrink-0"
+                        dateTime={new Date(report.reportedAt).toISOString()}
+                    >
                         {date}
-                    </span>
+                    </time>
                 </div>
 
-                {/* Cible du signalement */}
-                {report.type === "POST" && (
-                    <div className="text-sm">
-                        <span className="text-muted-foreground">
-                            Annonce :{" "}
-                        </span>
-                        {report.post ? (
-                            <Link
-                                href={`/post/${report.post.id}`}
-                                className="font-medium hover:underline"
-                            >
-                                {report.post.title ?? report.post.id}
-                            </Link>
-                        ) : (
-                            <span className="font-medium text-muted-foreground italic">
-                                {report.contentSnapshot ?? "Contenu supprimé"}
-                                {report.status === "RESOLVED" && (
-                                    <span className="ml-1 not-italic">(supprimée suite au traitement)</span>
-                                )}
-                            </span>
-                        )}
-                    </div>
-                )}
+                <Separator />
 
-                {report.type === "REVIEW" && report.rating && (
-                    <div className="flex flex-col gap-0.5 text-sm">
-                        <div className="flex items-center gap-1">
-                            <span className="text-muted-foreground">
-                                Avis :{" "}
-                            </span>
-                            <Star className="h-3.5 w-3.5 fill-current text-yellow-500" />
-                            <span className="font-medium">
-                                {report.rating.rating}/5
-                            </span>
-                            {report.rating.user && (
-                                <span className="text-muted-foreground">
-                                    — {report.rating.user.name}
+                <div className="flex flex-col gap-1.5">
+                    {report.type === "POST" && (
+                        <div className="flex items-start gap-2 text-sm">
+                            <span className="shrink-0">Annonce :</span>
+                            {report.post ? (
+                                <Link
+                                    href={`/post/${report.post.id}`}
+                                    className="inline-flex items-center gap-1 font-medium hover:underline"
+                                >
+                                    {report.post.title ?? report.post.id}
+                                    <ExternalLink className="size-3 opacity-60" />
+                                </Link>
+                            ) : (
+                                <span className="font-medium text-muted-foreground italic">
+                                    {report.contentSnapshot ??
+                                        "Contenu supprimé"}
+                                    {report.status === "RESOLVED" && (
+                                        <span className="ml-1 not-italic text-xs">
+                                            (supprimée suite au traitement)
+                                        </span>
+                                    )}
                                 </span>
                             )}
                         </div>
-                        {report.rating.comment && (
-                            <p
-                                className="max-w-md truncate text-xs text-muted-foreground"
-                                title={report.rating.comment}
-                            >
-                                {report.rating.comment}
-                            </p>
-                        )}
-                    </div>
-                )}
+                    )}
 
-                {report.type === "USER" && report.reportedUser && (
-                    <div className="text-sm">
-                        <span className="text-muted-foreground">
-                            Utilisateur :{" "}
-                        </span>
-                        <span className="font-medium">
-                            {report.reportedUser.name ?? "—"}
-                        </span>
-                    </div>
-                )}
+                    {report.type === "REVIEW" && report.rating && (
+                        <div className="flex flex-col gap-1 text-sm">
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-muted-foreground">
+                                    Avis :
+                                </span>
+                                <span className="inline-flex items-center gap-1 font-medium">
+                                    <Star className="size-3.5 fill-yellow-400 text-yellow-400" />
+                                    {report.rating.rating}/5
+                                </span>
+                                {report.rating.user && (
+                                    <span className="text-muted-foreground text-xs">
+                                        — {report.rating.user.name}
+                                    </span>
+                                )}
+                            </div>
+                            {report.rating.comment && (
+                                <p
+                                    className="max-w-md truncate text-xs text-muted-foreground"
+                                    title={report.rating.comment}
+                                >
+                                    {report.rating.comment}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {report.type === "USER" && report.reportedUser && (
+                        <div className="flex items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">
+                                Utilisateur :
+                            </span>
+                            <span className="font-medium">
+                                {report.reportedUser.name ?? "—"}
+                            </span>
+                        </div>
+                    )}
+                </div>
 
                 {/* Détails fournis */}
-                {report.details && (
-                    <p
-                        className="text-sm text-muted-foreground line-clamp-2"
-                        title={report.details}
-                    >
-                        <span className="font-medium text-foreground">
-                            Détails :{" "}
-                        </span>
-                        {report.details}
-                    </p>
-                )}
-            </CardContent>
-        </Card>
+                <p
+                    className="text-xs text-muted-foreground break-all"
+                    title={report.details ?? undefined}
+                >
+                    <span className="font-medium text-foreground">
+                        Détails :{" "}
+                    </span>
+                    {report.details ?? (
+                        <span className="italic">Aucun détail fourni</span>
+                    )}
+                </p>
+            </div>
+        </div>
     );
 }
 
@@ -197,7 +242,10 @@ async function ReportsContent() {
     return (
         <div className="grid gap-4">
             {reports.map((report) => (
-                <ReportCard key={report.id} report={report as unknown as MyReport} />
+                <ReportCard
+                    key={report.id}
+                    report={report as unknown as MyReport}
+                />
             ))}
         </div>
     );

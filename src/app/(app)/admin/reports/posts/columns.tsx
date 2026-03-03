@@ -20,12 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { REPORT_TYPE, REPORT_STATUS } from "@prisma/client";
 import Link from "next/link";
-import {
-    reasonLabel,
-    reasonVariant,
-    statusLabel,
-    statusVariant,
-} from "@/lib/report";
+import { reasonLabel, statusLabel, statusVariant } from "@/lib/report";
 import { trpc } from "@/trpc/client";
 import { ResolveReportDialog } from "@/components/admin/resolve-report-dialog";
 
@@ -181,10 +176,7 @@ export function makeColumns(
             cell: ({ row }) => {
                 const reason = row.getValue<REPORT_TYPE>("reason");
                 return (
-                    <Badge
-                        variant={reasonVariant[reason]}
-                        className="capitalize"
-                    >
+                    <Badge variant="secondary" className="capitalize">
                         {reasonLabel[reason]}
                     </Badge>
                 );

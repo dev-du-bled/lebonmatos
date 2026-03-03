@@ -12,17 +12,6 @@ export const reasonLabel: Record<REPORT_TYPE, string> = {
     OTHER: "Autre",
 };
 
-export const reasonVariant: Record<
-    REPORT_TYPE,
-    "destructive" | "secondary" | "outline"
-> = {
-    SPAM: "secondary",
-    INNAPPROPRIATE: "destructive",
-    HARASSMENT: "destructive",
-    SCAM: "destructive",
-    OTHER: "outline",
-};
-
 export const typeLabel: Record<REPORT_CONTENT, string> = {
     POST: "Annonce",
     USER: "Utilisateur",
@@ -41,7 +30,7 @@ export const statusVariant: Record<
 > = {
     PENDING: "secondary",
     RESOLVED: "default",
-    REJECTED: "outline",
+    REJECTED: "destructive",
 };
 
 /** allow us to save a string in the db if the related content is deleted so we have a feedback on the ui for the user */
