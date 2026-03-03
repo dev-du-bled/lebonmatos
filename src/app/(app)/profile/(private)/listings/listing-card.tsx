@@ -104,7 +104,10 @@ export function ListingCard({ listing }: ListingCardProps) {
                     </div>
                     <div className="flex flex-1 flex-col justify-between p-4 gap-4">
                         <div className="flex items-start gap-2">
-                            <Link href={`/post/${listing.id}`} className="space-y-1 flex-1 min-w-0">
+                            <Link
+                                href={`/post/${listing.id}`}
+                                className="space-y-1 flex-1 min-w-0"
+                            >
                                 <CardTitle className="text-base line-clamp-1">
                                     {listing.title}
                                 </CardTitle>
@@ -207,25 +210,30 @@ export function ListingCard({ listing }: ListingCardProps) {
             </Dialog>
 
             {/* Dialog de confirmation vendu */}
-            <Dialog
-                open={isSoldDialogOpen}
-                onOpenChange={setIsSoldDialogOpen}
-            >
+            <Dialog open={isSoldDialogOpen} onOpenChange={setIsSoldDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>
-                            Marquer comme vendu ?
-                        </DialogTitle>
+                        <DialogTitle>Marquer comme vendu ?</DialogTitle>
                         <DialogDescription>
-                            Cette action est irréversible. Votre annonce
-                            &quot;{listing.title}&quot; sera marquée comme
-                            vendue.
+                            Cette action est irréversible. Votre annonce &quot;
+                            {listing.title}&quot; sera marquée comme vendue.
+                            <br />
+                            Si cet article a été acheté via la messagerie,
+                            pensez à mettre à jour son statut depuis la
+                            conversation. L&apos;acheteur pourra alors laisser
+                            un avis et vous recommander.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="outline">Annuler</Button>
-                        </DialogClose>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setIsSoldDialogOpen(false);
+                                router.push("/messages");
+                            }}
+                        >
+                            Ouvrir la messagerie
+                        </Button>
                         <Button
                             onClick={() =>
                                 markAsSold.mutate({ id: listing.id })
