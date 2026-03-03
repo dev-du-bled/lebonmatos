@@ -12,22 +12,12 @@ import { toast } from "sonner";
 import { trpc } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 
 const reviewSchema = z.object({
     rating: z.number().int().min(1, "Veuillez sélectionner une note.").max(5),
-    comment: z
-        .string()
-        .max(500, "Le commentaire ne peut pas dépasser 500 caractères.")
-        .optional(),
+    comment: z.string().max(500, "Le commentaire ne peut pas dépasser 500 caractères.").optional(),
 });
 
 type ReviewFormValues = z.infer<typeof reviewSchema>;
@@ -89,20 +79,15 @@ export function ReviewForm({ userId }: { userId: string }) {
                             <FormLabel>Note</FormLabel>
                             <FormControl>
                                 <div className="flex flex-col gap-2">
-                                    <div
-                                        className="flex items-center gap-1"
-                                        onMouseLeave={() => setHovered(0)}
-                                    >
+                                    <div className="flex items-center gap-1" onMouseLeave={() => setHovered(0)}>
                                         {[1, 2, 3, 4, 5].map((star) => (
                                             <button
                                                 key={star}
                                                 type="button"
-                                                onClick={() =>
-                                                    field.onChange(star)
-                                                }
-                                                onMouseEnter={() =>
-                                                    setHovered(star)
-                                                }
+                                                aria-label={`${star} ${star === 1 ? "étoile" : "étoiles"}`}
+                                                aria-pressed={selectedRating === star}
+                                                onClick={() => field.onChange(star)}
+                                                onMouseEnter={() => setHovered(star)}
                                                 className="focus-visible:outline-none"
                                             >
                                                 <Star
@@ -117,9 +102,7 @@ export function ReviewForm({ userId }: { userId: string }) {
                                         ))}
                                     </div>
                                     {displayRating > 0 && (
-                                        <p className="text-sm text-muted-foreground">
-                                            {LABELS[displayRating]}
-                                        </p>
+                                        <p className="text-sm text-muted-foreground">{LABELS[displayRating]}</p>
                                     )}
                                 </div>
                             </FormControl>
@@ -135,10 +118,7 @@ export function ReviewForm({ userId }: { userId: string }) {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>
-                                Commentaire{" "}
-                                <span className="text-muted-foreground font-normal">
-                                    (optionnel)
-                                </span>
+                                Commentaire <span className="text-muted-foreground font-normal">(optionnel)</span>
                             </FormLabel>
                             <FormControl>
                                 <Textarea
@@ -158,11 +138,7 @@ export function ReviewForm({ userId }: { userId: string }) {
                     )}
                 />
 
-                <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={mutation.isPending || selectedRating === 0}
-                >
+                <Button type="submit" className="w-full" disabled={mutation.isPending || selectedRating === 0}>
                     {mutation.isPending ? (
                         <>
                             <Loader2 className="size-4 animate-spin" />

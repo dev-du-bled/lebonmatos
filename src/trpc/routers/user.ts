@@ -1,12 +1,8 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from ".prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import {
-    profileUpdateSchema,
-    publicProfileUpdateSchema,
-    personalInfoUpdateSchema,
-} from "@/lib/schema/user";
+import { profileUpdateSchema, publicProfileUpdateSchema, personalInfoUpdateSchema } from "@/lib/schema/user";
 import { utapi } from "@/lib/utapi";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 
@@ -38,10 +34,7 @@ type PublicProfileRecord = Prisma.UserGetPayload<{
     select: typeof publicProfileSelect;
 }>;
 
-function mapPrivateProfileResult(
-    user: PrivateProfileRecord,
-    rating: { average: number | null; count: number }
-) {
+function mapPrivateProfileResult(user: PrivateProfileRecord, rating: { average: number | null; count: number }) {
     return {
         id: user.id,
         name: user.name,
@@ -56,10 +49,7 @@ function mapPrivateProfileResult(
     };
 }
 
-function mapPublicProfileResult(
-    user: PublicProfileRecord,
-    rating: { average: number | null; count: number }
-) {
+function mapPublicProfileResult(user: PublicProfileRecord, rating: { average: number | null; count: number }) {
     return {
         id: user.id,
         username: user.username,
@@ -129,31 +119,29 @@ export const userRouter = createTRPCRouter({
     getProfile: privateProcedure.query(async ({ ctx }) => {
         return buildProfilePayload(ctx.session!.user.id);
     }),
-    getReceivedReviews: publicProcedure
-        .input(z.object({ userId: z.string() }))
-        .query(async ({ input }) => {
-            const reviews = await prisma.rating.findMany({
-                where: { userId: input.userId },
-                orderBy: { createdAt: "desc" },
-                include: {
-                    rater: {
-                        select: {
-                            id: true,
-                            username: true,
-                            displayUsername: true,
-                            image: true,
-                        },
+    getReceivedReviews: publicProcedure.input(z.object({ userId: z.string() })).query(async ({ input }) => {
+        const reviews = await prisma.rating.findMany({
+            where: { userId: input.userId },
+            orderBy: { createdAt: "desc" },
+            include: {
+                rater: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayUsername: true,
+                        image: true,
                     },
                 },
-            });
-            return reviews.map((r) => ({
-                id: r.id,
-                rating: r.rating,
-                comment: r.comment,
-                createdAt: r.createdAt.toISOString(),
-                rater: r.rater,
-            }));
-        }),
+            },
+        });
+        return reviews.map((r: (typeof reviews)[number]) => ({
+            id: r.id,
+            rating: r.rating,
+            comment: r.comment,
+            createdAt: r.createdAt.toISOString(),
+            rater: r.rater,
+        }));
+    }),
 
     getGivenReviews: privateProcedure.query(async ({ ctx }) => {
         const raterId = ctx.session!.user.id;
@@ -171,7 +159,7 @@ export const userRouter = createTRPCRouter({
                 },
             },
         });
-        return reviews.map((r) => ({
+        return reviews.map((r: (typeof reviews)[number]) => ({
             id: r.id,
             rating: r.rating,
             comment: r.comment,
@@ -210,6 +198,22 @@ export const userRouter = createTRPCRouter({
                 });
             }
 
+            const purchase = await prisma.post.findFirst({
+                where: {
+                    userId: input.userId,
+                    boughtById: raterId,
+                    isSold: true,
+                },
+                select: { id: true },
+            });
+
+            if (!purchase) {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Vous devez avoir acheté un article de cet utilisateur pour laisser un avis.",
+                });
+            }
+
             const existing = await prisma.rating.findFirst({
                 where: { userId: input.userId, raterId },
             });
@@ -217,8 +221,7 @@ export const userRouter = createTRPCRouter({
             if (existing) {
                 throw new TRPCError({
                     code: "CONFLICT",
-                    message:
-                        "Vous avez déjà laissé un avis pour cet utilisateur.",
+                    message: "Vous avez déjà laissé un avis pour cet utilisateur.",
                 });
             }
 
@@ -234,146 +237,132 @@ export const userRouter = createTRPCRouter({
             return { success: true };
         }),
 
-    getPublicProfile: publicProcedure
-        .input(z.object({ userId: z.string() }))
-        .query(async ({ input }) => {
-            return buildPublicProfilePayload(input.userId);
-        }),
-    updateProfile: privateProcedure
-        .input(profileUpdateSchema)
-        .mutation(async ({ ctx, input }) => {
-            const userId = ctx.session!.user.id;
-            const existing = await prisma.user.findUnique({
-                where: { id: userId },
-                select: { image: true },
+    getPublicProfile: publicProcedure.input(z.object({ userId: z.string() })).query(async ({ input }) => {
+        return buildPublicProfilePayload(input.userId);
+    }),
+    updateProfile: privateProcedure.input(profileUpdateSchema).mutation(async ({ ctx, input }) => {
+        const userId = ctx.session!.user.id;
+        const existing = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { image: true },
+        });
+        if (!existing) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Utilisateur introuvable",
             });
-            if (!existing) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Utilisateur introuvable",
-                });
-            }
-            const { avatar, removeAvatar, ...profileData } = input;
+        }
+        const { avatar, removeAvatar, ...profileData } = input;
 
-            try {
-                let newImage = existing.image;
+        try {
+            let newImage = existing.image;
 
-                if (removeAvatar) {
-                    if (existing.image) {
-                        await deleteUserImage(existing.image);
-                    }
-                    newImage = null;
-                } else if (avatar) {
-                    if (existing.image) {
-                        await deleteUserImage(existing.image);
-                    }
-                    newImage = avatar;
+            if (removeAvatar) {
+                if (existing.image) {
+                    await deleteUserImage(existing.image);
                 }
-
-                await prisma.user.update({
-                    where: { id: userId },
-                    data: {
-                        name: profileData.name,
-                        username: profileData.username,
-                        bio: profileData.bio,
-                        phoneNumber: profileData.phoneNumber,
-                        image: newImage,
-                    },
-                });
-            } catch (error) {
-                if (
-                    error instanceof Prisma.PrismaClientKnownRequestError &&
-                    error.code === "P2002"
-                ) {
-                    throw new TRPCError({
-                        code: "CONFLICT",
-                        message: "Ce nom d'utilisateur est déjà utilisé.",
-                    });
+                newImage = null;
+            } else if (avatar) {
+                if (existing.image) {
+                    await deleteUserImage(existing.image);
                 }
-                throw error;
-            }
-            return buildProfilePayload(userId);
-        }),
-    updatePublicProfile: privateProcedure
-        .input(publicProfileUpdateSchema)
-        .mutation(async ({ ctx, input }) => {
-            const userId = ctx.session!.user.id;
-            const existing = await prisma.user.findUnique({
-                where: { id: userId },
-                select: { image: true },
-            });
-            if (!existing) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Utilisateur introuvable",
-                });
-            }
-
-            const { avatar, removeAvatar, username, bio } = input;
-
-            try {
-                let newImage = existing.image;
-
-                if (removeAvatar) {
-                    if (existing.image) {
-                        await deleteUserImage(existing.image);
-                    }
-                    newImage = null;
-                } else if (avatar) {
-                    if (existing.image) {
-                        await deleteUserImage(existing.image);
-                    }
-                    newImage = avatar;
-                }
-
-                await prisma.user.update({
-                    where: { id: userId },
-                    data: {
-                        username,
-                        bio,
-                        image: newImage,
-                    },
-                });
-            } catch (error) {
-                if (
-                    error instanceof Prisma.PrismaClientKnownRequestError &&
-                    error.code === "P2002"
-                ) {
-                    throw new TRPCError({
-                        code: "CONFLICT",
-                        message: "Ce nom d'utilisateur est déjà utilisé.",
-                    });
-                }
-                throw error;
-            }
-            return buildProfilePayload(userId);
-        }),
-    updatePersonalInfo: privateProcedure
-        .input(personalInfoUpdateSchema)
-        .mutation(async ({ ctx, input }) => {
-            const userId = ctx.session!.user.id;
-
-            if (input.email) {
-                const existingUser = await prisma.user.findUnique({
-                    where: { email: input.email },
-                });
-                if (existingUser && existingUser.id !== userId) {
-                    throw new TRPCError({
-                        code: "CONFLICT",
-                        message: "Cet email est déjà utilisé.",
-                    });
-                }
+                newImage = avatar;
             }
 
             await prisma.user.update({
                 where: { id: userId },
                 data: {
-                    name: input.name,
-                    email: input.email,
-                    phoneNumber: input.phoneNumber,
+                    name: profileData.name,
+                    username: profileData.username,
+                    bio: profileData.bio,
+                    phoneNumber: profileData.phoneNumber,
+                    image: newImage,
                 },
             });
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "Ce nom d'utilisateur est déjà utilisé.",
+                });
+            }
+            throw error instanceof Error ? error : new Error(String(error));
+        }
+        return buildProfilePayload(userId);
+    }),
+    updatePublicProfile: privateProcedure.input(publicProfileUpdateSchema).mutation(async ({ ctx, input }) => {
+        const userId = ctx.session!.user.id;
+        const existing = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { image: true },
+        });
+        if (!existing) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Utilisateur introuvable",
+            });
+        }
 
-            return buildProfilePayload(userId);
-        }),
+        const { avatar, removeAvatar, username, bio } = input;
+
+        try {
+            let newImage = existing.image;
+
+            if (removeAvatar) {
+                if (existing.image) {
+                    await deleteUserImage(existing.image);
+                }
+                newImage = null;
+            } else if (avatar) {
+                if (existing.image) {
+                    await deleteUserImage(existing.image);
+                }
+                newImage = avatar;
+            }
+
+            await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    username,
+                    bio,
+                    image: newImage,
+                },
+            });
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "Ce nom d'utilisateur est déjà utilisé.",
+                });
+            }
+            throw error instanceof Error ? error : new Error(String(error));
+        }
+        return buildProfilePayload(userId);
+    }),
+    updatePersonalInfo: privateProcedure.input(personalInfoUpdateSchema).mutation(async ({ ctx, input }) => {
+        const userId = ctx.session!.user.id;
+
+        if (input.email) {
+            const existingUser = await prisma.user.findUnique({
+                where: { email: input.email },
+            });
+            if (existingUser && existingUser.id !== userId) {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "Cet email est déjà utilisé.",
+                });
+            }
+        }
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                name: input.name,
+                email: input.email,
+                phoneNumber: input.phoneNumber,
+            },
+        });
+
+        return buildProfilePayload(userId);
+    }),
 });

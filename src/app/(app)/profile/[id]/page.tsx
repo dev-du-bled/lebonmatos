@@ -14,11 +14,7 @@ type Params = {
     id: string;
 };
 
-export async function generateMetadata({
-    params,
-}: {
-    params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
     const { id } = await params;
     const user = await getUser(id);
     return {
@@ -100,7 +96,7 @@ async function ProfileHeader({ userId }: { userId: string }) {
     const reviews = await trpc.user.getReceivedReviews({ userId: user.id });
     const average =
         reviews.length > 0
-            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+            ? reviews.reduce((sum: number, r: (typeof reviews)[number]) => sum + r.rating, 0) / reviews.length
             : 0;
 
     return (
@@ -108,37 +104,19 @@ async function ProfileHeader({ userId }: { userId: string }) {
             <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
                 <Avatar className="size-24 border-4 border-background text-3xl font-semibold shadow-lg">
                     {user.image ? (
-                        <AvatarImage
-                            src={user.image}
-                            alt={`Avatar de ${displayName}`}
-                            className="object-cover"
-                        />
+                        <AvatarImage src={user.image} alt={`Avatar de ${displayName}`} className="object-cover" />
                     ) : null}
-                    <AvatarFallback className="bg-secondary text-muted-foreground">
-                        {initials}
-                    </AvatarFallback>
+                    <AvatarFallback className="bg-secondary text-muted-foreground">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
                     <div className="space-y-1">
-                        <h1 className="text-2xl font-semibold sm:text-3xl">
-                            {displayName}
-                        </h1>
+                        <h1 className="text-2xl font-semibold sm:text-3xl">{displayName}</h1>
                         {user.username && user.username !== displayName && (
-                            <p className="text-sm text-muted-foreground">
-                                @{user.username}
-                            </p>
+                            <p className="text-sm text-muted-foreground">@{user.username}</p>
                         )}
                     </div>
-                    {user.bio && (
-                        <p className="max-w-md text-sm text-muted-foreground">
-                            {user.bio}
-                        </p>
-                    )}
-                    <ReviewsDialog
-                        reviews={reviews}
-                        average={average}
-                        username={displayName}
-                    />
+                    {user.bio && <p className="max-w-md text-sm text-muted-foreground">{user.bio}</p>}
+                    <ReviewsDialog reviews={reviews} average={average} username={displayName} />
                 </div>
             </div>
         </div>
@@ -167,18 +145,14 @@ async function ListingsContent({ userId }: { userId: string }) {
 
     return (
         <div className="grid gap-4">
-            {listings.map((listing) => (
+            {listings.map((listing: (typeof listings)[number]) => (
                 <ListingCard key={listing.id} listing={listing} />
             ))}
         </div>
     );
 }
 
-export default async function ProfilePage({
-    params,
-}: {
-    params: Promise<Params>;
-}) {
+export default async function ProfilePage({ params }: { params: Promise<Params> }) {
     const { id } = await params;
     const user = await getUser(id);
 
@@ -192,17 +166,11 @@ export default async function ProfilePage({
 
             <div className="mb-4 mt-10">
                 <h2 className="text-xl font-semibold">Annonces</h2>
-                <p className="text-sm text-muted-foreground">
-                    Les annonces publiées par ce vendeur
-                </p>
+                <p className="text-sm text-muted-foreground">Les annonces publiées par ce vendeur</p>
             </div>
 
             <Suspense fallback={<ListingsSkeleton />}>
-                {user?.id ? (
-                    <ListingsContent userId={user.id} />
-                ) : (
-                    <EmptyState />
-                )}
+                {user?.id ? <ListingsContent userId={user.id} /> : <EmptyState />}
             </Suspense>
         </section>
     );

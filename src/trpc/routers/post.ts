@@ -2,7 +2,7 @@ import { z } from "zod";
 import { postCreateSchema } from "@/lib/schema/post";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { utapi } from "@/lib/utapi";
-import { ComponentType } from "@prisma/client";
+import { ComponentType } from ".prisma/client";
 import { Components } from "@/utils/components";
 import { CityData } from "@/utils/location";
 import { TRPCError } from "@trpc/server";
@@ -24,10 +24,7 @@ const getComponentIncludes = (componentType: ComponentType) => ({
     SoundCard: componentType === ComponentType.SOUND_CARD,
 });
 
-const getComponentDetails = (
-    componentType: ComponentType,
-    component: Record<string, unknown>
-): Components => {
+const getComponentDetails = (componentType: ComponentType, component: Record<string, unknown>): Components => {
     const map: Record<ComponentType, string> = {
         CPU: "Cpu",
         GPU: "Gpu",
@@ -46,32 +43,28 @@ const getComponentDetails = (
 };
 
 export const postRouter = createTRPCRouter({
-    getUserListings: privateProcedure
-        .input(z.object({ userId: z.string().optional() }))
-        .query(async ({ ctx, input }) => {
-            const posts = await prisma.post.findMany({
-                where: { userId: input.userId ?? ctx.session.user.id },
-                orderBy: { id: "desc" },
-                include: {
-                    component: true,
-                },
-            });
+    getUserListings: publicProcedure.input(z.object({ userId: z.string() })).query(async ({ input }) => {
+        const posts = await prisma.post.findMany({
+            where: { userId: input.userId },
+            orderBy: { id: "desc" },
+            include: {
+                component: true,
+            },
+        });
 
-            return posts.map((post) => ({
-                id: post.id,
-                title: post.title,
-                description: post.description,
-                price: post.price,
-                component: {
-                    id: post.component.id,
-                    name: post.component.name,
-                    type: post.component.type,
-                },
-                thumbnail: post.images[0]
-                    ? { id: "", image: post.images[0], alt: null }
-                    : null,
-            }));
-        }),
+        return posts.map((post: (typeof posts)[number]) => ({
+            id: post.id,
+            title: post.title,
+            description: post.description,
+            price: post.price,
+            component: {
+                id: post.component.id,
+                name: post.component.name,
+                type: post.component.type,
+            },
+            thumbnail: post.images[0] ? { id: "", image: post.images[0], alt: null } : null,
+        }));
+    }),
 
     getUserFavorites: privateProcedure.query(async ({ ctx }) => {
         const favorites = await prisma.favorite.findMany({
@@ -86,7 +79,7 @@ export const postRouter = createTRPCRouter({
             orderBy: { id: "desc" },
         });
 
-        return favorites.map((fav) => ({
+        return favorites.map((fav: (typeof favorites)[number]) => ({
             id: fav.post.id,
             title: fav.post.title,
             description: fav.post.description,
@@ -96,172 +89,172 @@ export const postRouter = createTRPCRouter({
                 name: fav.post.component.name,
                 type: fav.post.component.type,
             },
-            thumbnail: fav.post.images[0]
-                ? { image: fav.post.images[0], alt: null }
-                : null,
+            thumbnail: fav.post.images[0] ? { image: fav.post.images[0], alt: null } : null,
         }));
     }),
 
-    deletePost: privateProcedure
-        .input(z.object({ id: z.cuid() }))
-        .mutation(async ({ ctx, input }) => {
-            const post = await prisma.post.findUnique({
-                where: { id: input.id },
+    deletePost: privateProcedure.input(z.object({ id: z.cuid() })).mutation(async ({ ctx, input }) => {
+        const post = await prisma.post.findUnique({
+            where: { id: input.id },
+        });
+
+        if (!post) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Post not found",
             });
+        }
 
-            if (!post) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Post not found",
-                });
-            }
-
-            if (post.userId !== ctx.session.user.id) {
-                throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "You are not authorized to delete this post",
-                });
-            }
-
-            if (post.images.length > 0) {
-                const keys = post.images.map((img) => {
-                    const url = new URL(img);
-                    const pathname = url.pathname.split("/").pop();
-                    return pathname?.split("?")[0] ?? img;
-                });
-                await utapi.deleteFiles(keys);
-            }
-
-            await prisma.post.delete({
-                where: { id: input.id },
-                include: { location: true },
+        if (post.userId !== ctx.session.user.id) {
+            throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: "You are not authorized to delete this post",
             });
+        }
 
-            return { success: true };
-        }),
+        if (post.images.length > 0) {
+            const keys = post.images.map((img: string) => {
+                const url = new URL(img);
+                const pathname = url.pathname.split("/").pop();
+                return pathname?.split("?")[0] ?? img;
+            });
+            await utapi.deleteFiles(keys);
+        }
 
-    createPost: privateProcedure
-        .input(postCreateSchema)
-        .mutation(async ({ ctx, input }) => {
-            try {
-                const post = await prisma.post.create({
-                    data: {
-                        title: input.title,
-                        description: input.description,
-                        price: input.price,
-                        componentId: input.componentId,
-                        images: input.images || [],
-                        userId: ctx.session.user.id,
-                        location: {
-                            create: {
-                                name: input.location.name,
-                                displayName: input.location.displayName,
-                                city: input.location.city,
-                                state: input.location.state,
-                                region: input.location.region,
-                                country: input.location.country,
-                                countryCode: input.location.countryCode,
-                                lat: input.location.lat,
-                                lon: input.location.lon,
-                                coordinates: input.location.coordinates,
-                            },
+        await prisma.post.delete({
+            where: { id: input.id },
+            include: { location: true },
+        });
+
+        return { success: true };
+    }),
+
+    createPost: privateProcedure.input(postCreateSchema).mutation(async ({ ctx, input }) => {
+        try {
+            const post = await prisma.post.create({
+                data: {
+                    title: input.title,
+                    description: input.description,
+                    price: input.price,
+                    componentId: input.componentId,
+                    images: input.images || [],
+                    userId: ctx.session.user.id,
+                    location: {
+                        create: {
+                            name: input.location.name,
+                            displayName: input.location.displayName,
+                            city: input.location.city,
+                            state: input.location.state,
+                            region: input.location.region,
+                            country: input.location.country,
+                            countryCode: input.location.countryCode,
+                            lat: input.location.lat,
+                            lon: input.location.lon,
+                            coordinates: input.location.coordinates,
                         },
                     },
-                });
-
-                return {
-                    postId: post.id,
-                };
-            } catch (error) {
-                console.error("Error creating post:", error);
-                throw new TRPCError({
-                    code: "INTERNAL_SERVER_ERROR",
-                    message: "Failed to create post",
-                });
-            }
-        }),
-
-    editPost: privateProcedure
-        .input(postCreateSchema.extend({ id: z.cuid() }))
-        .mutation(async ({ ctx, input }) => {
-            const post = await prisma.post.findUnique({
-                where: { id: input.id },
+                },
             });
 
-            if (!post) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Post not found",
-                });
-            }
+            return {
+                postId: post.id,
+            };
+        } catch (error) {
+            console.error("Error creating post:", error);
+            throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "Failed to create post",
+            });
+        }
+    }),
 
-            if (post.userId !== ctx.session.user.id) {
-                throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "You are not authorized to edit this post",
-                });
-            }
+    editPost: privateProcedure.input(postCreateSchema.extend({ id: z.cuid() })).mutation(async ({ ctx, input }) => {
+        const post = await prisma.post.findUnique({
+            where: { id: input.id },
+        });
 
-            try {
-                await prisma.post.update({
-                    where: { id: input.id },
-                    data: {
-                        title: input.title,
-                        description: input.description,
-                        price: input.price,
-                        componentId: input.componentId,
-                        images: input.images || [],
-                        location: {
-                            update: {
-                                name: input.location.name,
-                                displayName: input.location.displayName,
-                                city: input.location.city,
-                                state: input.location.state,
-                                region: input.location.region,
-                                country: input.location.country,
-                                countryCode: input.location.countryCode,
-                                lat: input.location.lat,
-                                lon: input.location.lon,
-                                coordinates: input.location.coordinates,
-                            },
+        if (!post) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Post not found",
+            });
+        }
+
+        if (post.userId !== ctx.session.user.id) {
+            throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: "You are not authorized to edit this post",
+            });
+        }
+
+        try {
+            await prisma.post.update({
+                where: { id: input.id },
+                data: {
+                    title: input.title,
+                    description: input.description,
+                    price: input.price,
+                    componentId: input.componentId,
+                    images: input.images || [],
+                    location: {
+                        update: {
+                            name: input.location.name,
+                            displayName: input.location.displayName,
+                            city: input.location.city,
+                            state: input.location.state,
+                            region: input.location.region,
+                            country: input.location.country,
+                            countryCode: input.location.countryCode,
+                            lat: input.location.lat,
+                            lon: input.location.lon,
+                            coordinates: input.location.coordinates,
                         },
                     },
-                });
-
-                return {
-                    postId: post.id,
-                };
-            } catch {
-                throw new TRPCError({
-                    code: "INTERNAL_SERVER_ERROR",
-                    message: "Failed to update post",
-                });
-            }
-        }),
-
-    favoritePost: privateProcedure
-        .input(z.object({ postId: z.cuid() }))
-        .mutation(async ({ ctx, input }) => {
-            const post = await prisma.post.findUnique({
-                where: { id: input.postId },
-                select: { userId: true },
+                },
             });
 
-            if (!post) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Post not found",
-                });
-            }
+            return {
+                postId: post.id,
+            };
+        } catch {
+            throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "Failed to update post",
+            });
+        }
+    }),
 
-            if (post.userId === ctx.session.user.id) {
-                throw new TRPCError({
-                    code: "BAD_REQUEST",
-                    message: "You cant favorite your own post",
-                });
-            }
+    favoritePost: privateProcedure.input(z.object({ postId: z.cuid() })).mutation(async ({ ctx, input }) => {
+        const post = await prisma.post.findUnique({
+            where: { id: input.postId },
+            select: { userId: true },
+        });
 
-            const favorite = await prisma.favorite.findUnique({
+        if (!post) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Post not found",
+            });
+        }
+
+        if (post.userId === ctx.session.user.id) {
+            throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "You cant favorite your own post",
+            });
+        }
+
+        const favorite = await prisma.favorite.findUnique({
+            where: {
+                postId_userId: {
+                    postId: input.postId,
+                    userId: ctx.session.user.id,
+                },
+            },
+        });
+
+        if (favorite) {
+            await prisma.favorite.delete({
                 where: {
                     postId_userId: {
                         postId: input.postId,
@@ -270,64 +263,69 @@ export const postRouter = createTRPCRouter({
                 },
             });
 
-            if (favorite) {
-                await prisma.favorite.delete({
-                    where: {
-                        postId_userId: {
-                            postId: input.postId,
-                            userId: ctx.session.user.id,
-                        },
-                    },
-                });
+            return { favorited: false };
+        } else {
+            await prisma.favorite.create({
+                data: {
+                    postId: input.postId,
+                    userId: ctx.session.user.id,
+                },
+            });
 
-                return { favorited: false };
-            } else {
-                await prisma.favorite.create({
-                    data: {
-                        postId: input.postId,
-                        userId: ctx.session.user.id,
-                    },
-                });
+            return { favorited: true };
+        }
+    }),
 
-                return { favorited: true };
-            }
-        }),
+    buyPost: privateProcedure.input(z.object({ postId: z.cuid() })).mutation(async ({ ctx, input }) => {
+        const buyerId = ctx.session.user.id;
 
-    buyPost: privateProcedure
-        .input(z.object({ postId: z.cuid() }))
-        .mutation(async ({ ctx, input }) => {
-            const buyerId = ctx.session.user.id;
+        // Atomic conditional UPDATE: only touches the row when it exists, is
+        // not yet sold, and is not owned by the buyer.  Because the WHERE
+        // clause and the SET happen in a single statement, two concurrent
+        // requests cannot both pass – the second one will match 0 rows.
+        const { count } = await prisma.post.updateMany({
+            where: {
+                id: input.postId,
+                isSold: false,
+                userId: { not: buyerId },
+            },
+            data: {
+                isSold: true,
+                boughtById: buyerId,
+            },
+        });
 
-            const post = (await prisma.post.findUnique({
-                where: { id: input.postId },
-                select: { userId: true },
-            })) as { userId: string; isSold: boolean } | null;
-
-            if (!post) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Post not found",
-                });
-            }
-
-            if (post.userId === buyerId) {
-                throw new TRPCError({
-                    code: "BAD_REQUEST",
-                    message: "You cannot buy your own post",
-                });
-            }
-
-            if (post.isSold) {
-                throw new TRPCError({
-                    code: "BAD_REQUEST",
-                    message: "This post has already been sold",
-                });
-            }
-
-            await prisma.$executeRaw`UPDATE "post" SET "isSold" = true, "boughtById" = ${buyerId} WHERE "id" = ${input.postId}`;
-
+        if (count === 1) {
             return { success: true };
-        }),
+        }
+
+        // Zero rows were updated – re-fetch just enough to give a precise error.
+        const post = await prisma.post.findUnique({
+            where: { id: input.postId },
+            select: { userId: true, isSold: true },
+        });
+
+        if (!post) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Post not found",
+            });
+        }
+
+        if (post.userId === buyerId) {
+            throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "You cannot buy your own post",
+            });
+        }
+
+        // isSold must be true at this point (the only remaining reason the
+        // UPDATE matched 0 rows while the post exists and isn't ours).
+        throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "This post has already been sold",
+        });
+    }),
 
     getPost: publicProcedure
         .input(
@@ -348,11 +346,13 @@ export const postRouter = createTRPCRouter({
                     },
                     component: true,
                     location: true,
-                    Favorites: {
-                        where: {
-                            userId: ctx.session?.user?.id ?? "",
-                        },
-                    },
+                    Favorites: ctx.session?.user
+                        ? {
+                              where: {
+                                  userId: ctx.session.user.id,
+                              },
+                          }
+                        : false,
                 },
             });
 
@@ -372,9 +372,7 @@ export const postRouter = createTRPCRouter({
             const component = await prisma.component.findUnique({
                 where: { id: post.componentId },
                 include: {
-                    ...getComponentIncludes(
-                        post.component.type as ComponentType
-                    ),
+                    ...getComponentIncludes(post.component.type as ComponentType),
                 },
             });
 
@@ -412,16 +410,24 @@ export const postRouter = createTRPCRouter({
                 boughtById: string | null;
             };
 
+            // canLeaveReview is true only for the buyer who hasn't reviewed yet.
+            // boughtById is intentionally never forwarded to the client.
+            const canLeaveReview =
+                !!ctx.session?.user &&
+                postScalars.isSold &&
+                postScalars.boughtById === ctx.session.user.id &&
+                !hasReviewedSeller;
+
             return {
                 id: post.id,
                 title: post.title,
                 description: post.description,
                 price: post.price,
                 isSold: postScalars.isSold,
-                boughtById: postScalars.boughtById,
                 ...(ctx.session?.user && {
                     isFavorited: post.Favorites.length > 0,
                     hasReviewedSeller,
+                    canLeaveReview,
                 }),
                 location: {
                     name: post.location.name,
@@ -450,9 +456,7 @@ export const postRouter = createTRPCRouter({
                         username: post.user.username,
                         rating: rating
                             ? {
-                                  avg: rating._avg.rating
-                                      ? Number(rating._avg.rating.toFixed(2))
-                                      : 0,
+                                  avg: rating._avg.rating ? Number(rating._avg.rating.toFixed(2)) : 0,
                                   count: rating._count.rating || 0,
                               }
                             : null,
@@ -483,7 +487,7 @@ export const postRouter = createTRPCRouter({
             const shufflePosts = posts.sort(() => Math.random() - 0.5);
             const randomPosts = shufflePosts.slice(0, 20);
 
-            return randomPosts.map((post) => ({
+            return randomPosts.map((post: (typeof randomPosts)[number]) => ({
                 id: post.id,
                 title: post.title,
                 price: post.price,
