@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { FileText, Plus } from "lucide-react";
 import { trpc } from "@/trpc/server";
+import { getUser } from "@/utils/getUser";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -75,7 +76,8 @@ function EmptyState() {
 }
 
 async function ListingsContent() {
-    const listings = await trpc.posts.getUserListings();
+    const user = await getUser();
+    const listings = await trpc.posts.getUserListings({ userId: user.id });
 
     if (listings.length === 0) {
         return <EmptyState />;
@@ -91,7 +93,8 @@ async function ListingsContent() {
 }
 
 async function HeaderAction() {
-    const listings = await trpc.posts.getUserListings();
+    const user = await getUser();
+    const listings = await trpc.posts.getUserListings({ userId: user.id });
 
     if (listings.length === 0) {
         return null;

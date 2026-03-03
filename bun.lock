@@ -24,7 +24,10 @@
         "@radix-ui/react-tabs": "^1.1.13",
         "@radix-ui/react-tooltip": "^1.2.8",
         "@tanstack/react-query": "^5.90.21",
+<<<<<<< HEAD
         "@tanstack/react-table": "^8.21.3",
+=======
+>>>>>>> main
         "@trpc/client": "^11.11.0",
         "@trpc/react-query": "^11.11.0",
         "@trpc/server": "^11.11.0",

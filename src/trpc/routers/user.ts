@@ -129,6 +129,166 @@ export const userRouter = createTRPCRouter({
     getProfile: privateProcedure.query(async ({ ctx }) => {
         return buildProfilePayload(ctx.session!.user.id);
     }),
+    getReviewStats: publicProcedure
+        .input(z.object({ userId: z.string() }))
+        .query(async ({ input }) => {
+            const result = await prisma.rating.aggregate({
+                where: { userId: input.userId },
+                _avg: { rating: true },
+                _count: { rating: true },
+            });
+            return {
+                average: result._avg.rating
+                    ? Number(result._avg.rating.toFixed(2))
+                    : 0,
+                count: result._count.rating,
+            };
+        }),
+
+    getReceivedReviews: publicProcedure
+        .input(
+            z.object({
+                userId: z.string(),
+                limit: z.number().int().min(1).max(50).default(10),
+                cursor: z.string().optional(), // id of the last review on the previous page
+            })
+        )
+        .query(async ({ input }) => {
+            const { userId, limit, cursor } = input;
+
+            // Fetch one extra row to know whether a next page exists.
+            const rows = await prisma.rating.findMany({
+                where: { userId },
+                orderBy: { createdAt: "desc" },
+                take: limit + 1,
+                ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+                include: {
+                    rater: {
+                        select: {
+                            id: true,
+                            username: true,
+                            displayUsername: true,
+                            image: true,
+                        },
+                    },
+                },
+            });
+
+            const hasNextPage = rows.length > limit;
+            const reviews = rows.slice(0, limit);
+            const nextCursor = hasNextPage
+                ? reviews[reviews.length - 1].id
+                : undefined;
+
+            return {
+                reviews: reviews.map((r: (typeof reviews)[number]) => ({
+                    id: r.id,
+                    rating: r.rating,
+                    comment: r.comment,
+                    createdAt: r.createdAt.toISOString(),
+                    rater: r.rater,
+                })),
+                nextCursor,
+            };
+        }),
+
+    getGivenReviews: privateProcedure.query(async ({ ctx }) => {
+        const raterId = ctx.session!.user.id;
+        const reviews = await prisma.rating.findMany({
+            where: { raterId },
+            orderBy: { createdAt: "desc" },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayUsername: true,
+                        image: true,
+                    },
+                },
+            },
+        });
+        return reviews.map((r: (typeof reviews)[number]) => ({
+            id: r.id,
+            rating: r.rating,
+            comment: r.comment,
+            createdAt: r.createdAt.toISOString(),
+            recipient: r.user,
+        }));
+    }),
+
+    addReview: privateProcedure
+        .input(
+            z.object({
+                userId: z.string(),
+                rating: z.number().int().min(1).max(5),
+                comment: z.string().max(500).optional(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const raterId = ctx.session!.user.id;
+
+            if (raterId === input.userId) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Vous ne pouvez pas vous noter vous-même.",
+                });
+            }
+
+            const target = await prisma.user.findUnique({
+                where: { id: input.userId },
+                select: { id: true },
+            });
+
+            if (!target) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Utilisateur introuvable.",
+                });
+            }
+
+            const purchase = await prisma.post.findFirst({
+                where: {
+                    userId: input.userId,
+                    boughtById: raterId,
+                    isSold: true,
+                },
+                select: { id: true },
+            });
+
+            if (!purchase) {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message:
+                        "Vous devez avoir acheté un article de cet utilisateur pour laisser un avis.",
+                });
+            }
+
+            try {
+                await prisma.rating.create({
+                    data: {
+                        userId: input.userId,
+                        raterId,
+                        rating: input.rating,
+                        comment: input.comment ?? null,
+                    },
+                });
+            } catch (error) {
+                if (
+                    error instanceof Prisma.PrismaClientKnownRequestError &&
+                    error.code === "P2002"
+                ) {
+                    throw new TRPCError({
+                        code: "CONFLICT",
+                        message:
+                            "Vous avez déjà laissé un avis pour cet utilisateur.",
+                    });
+                }
+                throw error;
+            }
+
+            return { success: true };
+        }),
 
     getPublicProfile: publicProcedure
         .input(z.object({ userId: z.string() }))
@@ -186,7 +346,7 @@ export const userRouter = createTRPCRouter({
                         message: "Ce nom d'utilisateur est déjà utilisé.",
                     });
                 }
-                throw error;
+                throw error instanceof Error ? error : new Error(String(error));
             }
             return buildProfilePayload(userId);
         }),
@@ -240,7 +400,7 @@ export const userRouter = createTRPCRouter({
                         message: "Ce nom d'utilisateur est déjà utilisé.",
                     });
                 }
-                throw error;
+                throw error instanceof Error ? error : new Error(String(error));
             }
             return buildProfilePayload(userId);
         }),

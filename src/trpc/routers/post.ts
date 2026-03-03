@@ -46,30 +46,34 @@ const getComponentDetails = (
 };
 
 export const postRouter = createTRPCRouter({
-    getUserListings: privateProcedure.query(async ({ ctx }) => {
-        const posts = await prisma.post.findMany({
-            where: { userId: ctx.session.user.id },
-            orderBy: { id: "desc" },
-            include: {
-                component: true,
-            },
-        });
+    getUserListings: publicProcedure
+        .input(z.object({ userId: z.string() }))
+        .query(async ({ input }) => {
+            const posts = await prisma.post.findMany({
+                where: { userId: input.userId },
+                orderBy: { id: "desc" },
+                include: {
+                    component: true,
+                },
+            });
 
-        return posts.map((post) => ({
-            id: post.id,
-            title: post.title,
-            description: post.description,
-            price: post.price,
-            component: {
-                id: post.component.id,
-                name: post.component.name,
-                type: post.component.type,
-            },
-            thumbnail: post.images[0]
-                ? { id: "", image: post.images[0], alt: null }
-                : null,
-        }));
-    }),
+            return posts.map((post: (typeof posts)[number]) => ({
+                id: post.id,
+                title: post.title,
+                description: post.description,
+                price: post.price,
+                isSold: post.isSold,
+                createdAt: post.id,
+                component: {
+                    id: post.component.id,
+                    name: post.component.name,
+                    type: post.component.type,
+                },
+                thumbnail: post.images[0]
+                    ? { id: "", image: post.images[0], alt: null }
+                    : null,
+            }));
+        }),
 
     getUserFavorites: privateProcedure.query(async ({ ctx }) => {
         const favorites = await prisma.favorite.findMany({
@@ -84,7 +88,7 @@ export const postRouter = createTRPCRouter({
             orderBy: { id: "desc" },
         });
 
-        return favorites.map((fav) => ({
+        return favorites.map((fav: (typeof favorites)[number]) => ({
             id: fav.post.id,
             title: fav.post.title,
             description: fav.post.description,
@@ -284,6 +288,59 @@ export const postRouter = createTRPCRouter({
             }
         }),
 
+    buyPost: privateProcedure
+        .input(z.object({ postId: z.cuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const buyerId = ctx.session.user.id;
+
+            // Atomic conditional UPDATE: only touches the row when it exists, is
+            // not yet sold, and is not owned by the buyer.  Because the WHERE
+            // clause and the SET happen in a single statement, two concurrent
+            // requests cannot both pass – the second one will match 0 rows.
+            const { count } = await prisma.post.updateMany({
+                where: {
+                    id: input.postId,
+                    isSold: false,
+                    userId: { not: buyerId },
+                },
+                data: {
+                    isSold: true,
+                    boughtById: buyerId,
+                },
+            });
+
+            if (count === 1) {
+                return { success: true };
+            }
+
+            // Zero rows were updated – re-fetch just enough to give a precise error.
+            const post = await prisma.post.findUnique({
+                where: { id: input.postId },
+                select: { userId: true, isSold: true },
+            });
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
+            }
+
+            if (post.userId === buyerId) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "You cannot buy your own post",
+                });
+            }
+
+            // isSold must be true at this point (the only remaining reason the
+            // UPDATE matched 0 rows while the post exists and isn't ours).
+            throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "This post has already been sold",
+            });
+        }),
+
     getPost: publicProcedure
         .input(
             z.object({
@@ -313,6 +370,17 @@ export const postRouter = createTRPCRouter({
                     code: "NOT_FOUND",
                     message: "Post not found",
                 });
+
+            let hasReviewedSeller = false;
+            if (ctx.session?.user) {
+                const existing = await prisma.rating.findFirst({
+                    where: {
+                        userId: post.userId,
+                        raterId: ctx.session.user.id,
+                    },
+                });
+                hasReviewedSeller = !!existing;
+            }
 
             const component = await prisma.component.findUnique({
                 where: { id: post.componentId },
@@ -352,13 +420,29 @@ export const postRouter = createTRPCRouter({
                 });
             }
 
+            const postScalars = post as typeof post & {
+                isSold: boolean;
+                boughtById: string | null;
+            };
+
+            // canLeaveReview is true only for the buyer who hasn't reviewed yet.
+            // boughtById is intentionally never forwarded to the client.
+            const canLeaveReview =
+                !!ctx.session?.user &&
+                postScalars.isSold &&
+                postScalars.boughtById === ctx.session.user.id &&
+                !hasReviewedSeller;
+
             return {
                 id: post.id,
                 title: post.title,
                 description: post.description,
                 price: post.price,
+                isSold: postScalars.isSold,
                 ...(ctx.session?.user && {
                     isFavorited: post.Favorites.length > 0,
+                    hasReviewedSeller,
+                    canLeaveReview,
                 }),
                 location: {
                     name: post.location.name,
@@ -385,6 +469,7 @@ export const postRouter = createTRPCRouter({
                     seller: {
                         id: post.user.id,
                         username: post.user.username,
+                        image: post.user.image,
                         rating: rating
                             ? {
                                   avg: rating._avg.rating
@@ -420,7 +505,7 @@ export const postRouter = createTRPCRouter({
             const shufflePosts = posts.sort(() => Math.random() - 0.5);
             const randomPosts = shufflePosts.slice(0, 20);
 
-            return randomPosts.map((post) => ({
+            return randomPosts.map((post: (typeof randomPosts)[number]) => ({
                 id: post.id,
                 title: post.title,
                 price: post.price,
