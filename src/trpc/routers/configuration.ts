@@ -167,7 +167,8 @@ export const configurationRouter = createTRPCRouter({
             }
 
             // Check access rights
-            const userId = ctx.session?.user?.id;
+            const session = await ctx.getSession();
+            const userId = session?.user?.id;
             if (!configuration.isPublic && configuration.userId !== userId) {
                 throw new TRPCError({
                     code: "FORBIDDEN",

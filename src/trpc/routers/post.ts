@@ -349,16 +349,17 @@ export const postRouter = createTRPCRouter({
             })
         )
         .query(async ({ ctx, input }) => {
+            const session = await ctx.getSession();
             const post = await prisma.post.findUnique({
                 where: { id: input.postId },
                 include: {
                     user: true,
                     component: true,
                     location: true,
-                    Favorites: ctx.session?.user
+                    Favorites: session?.user
                         ? {
                               where: {
-                                  userId: ctx.session.user.id,
+                                  userId: session.user.id,
                               },
                           }
                         : false,
@@ -372,11 +373,11 @@ export const postRouter = createTRPCRouter({
                 });
 
             let hasReviewedSeller = false;
-            if (ctx.session?.user) {
+            if (session?.user) {
                 const existing = await prisma.rating.findFirst({
                     where: {
                         userId: post.userId,
-                        raterId: ctx.session.user.id,
+                        raterId: session.user.id,
                     },
                 });
                 hasReviewedSeller = !!existing;
@@ -428,9 +429,9 @@ export const postRouter = createTRPCRouter({
             // canLeaveReview is true only for the buyer who hasn't reviewed yet.
             // boughtById is intentionally never forwarded to the client.
             const canLeaveReview =
-                !!ctx.session?.user &&
+                !!session?.user &&
                 postScalars.isSold &&
-                postScalars.boughtById === ctx.session.user.id &&
+                postScalars.boughtById === session.user.id &&
                 !hasReviewedSeller;
 
             return {
@@ -439,7 +440,7 @@ export const postRouter = createTRPCRouter({
                 description: post.description,
                 price: post.price,
                 isSold: postScalars.isSold,
-                ...(ctx.session?.user && {
+                ...(session?.user && {
                     isFavorited: post.Favorites.length > 0,
                     hasReviewedSeller,
                     canLeaveReview,

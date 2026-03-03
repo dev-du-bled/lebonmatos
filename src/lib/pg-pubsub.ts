@@ -55,7 +55,10 @@ export async function publish(channel: string, data?: unknown): Promise<void> {
     await pool.query("SELECT pg_notify($1, $2)", [PG_CHANNEL, payload]);
 }
 
-void startListener();
+// Ne pas démarrer le listener pendant le build Next.js
+if (process.env.NEXT_PHASE !== "phase-production-build") {
+    void startListener();
+}
 
 if (process.env.NODE_ENV !== "production") {
     globalForPubSub.pgEmitter = messageEmitter;
