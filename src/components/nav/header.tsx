@@ -48,7 +48,9 @@ export default function Header({ className }: { className?: string }) {
                     </Link>
                     <div className="flex items-center gap-2 w-full justify-end">
                         <Link href="/create-post">
-                            <Button className="hover:cursor-pointer">Publier</Button>
+                            <Button className="hover:cursor-pointer">
+                                Publier
+                            </Button>
                         </Link>
                         <button
                             onClick={() => setSearchOpen(true)}
@@ -58,7 +60,9 @@ export default function Header({ className }: { className?: string }) {
                                 <SearchIcon className="size-4 shrink-0 opacity-50" />
                                 <span>Rechercher</span>
                             </div>
-                            <Kbd className="border">{formatForDisplay("Mod+K")}</Kbd>
+                            <Kbd className="border">
+                                {formatForDisplay("Mod+K")}
+                            </Kbd>
                         </button>
                         <UserMenu />
                     </div>

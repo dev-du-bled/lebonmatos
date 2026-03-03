@@ -53,7 +53,13 @@ export const componentRouter = createTRPCRouter({
         )
         .query(async ({ input }) => {
             const index = meilisearch.index("components");
-            const results = await index.search(input.query, { limit: input.limit });
-            return results.hits as { id: string; name: string; type: ComponentType }[];
+            const results = await index.search(input.query, {
+                limit: input.limit,
+            });
+            return results.hits as {
+                id: string;
+                name: string;
+                type: ComponentType;
+            }[];
         }),
 });

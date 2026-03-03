@@ -153,29 +153,50 @@ export default function ComponentSelector({
                                         "border-destructive ring-1 ring-destructive/50"
                                 )}
                             >
-                                {variant === "inline" && selectedComponent && SelectedIcon ? (
+                                {variant === "inline" &&
+                                selectedComponent &&
+                                SelectedIcon ? (
                                     <SelectedIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
                                 ) : (
                                     <Package className="h-5 w-5 shrink-0 text-muted-foreground" />
                                 )}
-                                <span className={cn("truncate flex-1", variant === "inline" && selectedComponent ? "text-foreground" : "text-muted-foreground")}>
+                                <span
+                                    className={cn(
+                                        "truncate flex-1",
+                                        variant === "inline" &&
+                                            selectedComponent
+                                            ? "text-foreground"
+                                            : "text-muted-foreground"
+                                    )}
+                                >
                                     {variant === "inline" && selectedComponent
                                         ? selectedComponent.name
                                         : "Sélectionner un composant..."}
                                 </span>
                                 {variant === "inline" && selectedComponent && (
-                                    <button
-                                        type="button"
-                                        disabled={disabled}
+                                    <span
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-disabled={disabled}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            clearSelection();
+                                            if (!disabled) clearSelection();
                                         }}
-                                        className="p-0.5 rounded hover:bg-muted transition-colors shrink-0 disabled:opacity-50"
+                                        onKeyDown={(e) => {
+                                            if (
+                                                e.key === "Enter" ||
+                                                e.key === " "
+                                            ) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (!disabled) clearSelection();
+                                            }
+                                        }}
+                                        className="p-0.5 rounded hover:bg-muted transition-colors shrink-0 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
                                         aria-label="Supprimer le composant"
                                     >
                                         <X className="h-4 w-4 text-muted-foreground" />
-                                    </button>
+                                    </span>
                                 )}
                             </Button>
                         </DialogTrigger>

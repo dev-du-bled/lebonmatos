@@ -36,7 +36,9 @@ async function syncAll() {
             `SELECT id, name, type FROM component`
         );
         if (components.length > 0) {
-            console.log(`Syncing ${components.length} components to Meilisearch...`);
+            console.log(
+                `Syncing ${components.length} components to Meilisearch...`
+            );
             const compTask = await wrappMeiliTask(
                 meilisearch.index("components").addDocuments(components)
             );
