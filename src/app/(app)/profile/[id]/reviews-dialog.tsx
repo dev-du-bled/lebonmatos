@@ -4,8 +4,21 @@ import Link from "next/link";
 import { Star, X, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -39,14 +52,25 @@ function StarRating({ value }: { value: number }) {
             {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                     key={i}
-                    className={cn("size-4", i < value ? "fill-primary text-primary" : "fill-muted text-muted")}
+                    className={cn(
+                        "size-4",
+                        i < value
+                            ? "fill-primary text-primary"
+                            : "fill-muted text-muted"
+                    )}
                 />
             ))}
         </div>
     );
 }
 
-function ReviewsTrigger({ average, count }: { average: number; count: number }) {
+function ReviewsTrigger({
+    average,
+    count,
+}: {
+    average: number;
+    count: number;
+}) {
     return (
         <span className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground md:justify-start">
             <span className="flex items-center gap-1 font-semibold text-foreground">
@@ -60,21 +84,32 @@ function ReviewsTrigger({ average, count }: { average: number; count: number }) 
     );
 }
 
-function ReviewsSummary({ average, count }: { average: number; count: number }) {
+function ReviewsSummary({
+    average,
+    count,
+}: {
+    average: number;
+    count: number;
+}) {
     if (count === 0) return null;
     return (
         <div className="flex items-center gap-3 mt-2">
             <span className="text-3xl font-bold">{average.toFixed(1)}</span>
             <div className="space-y-0.5">
                 <StarRating value={Math.round(average)} />
-                <p className="text-xs text-muted-foreground">{count} avis au total</p>
+                <p className="text-xs text-muted-foreground">
+                    {count} avis au total
+                </p>
             </div>
         </div>
     );
 }
 
 function ReviewCard({ review }: { review: Review }) {
-    const displayName = review.rater.displayUsername ?? review.rater.username ?? "Utilisateur supprimé";
+    const displayName =
+        review.rater.displayUsername ??
+        review.rater.username ??
+        "Utilisateur supprimé";
     const initials = displayName
         .split(/\s+/)
         .map((s) => s[0])
@@ -98,7 +133,9 @@ function ReviewCard({ review }: { review: Review }) {
                             className="object-cover"
                         />
                     ) : null}
-                    <AvatarFallback className="bg-secondary text-muted-foreground text-sm">{initials}</AvatarFallback>
+                    <AvatarFallback className="bg-secondary text-muted-foreground text-sm">
+                        {initials}
+                    </AvatarFallback>
                 </Avatar>
             </Link>
             <div className="flex-1 min-w-0 space-y-1">
@@ -109,10 +146,16 @@ function ReviewCard({ review }: { review: Review }) {
                     >
                         {displayName}
                     </Link>
-                    <span className="text-xs text-muted-foreground shrink-0">{date}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                        {date}
+                    </span>
                 </div>
                 <StarRating value={review.rating} />
-                {review.comment && <p className="text-sm text-muted-foreground pt-0.5 break-words">{review.comment}</p>}
+                {review.comment && (
+                    <p className="text-sm text-muted-foreground pt-0.5 break-words">
+                        {review.comment}
+                    </p>
+                )}
             </div>
         </div>
     );
@@ -149,7 +192,9 @@ function ReviewsList({
         return (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-center px-6">
                 <Star className="size-10 text-muted-foreground" />
-                <p className="text-muted-foreground text-sm">Aucun avis pour le moment.</p>
+                <p className="text-muted-foreground text-sm">
+                    Aucun avis pour le moment.
+                </p>
             </div>
         );
     }
@@ -161,7 +206,12 @@ function ReviewsList({
             ))}
             {cursor && (
                 <div className="flex justify-center px-6 py-4">
-                    <Button variant="outline" size="sm" onClick={loadMore} disabled={query.isFetching}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={loadMore}
+                        disabled={query.isFetching}
+                    >
                         {query.isFetching ? (
                             <>
                                 <Loader2 className="size-4 animate-spin" />
