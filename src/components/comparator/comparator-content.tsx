@@ -226,7 +226,7 @@ export default function ComparatorContent() {
                         <DialogTitle>Choisir un composant</DialogTitle>
                     </DialogHeader>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                         {componentTypes.map((type) => {
                             const Icon = componentTypeIcons[type];
 
