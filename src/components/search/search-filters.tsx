@@ -61,7 +61,17 @@ function PriceRangeInput({
                 value={value}
                 min={min}
                 max={max}
-                onChange={(e) => onChange(Number(e.target.value))}
+                onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw === "") {
+                        return;
+                    }
+                    const parsed = Number(raw);
+                    if (Number.isNaN(parsed)) {
+                        return;
+                    }
+                    onChange(parsed);
+                }}
                 className="h-7 w-20 text-xs px-2"
             />
             <span className="text-xs text-muted-foreground">€</span>
