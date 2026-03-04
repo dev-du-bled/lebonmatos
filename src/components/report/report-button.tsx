@@ -71,6 +71,7 @@ interface ReportButtonProps {
     reportedId: string;
     userId?: string; // userId props to hidde button if users try to report themselves, their own post or review
     tooltipText?: string;
+    isSold?: boolean;
 }
 
 export default function ReportButton({
@@ -79,6 +80,7 @@ export default function ReportButton({
     reportedId,
     userId,
     tooltipText,
+    isSold,
 }: ReportButtonProps) {
     const { session } = useSession();
     const [open, setOpen] = useState(false);
@@ -152,7 +154,7 @@ export default function ReportButton({
         });
     };
 
-    if (!session || session.user?.id === userId) return null;
+    if (!session || session.user?.id === userId || isSold) return null;
 
     return (
         <Dialog

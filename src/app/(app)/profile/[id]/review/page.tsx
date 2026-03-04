@@ -1,12 +1,9 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { Metadata } from "next";
 
 import { trpc } from "@/trpc/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { buttonVariants } from "@/components/ui/button";
 import {
     Card,
     CardContent,
@@ -14,8 +11,8 @@ import {
     CardTitle,
     CardDescription,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { ReviewForm } from "./review-form";
+import NavBack from "@/components/nav/nav-back";
 
 type Params = { id: string };
 
@@ -67,25 +64,11 @@ export default async function ReviewPage({
     return (
         <section className="mx-auto w-full max-w-lg px-4 pb-16 pt-10 sm:px-6">
             {/* Header */}
-            <div className="mb-8 flex items-center gap-3">
-                <Link
-                    href={backHref}
-                    className={cn(
-                        buttonVariants({ variant: "outline", size: "icon" }),
-                        "shrink-0 rounded-full"
-                    )}
-                >
-                    <ArrowLeft className="size-4" />
-                </Link>
-                <div>
-                    <h1 className="text-xl font-semibold tracking-tight">
-                        Laisser un avis
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Partagez votre expérience avec ce vendeur
-                    </p>
-                </div>
-            </div>
+            <NavBack
+                href={backHref}
+                title="Laisser un avis"
+                desc="Partagez votre expérience"
+            />
 
             {/* Target user recap */}
             <div className="mb-5 flex items-center gap-4 rounded-2xl border bg-muted/40 px-5 py-4">

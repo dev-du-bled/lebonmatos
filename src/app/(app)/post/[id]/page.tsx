@@ -120,11 +120,13 @@ export default async function PostPage({
                             width="icon"
                             reportedId={post.id}
                             userId={post.seller?.id}
+                            isSold={post.isSold}
                         />
                         <FavoriteButton
                             post={{
                                 id: post.id,
                                 isFavorited: post.isFavorited,
+                                isSold: post.isSold,
                                 seller: post.seller
                                     ? { id: post.seller.id }
                                     : undefined,
