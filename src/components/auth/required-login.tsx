@@ -12,8 +12,10 @@ import RequiredLoginClient from "./required-login-client";
 
 export default async function RequiredLogin({
     children,
+    requireAdmin = false,
 }: {
     children?: React.ReactNode | null;
+    requireAdmin?: boolean;
 }) {
     const hdrs = await headers();
     const session = await auth.api.getSession({ headers: hdrs });
@@ -21,6 +23,10 @@ export default async function RequiredLogin({
     if (!session?.user) {
         const pathname = hdrs.get("x-current-path") || "/";
         redirect(`/login?redirect=${pathname}`);
+    }
+
+    if (requireAdmin && session?.user.role !== "admin") {
+        redirect("/");
     }
 
     // Wrap children in RequiredLoginClient to handle client-side session changes

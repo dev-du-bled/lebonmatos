@@ -8,11 +8,11 @@ import { z } from "zod";
  * Schéma pour le modèle Images (correspondant à Prisma)
  */
 export const imagesSchema = z.object({
-    id: z.string(),
+    id: z.uuid(),
     image: z.string(),
     alt: z.string().nullable().optional(),
-    ownerId: z.string(),
-    postId: z.string().nullable().optional(),
+    ownerId: z.uuid(),
+    postId: z.uuid().nullable().optional(),
 });
 
 /**

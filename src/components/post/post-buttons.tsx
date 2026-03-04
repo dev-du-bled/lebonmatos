@@ -11,9 +11,10 @@ import { trpc } from "@/trpc/client";
 interface PostButtonsProps {
     postId: string;
     sellerId: string;
+    isSold?: boolean;
 }
 
-export function ContactButton({ postId, sellerId }: PostButtonsProps) {
+export function ContactButton({ postId, sellerId, isSold }: PostButtonsProps) {
     const { session } = useSession();
     const router = useRouter();
 
@@ -33,13 +34,14 @@ export function ContactButton({ postId, sellerId }: PostButtonsProps) {
         <Button
             onClick={() => getOrCreate.mutate({ postId, sellerId })}
             loading={getOrCreate.isPending}
+            disabled={isSold}
         >
             Contacter
         </Button>
     );
 }
 
-export function BuyButtons({ postId, sellerId }: PostButtonsProps) {
+export function BuyButtons({ postId, sellerId, isSold }: PostButtonsProps) {
     const { session } = useSession();
     const router = useRouter();
 
@@ -67,7 +69,7 @@ export function BuyButtons({ postId, sellerId }: PostButtonsProps) {
     return (
         <Card className="gap-3">
             <CardHeader>
-                <CardTitle>Intéressé ?</CardTitle>
+                <CardTitle>{isSold ? "Vendu" : "Intéressé ?"}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
                 <div className="flex gap-2">
@@ -78,6 +80,7 @@ export function BuyButtons({ postId, sellerId }: PostButtonsProps) {
                             getOrCreateOffer.mutate({ postId, sellerId })
                         }
                         loading={getOrCreateOffer.isPending}
+                        disabled={isSold}
                     >
                         Faire une offre
                     </Button>
@@ -85,6 +88,7 @@ export function BuyButtons({ postId, sellerId }: PostButtonsProps) {
                         className="flex-1"
                         onClick={() => getOrCreate.mutate({ postId, sellerId })}
                         loading={getOrCreate.isPending}
+                        disabled={isSold}
                     >
                         Acheter
                     </Button>

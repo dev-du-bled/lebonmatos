@@ -61,8 +61,8 @@ export const discussionRouter = createTRPCRouter({
     getOrCreate: privateProcedure
         .input(
             z.object({
-                postId: z.string().cuid(),
-                sellerId: z.string(),
+                postId: z.uuid(),
+                sellerId: z.uuid(),
             })
         )
         .mutation(async ({ ctx, input }) => {
@@ -139,6 +139,7 @@ export const discussionRouter = createTRPCRouter({
                         title: true,
                         price: true,
                         images: true,
+                        isSold: true,
                     },
                 },
                 buyer: {
@@ -183,6 +184,7 @@ export const discussionRouter = createTRPCRouter({
                     title: d.post?.title ?? "Annonce supprimée",
                     price: d.post?.price ?? 0,
                     thumbnail: d.post?.images[0] ?? null,
+                    isSold: d.post?.isSold ?? false,
                 },
                 otherParty: otherParty
                     ? {
@@ -209,8 +211,8 @@ export const discussionRouter = createTRPCRouter({
     getMessages: privateProcedure
         .input(
             z.object({
-                discussionId: z.string().cuid(),
-                cursor: z.string().cuid().optional(),
+                discussionId: z.uuid(),
+                cursor: z.uuid().optional(),
                 limit: z.number().int().min(1).max(50).default(30),
             })
         )
@@ -226,6 +228,7 @@ export const discussionRouter = createTRPCRouter({
                             title: true,
                             price: true,
                             images: true,
+                            isSold: true,
                         },
                     },
                     buyer: {
@@ -286,6 +289,21 @@ export const discussionRouter = createTRPCRouter({
             const isBuyer = discussion.buyerId === userId;
             const otherParty = isBuyer ? discussion.seller : discussion.buyer;
 
+            // Vérifier si l'acheteur a déjà laissé un avis au vendeur
+            let hasReview = false;
+            if (discussion.sellerId) {
+                const existingReview = await prisma.rating.findUnique({
+                    where: {
+                        userId_raterId: {
+                            userId: discussion.sellerId,
+                            raterId: discussion.buyerId,
+                        },
+                    },
+                    select: { id: true },
+                });
+                hasReview = !!existingReview;
+            }
+
             return {
                 discussion: {
                     id: discussion.id,
@@ -307,6 +325,11 @@ export const discussionRouter = createTRPCRouter({
                               username: null,
                           },
                     isBuyer,
+                    acceptedPrice: discussion.acceptedPrice,
+                    isSold: discussion.post?.isSold ?? false,
+                    sellerId: discussion.sellerId,
+                    buyerId: discussion.buyerId,
+                    hasReview,
                 },
                 messages: messages.map((m) => ({
                     id: m.id,
@@ -335,7 +358,7 @@ export const discussionRouter = createTRPCRouter({
         }),
 
     markAsRead: privateProcedure
-        .input(z.object({ discussionId: z.string().cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session.user.id;
 
@@ -372,7 +395,7 @@ export const discussionRouter = createTRPCRouter({
         .input(
             z
                 .object({
-                    discussionId: z.string().cuid(),
+                    discussionId: z.uuid(),
                     content: z.string().min(1).max(2000).optional(),
                     price: z.number().int().min(1).max(32767).optional(),
                     type: z.enum(["TEXT", "OFFER"]).default("TEXT"),
@@ -397,7 +420,11 @@ export const discussionRouter = createTRPCRouter({
 
             const discussion = await prisma.discussion.findUnique({
                 where: { id: input.discussionId },
-                select: { buyerId: true, sellerId: true },
+                select: {
+                    buyerId: true,
+                    sellerId: true,
+                    post: { select: { price: true } },
+                },
             });
 
             if (!discussion) {
@@ -409,6 +436,22 @@ export const discussionRouter = createTRPCRouter({
                 discussion.sellerId !== userId
             ) {
                 throw new TRPCError({ code: "UNAUTHORIZED" });
+            }
+
+            // Validation du prix pour les offres (entre 80% et < prix original)
+            if (
+                input.type === "OFFER" &&
+                input.price !== undefined &&
+                discussion.post
+            ) {
+                const postPrice = discussion.post.price;
+                const minPrice = Math.ceil(postPrice * 0.2);
+                if (input.price < minPrice || input.price >= postPrice) {
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: `L'offre doit être entre ${minPrice} € et ${postPrice - 1} €`,
+                    });
+                }
             }
 
             const message = await prisma.message.create({
@@ -464,8 +507,152 @@ export const discussionRouter = createTRPCRouter({
             return payload;
         }),
 
+    acceptOffer: privateProcedure
+        .input(
+            z.object({
+                discussionId: z.string().cuid(),
+                messageId: z.string().cuid(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const userId = ctx.session.user.id;
+
+            const discussion = await prisma.discussion.findUnique({
+                where: { id: input.discussionId },
+                include: {
+                    post: { select: { price: true, isSold: true } },
+                },
+            });
+
+            if (!discussion) {
+                throw new TRPCError({ code: "NOT_FOUND" });
+            }
+
+            if (discussion.sellerId !== userId) {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Seul le vendeur peut accepter une offre",
+                });
+            }
+
+            if (discussion.post?.isSold) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Cet article est déjà vendu",
+                });
+            }
+
+            const offerMessage = await prisma.message.findUnique({
+                where: { id: input.messageId },
+            });
+
+            if (
+                !offerMessage ||
+                offerMessage.discussionId !== input.discussionId ||
+                offerMessage.type !== "OFFER" ||
+                offerMessage.price === null
+            ) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Message d'offre invalide",
+                });
+            }
+
+            // Double vérification du prix côté serveur
+            if (discussion.post) {
+                const postPrice = discussion.post.price;
+                const minPrice = Math.ceil(postPrice * 0.2);
+                if (
+                    offerMessage.price < minPrice ||
+                    offerMessage.price >= postPrice
+                ) {
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: "Le prix de cette offre n'est plus valide",
+                    });
+                }
+            }
+
+            // Mettre à jour le acceptedPrice
+            await prisma.discussion.update({
+                where: { id: input.discussionId },
+                data: { acceptedPrice: offerMessage.price },
+            });
+
+            // Créer le message système
+            const systemMsg = await createSystemMessage(input.discussionId, {
+                content: `Offre de ${offerMessage.price} € acceptée`,
+            });
+
+            // Notifier la boîte de réception
+            const recipientId = discussion.buyerId;
+            await publish(`inbox:${recipientId}`);
+
+            return {
+                acceptedPrice: offerMessage.price,
+                systemMessage: systemMsg,
+            };
+        }),
+
+    markAsSoldFromConversation: privateProcedure
+        .input(
+            z.object({
+                discussionId: z.string().cuid(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const userId = ctx.session.user.id;
+
+            const discussion = await prisma.discussion.findUnique({
+                where: { id: input.discussionId },
+                include: {
+                    post: { select: { id: true, isSold: true } },
+                },
+            });
+
+            if (!discussion) {
+                throw new TRPCError({ code: "NOT_FOUND" });
+            }
+
+            if (discussion.sellerId !== userId) {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Seul le vendeur peut marquer comme vendu",
+                });
+            }
+
+            if (discussion.post?.isSold) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Cet article est déjà vendu",
+                });
+            }
+
+            // Update atomique du post
+            await prisma.post.update({
+                where: { id: discussion.post!.id },
+                data: {
+                    isSold: true,
+                    boughtById: discussion.buyerId,
+                },
+            });
+
+            // Créer le message système avec bouton "Laisser un avis"
+            const systemMsg = await createSystemMessage(input.discussionId, {
+                content: "Article marqué comme vendu !",
+                buttonLabel: "Laisser un avis",
+                buttonUrl: `/profile/${userId}/review?from=/messages/${input.discussionId}`,
+                buttonAction: "buyer_only",
+            });
+
+            // Notifier la boîte de réception de l'acheteur
+            await publish(`inbox:${discussion.buyerId}`);
+
+            return { systemMessage: systemMsg };
+        }),
+
     sendTyping: privateProcedure
-        .input(z.object({ discussionId: z.cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session.user.id;
             const name = ctx.session.user.name ?? "Quelqu'un";
@@ -489,7 +676,7 @@ export const discussionRouter = createTRPCRouter({
         }),
 
     onMessage: privateProcedure
-        .input(z.object({ discussionId: z.cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .subscription(async function* ({ ctx, input, signal }) {
             const userId = ctx.session.user.id;
 
@@ -520,7 +707,7 @@ export const discussionRouter = createTRPCRouter({
         }),
 
     onTyping: privateProcedure
-        .input(z.object({ discussionId: z.cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .subscription(async function* ({ ctx, input, signal }) {
             const userId = ctx.session.user.id;
 
@@ -554,7 +741,7 @@ export const discussionRouter = createTRPCRouter({
         }),
 
     onReadReceipt: privateProcedure
-        .input(z.object({ discussionId: z.cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .subscription(async function* ({ ctx, input, signal }) {
             const userId = ctx.session.user.id;
 
@@ -587,7 +774,7 @@ export const discussionRouter = createTRPCRouter({
     devSendSystemMessage: privateProcedure
         .input(
             z.object({
-                discussionId: z.string().cuid(),
+                discussionId: z.uuid(),
                 content: z.string().optional(),
                 imageUrls: z.array(z.string()).optional(),
                 buttonLabel: z.string().optional(),

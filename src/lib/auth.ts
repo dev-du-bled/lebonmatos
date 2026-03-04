@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
-import { captcha, username } from "better-auth/plugins";
+import { admin, captcha, username } from "better-auth/plugins";
 
 const forbiddenUsernames = [
     "admin",
@@ -40,6 +40,7 @@ export const auth = betterAuth({
                 );
             },
         }),
+        admin(),
         ...(process.env.NODE_ENV === "production" // ReCaptcha en prod seulement
             ? [
                   captcha({
@@ -53,6 +54,7 @@ export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
+    advanced: { database: { generateId: () => crypto.randomUUID() } },
     user: {
         deleteUser: {
             enabled: true,

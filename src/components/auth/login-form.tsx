@@ -188,7 +188,7 @@ export function LoginForm() {
                                 </Field>
                                 <FieldDescription className="text-center">
                                     Vous n&apos;avez pas de compte ?{" "}
-                                    <a
+                                    <Link
                                         href={
                                             redirect
                                                 ? `/signup?redirect=${encodeURIComponent(redirect)}`
@@ -196,7 +196,7 @@ export function LoginForm() {
                                         }
                                     >
                                         S&apos;inscrire
-                                    </a>
+                                    </Link>
                                 </FieldDescription>
                             </FieldGroup>
                         </form>

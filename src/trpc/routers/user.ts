@@ -130,7 +130,7 @@ export const userRouter = createTRPCRouter({
         return buildProfilePayload(ctx.session!.user.id);
     }),
     getReviewStats: publicProcedure
-        .input(z.object({ userId: z.string() }))
+        .input(z.object({ userId: z.uuid() }))
         .query(async ({ input }) => {
             const result = await prisma.rating.aggregate({
                 where: { userId: input.userId },
@@ -148,9 +148,9 @@ export const userRouter = createTRPCRouter({
     getReceivedReviews: publicProcedure
         .input(
             z.object({
-                userId: z.string(),
+                userId: z.uuid(),
                 limit: z.number().int().min(1).max(50).default(10),
-                cursor: z.string().optional(), // id of the last review on the previous page
+                cursor: z.uuid().optional(), // id of the last review on the previous page
             })
         )
         .query(async ({ input }) => {
@@ -220,7 +220,7 @@ export const userRouter = createTRPCRouter({
     addReview: privateProcedure
         .input(
             z.object({
-                userId: z.string(),
+                userId: z.uuid(),
                 rating: z.number().int().min(1).max(5),
                 comment: z.string().max(500).optional(),
             })
@@ -291,7 +291,7 @@ export const userRouter = createTRPCRouter({
         }),
 
     getPublicProfile: publicProcedure
-        .input(z.object({ userId: z.string() }))
+        .input(z.object({ userId: z.uuid() }))
         .query(async ({ input }) => {
             return buildPublicProfilePayload(input.userId);
         }),

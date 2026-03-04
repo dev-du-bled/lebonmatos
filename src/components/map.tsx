@@ -134,7 +134,7 @@ export default function Map({ latitude, longitude, coordinates }: MapProps) {
             <MapContainer
                 center={[latitude, longitude]}
                 zoom={10.5}
-                scrollWheelZoom={true}
+                // scrollWheelZoom={true}
                 zoomControl={false}
                 style={{
                     height: "400px",
