@@ -1197,14 +1197,12 @@ export default function ConversationView({
                     className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
                 >
                     <div className="relative size-14 shrink-0 rounded-lg overflow-hidden bg-muted">
-                        {thumbnail && (
-                            <Image
-                                src={thumbnail}
-                                alt={discussion.post.title}
-                                fill
-                                className="object-cover"
-                            />
-                        )}
+                        <Image
+                            src={thumbnail ?? "/images/fallback.webp"}
+                            alt={discussion.post.title}
+                            fill
+                            className="object-cover"
+                        />
                     </div>
                     <div className="min-w-0">
                         <p className="font-semibold text-base line-clamp-1">
