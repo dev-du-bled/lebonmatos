@@ -124,6 +124,7 @@ export const SearchPaginationFull = memo(function SearchPaginationFull({
                     <PaginationPrevious
                         onClick={(e) => {
                             e.preventDefault();
+                            if (page === 0) return;
                             onPageChange(page - 1);
                         }}
                         aria-disabled={page === 0}
@@ -143,6 +144,7 @@ export const SearchPaginationFull = memo(function SearchPaginationFull({
                     <PaginationNext
                         onClick={(e) => {
                             e.preventDefault();
+                            if (page >= totalPages - 1) return;
                             onPageChange(page + 1);
                         }}
                         aria-disabled={page >= totalPages - 1}
