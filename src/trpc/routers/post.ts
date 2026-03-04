@@ -641,13 +641,15 @@ export const postRouter = createTRPCRouter({
         .input(
             z.object({
                 query: z.string().optional(),
-                componentId: z.string().optional(),
+                componentId: z.string().uuid().optional(),
                 location: z
                     .object({ lat: z.number(), lon: z.number() })
                     .optional(),
                 priceMin: z.number().min(0).optional(),
                 priceMax: z.number().min(0).optional(),
-                colors: z.array(z.string()).optional(),
+                colors: z
+                    .array(z.enum(["Black", "White", "Gray", "Silver"]))
+                    .optional(),
                 limit: z.number().min(1).max(50).default(20),
                 offset: z.number().min(0).default(0),
             })
