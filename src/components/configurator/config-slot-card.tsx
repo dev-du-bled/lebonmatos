@@ -127,6 +127,7 @@ export function ConfigSlotCard({
                         <div className="flex-1 space-y-1">
                             <Link
                                 href={`/post/${post.id}`}
+                                target="_blank"
                                 className="block w-fit hover:underline"
                             >
                                 <p className="font-medium wrap-anywhere line-clamp-2 text-base">
