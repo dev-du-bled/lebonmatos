@@ -26,10 +26,10 @@ services:
             lbm_db:
                 condition: service_healthy
 
-    lbm_init:
-        build:
-            context: .
-            target: init
+    lbm_app:
+        build: .
+        ports:
+            - 80:3000
         env_file:
             - .env.docker
         depends_on:
@@ -37,17 +37,6 @@ services:
                 condition: service_healthy
             lbm_search:
                 condition: service_started
-
-    lbm_app:
-        build:
-            context: .
-        ports:
-            - 80:3000
-        env_file:
-            - .env.docker
-        depends_on:
-            lbm_init:
-                condition: service_completed_successfully
 
 volumes:
     lbm_data:

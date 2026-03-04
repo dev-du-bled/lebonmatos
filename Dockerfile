@@ -29,12 +29,6 @@ RUN bunx prisma generate --schema prisma/schema/
 
 RUN bun run build
 
-# Init stage for first-time setup (migrations, seed, meilisearch sync)
-FROM builder AS init
-RUN apk add --no-cache libc6-compat
-COPY --chmod=755 docker-init.sh ./
-ENTRYPOINT ["./docker-init.sh"]
-
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -69,6 +63,15 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/effect ./node_module
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/fast-check ./node_modules/fast-check
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pure-rand ./node_modules/pure-rand
 
+# Copy files needed for init scripts (seed, meilisearch sync)
+COPY --from=builder --chown=nextjs:nodejs /app/data ./data
+COPY --from=builder --chown=nextjs:nodejs /app/sync ./sync
+COPY --from=builder --chown=nextjs:nodejs /app/src/utils/components.ts ./src/utils/components.ts
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/compatibility.ts ./src/lib/compatibility.ts
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pg ./node_modules/pg
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/meilisearch ./node_modules/meilisearch
+
 # Copy entrypoint script
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
 
@@ -76,6 +79,5 @@ USER nextjs
 
 EXPOSE 3000
 
-# Use entrypoint to run migrations before starting the app
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["bun", "./server.js"]
