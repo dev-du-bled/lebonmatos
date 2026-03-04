@@ -74,7 +74,9 @@ export default function ConversationList({
                         {/* Thumbnail */}
                         <div className="relative size-14 shrink-0 rounded-lg overflow-hidden bg-muted">
                             <Image
-                                src={d.post.thumbnail ?? "/images/fallback.webp"}
+                                src={
+                                    d.post.thumbnail ?? "/images/fallback.webp"
+                                }
                                 alt={d.post.title}
                                 fill
                                 className="object-cover"
