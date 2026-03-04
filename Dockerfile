@@ -29,6 +29,12 @@ RUN bunx prisma generate --schema prisma/schema/
 
 RUN bun run build
 
+# Init stage for first-time setup (migrations, seed, meilisearch sync)
+FROM builder AS init
+RUN apk add --no-cache libc6-compat
+COPY --chmod=755 docker-init.sh ./
+ENTRYPOINT ["./docker-init.sh"]
+
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
