@@ -47,7 +47,7 @@ export default function Footer({ className }: { className?: string }) {
                         <ul className="space-y-2">
                             <li>
                                 <Link
-                                    href="/annonces"
+                                    href="/search"
                                     className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     Annonces
@@ -83,7 +83,7 @@ export default function Footer({ className }: { className?: string }) {
                         <ul className="space-y-2">
                             <li>
                                 <Link
-                                    href="/about"
+                                    href="#"
                                     className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     A propos
@@ -91,7 +91,7 @@ export default function Footer({ className }: { className?: string }) {
                             </li>
                             <li>
                                 <Link
-                                    href="/contact"
+                                    href="#"
                                     className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     Contact
@@ -99,7 +99,7 @@ export default function Footer({ className }: { className?: string }) {
                             </li>
                             <li>
                                 <Link
-                                    href="/privacy-policy"
+                                    href="#"
                                     className="text-muted-foreground hover:text-white transition-colors"
                                 >
                                     Politique de Confidentialité

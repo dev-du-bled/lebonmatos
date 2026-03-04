@@ -99,7 +99,7 @@ function PriceRangeInput({
     );
 }
 
-const PriceFilter = memo(function PriceFilter({
+export const PriceFilterContent = memo(function PriceFilterContent({
     priceRange,
     onPriceRangeChange,
     onPriceActiveChange,
@@ -109,8 +109,7 @@ const PriceFilter = memo(function PriceFilter({
     onPriceActiveChange: (active: boolean) => void;
 }) {
     return (
-        <PopoverContent side="left" align="start" className="w-64">
-            <p className="text-sm font-sans font-medium mb-4">Prix</p>
+        <>
             <Slider
                 value={priceRange}
                 onValueChange={(v) => {
@@ -149,7 +148,71 @@ const PriceFilter = memo(function PriceFilter({
                     }}
                 />
             </div>
+        </>
+    );
+});
+
+const PriceFilter = memo(function PriceFilter({
+    priceRange,
+    onPriceRangeChange,
+    onPriceActiveChange,
+}: {
+    priceRange: [number, number];
+    onPriceRangeChange: (range: [number, number]) => void;
+    onPriceActiveChange: (active: boolean) => void;
+}) {
+    return (
+        <PopoverContent side="left" align="start" className="w-64">
+            <p className="text-sm font-sans font-medium mb-4">Prix</p>
+            <PriceFilterContent
+                priceRange={priceRange}
+                onPriceRangeChange={onPriceRangeChange}
+                onPriceActiveChange={onPriceActiveChange}
+            />
         </PopoverContent>
+    );
+});
+
+export const ColorFilterContent = memo(function ColorFilterContent({
+    selectedColors,
+    onSelectedColorsChange,
+}: {
+    selectedColors: ComponentColor[];
+    onSelectedColorsChange: (colors: ComponentColor[]) => void;
+}) {
+    return (
+        <>
+            <button
+                className="w-full text-left py-1 text-xs font-sans text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => onSelectedColorsChange([])}
+            >
+                Tout désélectionner
+            </button>
+            <div className="flex flex-wrap gap-2 mt-1">
+                {COLORS.map((color) => (
+                    <label
+                        key={color}
+                        className="flex items-center gap-2 text-sm font-sans cursor-pointer"
+                    >
+                        <input
+                            type="checkbox"
+                            checked={selectedColors.includes(color)}
+                            onChange={(e) => {
+                                onSelectedColorsChange(
+                                    e.target.checked
+                                        ? [...selectedColors, color]
+                                        : selectedColors.filter(
+                                              (c) => c !== color
+                                          )
+                                );
+                            }}
+                            className="accent-primary size-3.5"
+                        />
+                        {color}
+                    </label>
+                ))}
+            </div>
+        </>
     );
 });
 
@@ -162,32 +225,12 @@ const ColorFilter = memo(function ColorFilter({
 }) {
     return (
         <PopoverContent side="left" align="start" className="w-48 p-0">
-            <button
-                className="w-full text-left px-4 py-2.5 text-xs font-sans text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-b"
-                onClick={() => onSelectedColorsChange([])}
-            >
-                Tout désélectionner
-            </button>
-            {COLORS.map((color) => (
-                <label
-                    key={color}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-sans hover:bg-accent transition-colors cursor-pointer"
-                >
-                    <input
-                        type="checkbox"
-                        checked={selectedColors.includes(color)}
-                        onChange={(e) => {
-                            onSelectedColorsChange(
-                                e.target.checked
-                                    ? [...selectedColors, color]
-                                    : selectedColors.filter((c) => c !== color)
-                            );
-                        }}
-                        className="accent-primary size-3.5"
-                    />
-                    {color}
-                </label>
-            ))}
+            <div className="px-4 py-2.5 border-b">
+                <ColorFilterContent
+                    selectedColors={selectedColors}
+                    onSelectedColorsChange={onSelectedColorsChange}
+                />
+            </div>
         </PopoverContent>
     );
 });

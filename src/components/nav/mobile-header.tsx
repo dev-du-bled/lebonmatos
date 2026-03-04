@@ -59,11 +59,20 @@ export function MobileHeader() {
                                     </li>
                                     <li>
                                         <Link
-                                            href="/explore"
+                                            href="/search"
                                             onClick={() => setOpen(false)}
                                             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
                                         >
                                             Explorer
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/create-post"
+                                            onClick={() => setOpen(false)}
+                                            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                                        >
+                                            Publier
                                         </Link>
                                     </li>
                                 </ul>
