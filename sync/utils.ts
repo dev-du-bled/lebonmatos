@@ -22,6 +22,7 @@ export const POST_QUERY_BASE = `
         p.images,
         c.name as "componentName",
         c.type as "componentType",
+        c.color as "componentColor",
         u.name as "userName",
         l.city as "locationCity",
         json_build_object('lat', l.lat, 'lng', l.lon) as "_geo"
