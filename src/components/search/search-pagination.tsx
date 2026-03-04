@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, ReactNode } from "react";
 import {
     Pagination,
     PaginationContent,
@@ -23,36 +23,61 @@ function PageItems({
     linkClassName?: string;
     activeLinkClassName?: string;
 }) {
-    return Array.from({ length: totalPages }, (_, i) => {
-        if (i === 0 || i === totalPages - 1 || Math.abs(i - page) <= 1) {
-            return (
-                <PaginationItem key={i}>
-                    <PaginationLink
-                        isActive={i === page}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onPageChange(i);
-                        }}
-                        className={cn(
-                            "cursor-pointer",
-                            linkClassName,
-                            i === page && activeLinkClassName
-                        )}
-                    >
-                        {i + 1}
-                    </PaginationLink>
-                </PaginationItem>
-            );
+    if (totalPages <= 0) {
+        return null;
+    }
+
+    // Only render a few of pages, not need to parse through the entire page window
+    // as we'll not show all of it
+    // - first page (0)
+    // - last page (totalPages - 1)
+    // - a small window around the current page (page - 1, page, page + 1)
+    const pagesToShow = new Set<number>();
+    pagesToShow.add(0);
+    if (totalPages > 1) {
+        pagesToShow.add(totalPages - 1);
+    }
+    for (let offset = -1; offset <= 1; offset++) {
+        const candidate = page + offset;
+        if (candidate > 0 && candidate < totalPages - 1) {
+            pagesToShow.add(candidate);
         }
-        if (Math.abs(i - page) === 2) {
-            return (
-                <PaginationItem key={i}>
+    }
+
+    const sortedPages = Array.from(pagesToShow).sort((a, b) => a - b);
+    const items: ReactNode[] = [];
+    let previousPage: number | null = null;
+
+    for (const currentPage of sortedPages) {
+        if (previousPage !== null && currentPage - previousPage > 1) {
+            items.push(
+                <PaginationItem key={`ellipsis-${currentPage}`}>
                     <PaginationEllipsis className={linkClassName} />
                 </PaginationItem>
             );
         }
-        return null;
-    });
+        items.push(
+            <PaginationItem key={currentPage}>
+                <PaginationLink
+                    isActive={currentPage === page}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onPageChange(currentPage);
+                    }}
+                    className={cn(
+                        "cursor-pointer",
+                        linkClassName,
+                        currentPage === page && activeLinkClassName
+                    )}
+                >
+                    {currentPage + 1}
+                </PaginationLink>
+            </PaginationItem>
+        );
+        previousPage = currentPage;
+    }
+
+    return items;
 }
 
 export const SearchPaginationCompact = memo(function SearchPaginationCompact({
