@@ -38,7 +38,7 @@ import {
     FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithCount } from "@/components/ui/textarea-with-count";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     publicProfileFormSchema,
@@ -406,7 +406,7 @@ export function PublicProfileDialog({
                                         </Button>
                                     )}
                                     {avatarError && (
-                                        <p className="text-xs font-medium text-destructive max-w-[150px] text-center">
+                                        <p className="text-xs font-medium text-destructive max-w-37.5 text-center">
                                             {avatarError}
                                         </p>
                                     )}
@@ -437,22 +437,25 @@ export function PublicProfileDialog({
                                 <FormField
                                     control={form.control}
                                     name="bio"
-                                    render={({ field }) => (
+                                    render={({ field, fieldState }) => (
                                         <FormItem>
                                             <FormLabel>Bio</FormLabel>
+                                            <FormDescription>
+                                                Dites-en un peu plus sur vous.
+                                            </FormDescription>
                                             <FormControl>
-                                                <Textarea
+                                                <TextareaWithCount
                                                     placeholder="Parlez-nous de vous..."
-                                                    className="min-h-[120px] resize-none"
+                                                    className="min-h-30 resize-none"
+                                                    maxLength={500}
+                                                    error={
+                                                        fieldState.error
+                                                            ?.message
+                                                    }
                                                     {...field}
                                                     value={field.value ?? ""}
                                                 />
                                             </FormControl>
-                                            <FormDescription>
-                                                Dites-en un peu plus sur vous.
-                                                (Max 500 caractères)
-                                            </FormDescription>
-                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />

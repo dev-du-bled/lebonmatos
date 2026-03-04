@@ -22,7 +22,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithCount } from "@/components/ui/textarea-with-count";
 import { Label } from "@/components/ui/label";
 import { REPORT_TYPE } from "@prisma/client";
 import { trpc } from "@/trpc/client";
@@ -94,7 +94,6 @@ export default function ReportButton({
         formState: { isValid, errors },
         register,
         handleSubmit,
-        watch,
         setValue,
         reset,
     } = useForm<CreateReportInput>({
@@ -107,8 +106,6 @@ export default function ReportButton({
             details: null,
         },
     });
-
-    const details = watch("details") ?? "";
 
     const { mutate: createReport, isPending } =
         trpc.reports.createReport.useMutation({
@@ -264,32 +261,21 @@ export default function ReportButton({
                                     </span>
                                 )}
                             </Label>
-                            <Textarea
+                            <TextareaWithCount
                                 id="report-details"
                                 placeholder="Décrivez le problème en quelques mots..."
                                 {...register("details")}
-                                value={details}
                                 onChange={(e) =>
                                     setValue("details", e.target.value, {
                                         shouldValidate: true,
                                     })
                                 }
                                 rows={4}
+                                maxLength={500}
                                 disabled={isPending}
                                 aria-invalid={!!errors.details}
+                                error={errors.details?.message}
                             />
-                            <div className="flex justify-between items-center">
-                                {errors.details ? (
-                                    <p className="text-xs text-destructive">
-                                        {errors.details.message}
-                                    </p>
-                                ) : (
-                                    <span />
-                                )}
-                                <p className="text-xs text-muted-foreground">
-                                    {details.length}/500
-                                </p>
-                            </div>
                         </div>
                         <div className="flex gap-2 justify-end">
                             <Button

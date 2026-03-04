@@ -1,10 +1,12 @@
 import Advert from "@/components/home-page/advert";
 import PostCarousel from "@/components/home-page/post-carousel";
 import { trpc } from "@/trpc/server";
+import { Metadata } from "next";
 
-export const metadata = {
-    title: "Home",
-    description: "Bienvenue sur notre site de vente de matériel informatique d'occasion ! Découvrez une large sélection de composants, d'ordinateurs portables et de périphériques à des prix compétitifs. Que vous soyez un passionné de technologie ou à la recherche d'une bonne affaire, notre plateforme vous offre une expérience d'achat facile et sécurisée. Explorez nos catégories variées et trouvez le matériel informatique d'occasion qui correspond à vos besoins dès aujourd'hui !",
+export const metadata: Metadata = {
+    title: "Accueil",
+    description:
+        "Bienvenue sur LeBonMatos, la plateforme d'annonces dédiée au matériel informatique d'occasion.",
 };
 
 export default async function Home() {

@@ -148,224 +148,203 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
     const canSubmit = isFormDirty && !mutation.isPending;
 
     return (
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-16 pt-10 sm:px-6 lg:px-8">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-semibold sm:text-4xl">
-                    Informations personnelles
-                </h1>
-                <p className="text-muted-foreground text-sm sm:text-base">
-                    Gérez vos informations privées et vos coordonnées de
-                    contact.
-                </p>
-            </div>
-            <Card className="shadow-lg">
-                <CardHeader>
-                    <CardTitle className="text-2xl">Coordonnées</CardTitle>
-                    <CardDescription>
-                        Ces informations sont utilisées pour vos transactions et
-                        la livraison.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(handleSubmit)}
-                            className="flex flex-col gap-6"
-                        >
-                            <div className="grid gap-6 md:grid-cols-2">
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>
-                                                Nom complet (Légal)
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Prénom Nom"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="exemple@email.com"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="phoneNumber"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Téléphone</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="+33 6 12 34 56 78"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="text-2xl">Coordonnées</CardTitle>
+                <CardDescription>
+                    Ces informations sont utilisées pour vos transactions et la
+                    livraison.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                    <form
+                        onSubmit={form.handleSubmit(handleSubmit)}
+                        className="flex flex-col gap-6"
+                    >
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Nom complet (Légal)
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Prénom Nom"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="exemple@email.com"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="phoneNumber"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Téléphone</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="+33 6 12 34 56 78"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {submitError && (
+                            <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                                {submitError}
                             </div>
+                        )}
+                        {submitSuccess && !submitError && (
+                            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                                Informations mises à jour avec succès.
+                            </div>
+                        )}
 
-                            {submitError && (
-                                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                                    {submitError}
-                                </div>
-                            )}
-                            {submitSuccess && !submitError && (
-                                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                                    Informations mises à jour avec succès.
-                                </div>
-                            )}
-
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <Dialog
-                                    open={isPasswordDialogOpen}
-                                    onOpenChange={setIsPasswordDialogOpen}
-                                >
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" type="button">
-                                            <Lock className="mr-2 size-4" />
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <Dialog
+                                open={isPasswordDialogOpen}
+                                onOpenChange={setIsPasswordDialogOpen}
+                            >
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" type="button">
+                                        <Lock className="mr-2 size-4" />
+                                        Changer le mot de passe
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>
                                             Changer le mot de passe
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>
-                                                Changer le mot de passe
-                                            </DialogTitle>
-                                            <DialogDescription>
-                                                Entrez votre mot de passe actuel
-                                                et le nouveau mot de passe.
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <Form {...passwordForm}>
-                                            <form
-                                                onSubmit={passwordForm.handleSubmit(
-                                                    onPasswordSubmit
+                                        </DialogTitle>
+                                        <DialogDescription>
+                                            Entrez votre mot de passe actuel et
+                                            le nouveau mot de passe.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <Form {...passwordForm}>
+                                        <form
+                                            onSubmit={passwordForm.handleSubmit(
+                                                onPasswordSubmit
+                                            )}
+                                            className="space-y-4"
+                                        >
+                                            <FormField
+                                                control={passwordForm.control}
+                                                name="currentPassword"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>
+                                                            Mot de passe actuel
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input
+                                                                type="password"
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
                                                 )}
-                                                className="space-y-4"
-                                            >
-                                                <FormField
-                                                    control={
-                                                        passwordForm.control
-                                                    }
-                                                    name="currentPassword"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>
-                                                                Mot de passe
-                                                                actuel
-                                                            </FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    type="password"
-                                                                    {...field}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <FormField
-                                                    control={
-                                                        passwordForm.control
-                                                    }
-                                                    name="newPassword"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>
-                                                                Nouveau mot de
-                                                                passe
-                                                            </FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    type="password"
-                                                                    {...field}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <FormField
-                                                    control={
-                                                        passwordForm.control
-                                                    }
-                                                    name="confirmPassword"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>
-                                                                Confirmer le mot
-                                                                de passe
-                                                            </FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    type="password"
-                                                                    {...field}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                {passwordError && (
-                                                    <div className="text-sm text-destructive">
-                                                        {passwordError}
-                                                    </div>
+                                            />
+                                            <FormField
+                                                control={passwordForm.control}
+                                                name="newPassword"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>
+                                                            Nouveau mot de passe
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input
+                                                                type="password"
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
                                                 )}
-                                                {passwordSuccess && (
-                                                    <div className="text-sm text-emerald-600">
-                                                        Mot de passe modifié
-                                                        avec succès.
-                                                    </div>
+                                            />
+                                            <FormField
+                                                control={passwordForm.control}
+                                                name="confirmPassword"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>
+                                                            Confirmer le mot de
+                                                            passe
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input
+                                                                type="password"
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
                                                 )}
-                                                <DialogFooter>
-                                                    <Button
-                                                        type="submit"
-                                                        loading={
-                                                            isChangingPassword
-                                                        }
-                                                    >
-                                                        Mettre à jour
-                                                    </Button>
-                                                </DialogFooter>
-                                            </form>
-                                        </Form>
-                                    </DialogContent>
-                                </Dialog>
+                                            />
+                                            {passwordError && (
+                                                <div className="text-sm text-destructive">
+                                                    {passwordError}
+                                                </div>
+                                            )}
+                                            {passwordSuccess && (
+                                                <div className="text-sm text-emerald-600">
+                                                    Mot de passe modifié avec
+                                                    succès.
+                                                </div>
+                                            )}
+                                            <DialogFooter>
+                                                <Button
+                                                    type="submit"
+                                                    loading={isChangingPassword}
+                                                >
+                                                    Mettre à jour
+                                                </Button>
+                                            </DialogFooter>
+                                        </form>
+                                    </Form>
+                                </DialogContent>
+                            </Dialog>
 
-                                <Button
-                                    type="submit"
-                                    disabled={!canSubmit}
-                                    loading={mutation.isPending}
-                                >
-                                    Enregistrer
-                                </Button>
-                            </div>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
-        </div>
+                            <Button
+                                type="submit"
+                                disabled={!canSubmit}
+                                loading={mutation.isPending}
+                            >
+                                Enregistrer
+                            </Button>
+                        </div>
+                    </form>
+                </Form>
+            </CardContent>
+        </Card>
     );
 }
 

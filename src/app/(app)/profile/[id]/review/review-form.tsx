@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 import { trpc } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithCount } from "@/components/ui/textarea-with-count";
 import {
     Form,
     FormControl,
@@ -152,7 +152,7 @@ export function ReviewForm({
                 <FormField
                     control={form.control}
                     name="comment"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                         <FormItem>
                             <FormLabel>
                                 Commentaire{" "}
@@ -161,26 +161,14 @@ export function ReviewForm({
                                 </span>
                             </FormLabel>
                             <FormControl>
-                                <Textarea
+                                <TextareaWithCount
                                     placeholder="Décrivez votre expérience avec cet utilisateur..."
                                     className="resize-none min-h-[100px]"
                                     maxLength={500}
+                                    error={fieldState.error?.message}
                                     {...field}
                                 />
                             </FormControl>
-                            <div className="flex justify-between items-center">
-                                <FormMessage />
-                                <p
-                                    className={cn(
-                                        "text-xs ml-auto tabular-nums transition-colors",
-                                        (field.value ?? "").length >= 450
-                                            ? "text-destructive"
-                                            : "text-muted-foreground"
-                                    )}
-                                >
-                                    {(field.value ?? "").length} / 500
-                                </p>
-                            </div>
                         </FormItem>
                     )}
                 />
