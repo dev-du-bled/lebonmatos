@@ -1,9 +1,9 @@
 import { createAuthClient } from "better-auth/react";
-import { usernameClient } from "better-auth/client/plugins";
+import { adminClient, usernameClient } from "better-auth/client/plugins";
 
 const createClient = () =>
     createAuthClient({
-        plugins: [usernameClient()],
+        plugins: [usernameClient(), adminClient()],
     });
 
 type AuthClient = ReturnType<typeof createClient>;

@@ -22,7 +22,7 @@ import { cache } from "react";
 import PostMap from "@/components/post/post-map";
 import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
-import z from "zod";
+import ReportButton from "@/components/report/report-button";
 import Link from "next/link";
 import { ReviewsDialog } from "@/app/(app)/profile/[id]/reviews-dialog";
 
@@ -39,6 +39,8 @@ export async function generateMetadata({
 
     const post = await getPost(id);
 
+    if (!post) notFound();
+
     return {
         title: `Annonce "${post?.title.slice(0, 15)}${post?.title.length || 0 > 15 ? "..." : ""}"`,
         description: `Découvrez en détails l'annonce "${post?.title}"`,
@@ -46,8 +48,11 @@ export async function generateMetadata({
 }
 
 const getPost = cache(async (id: string) => {
-    const post = await trpc.posts.getPost({ postId: id });
-    return post;
+    try {
+        return await trpc.posts.getPost({ postId: id });
+    } catch {
+        return null;
+    }
 });
 
 export default async function PostPage({
@@ -56,8 +61,6 @@ export default async function PostPage({
     params: Promise<Params>;
 }) {
     const { id } = await params;
-
-    if (!z.cuid().safeParse(id).success) notFound();
 
     const post = await getPost(id);
 
@@ -110,12 +113,21 @@ export default async function PostPage({
                         <CarouselPrevious className="left-4" />
                         <CarouselNext className="right-4" />
                     </Carousel>
-                    {/* Bouton favoris en haut à droite */}
-                    <div className="absolute top-4 right-4 z-10">
+                    {/* Bouton favoris/report en haut à droite */}
+                    <div className="absolute top-4 right-4 z-10 space-x-2">
+                        <ReportButton
+                            type="POST"
+                            width="icon"
+                            reportedId={post.id}
+                            userId={post.seller?.id}
+                        />
                         <FavoriteButton
                             post={{
                                 id: post.id,
                                 isFavorited: post.isFavorited,
+                                seller: post.seller
+                                    ? { id: post.seller.id }
+                                    : undefined,
                             }}
                         />
                     </div>

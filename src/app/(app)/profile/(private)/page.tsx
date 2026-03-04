@@ -1,13 +1,7 @@
-import Link from "next/link";
 import { Suspense } from "react";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardTitle,
-} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NavCard } from "@/components/nav/nav-card";
 import type { LucideIcon } from "lucide-react";
 import {
     AlertTriangle,
@@ -174,32 +168,8 @@ export default function ProfilePage() {
             </Suspense>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {QUICK_ACTIONS.map(({ title, description, href, Icon }) => (
-                    <Link
-                        key={title}
-                        href={href}
-                        className="group"
-                        prefetch={false}
-                    >
-                        <Card className="h-full gap-3 border-transparent bg-secondary/40 p-5 transition hover:border-primary hover:bg-background hover:shadow-md">
-                            <CardContent className="flex h-full flex-col gap-4 p-0">
-                                <div className="flex items-center gap-3">
-                                    <span
-                                        className="flex size-11 items-center justify-center rounded-lg bg-primary/20
-                                    group-hover:text-black transition group-hover:bg-primary"
-                                    >
-                                        <Icon className="size-5" />
-                                    </span>
-                                    <CardTitle className="text-base font-semibold">
-                                        {title}
-                                    </CardTitle>
-                                </div>
-                                <CardDescription className="text-sm text-muted-foreground">
-                                    {description}
-                                </CardDescription>
-                            </CardContent>
-                        </Card>
-                    </Link>
+                {QUICK_ACTIONS.map((action) => (
+                    <NavCard key={action.href} {...action} />
                 ))}
             </div>
         </section>

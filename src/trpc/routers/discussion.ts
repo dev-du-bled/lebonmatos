@@ -61,8 +61,8 @@ export const discussionRouter = createTRPCRouter({
     getOrCreate: privateProcedure
         .input(
             z.object({
-                postId: z.string().cuid(),
-                sellerId: z.string(),
+                postId: z.uuid(),
+                sellerId: z.uuid(),
             })
         )
         .mutation(async ({ ctx, input }) => {
@@ -211,8 +211,8 @@ export const discussionRouter = createTRPCRouter({
     getMessages: privateProcedure
         .input(
             z.object({
-                discussionId: z.string().cuid(),
-                cursor: z.string().cuid().optional(),
+                discussionId: z.uuid(),
+                cursor: z.uuid().optional(),
                 limit: z.number().int().min(1).max(50).default(30),
             })
         )
@@ -358,7 +358,7 @@ export const discussionRouter = createTRPCRouter({
         }),
 
     markAsRead: privateProcedure
-        .input(z.object({ discussionId: z.string().cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session.user.id;
 
@@ -395,7 +395,7 @@ export const discussionRouter = createTRPCRouter({
         .input(
             z
                 .object({
-                    discussionId: z.string().cuid(),
+                    discussionId: z.uuid(),
                     content: z.string().min(1).max(2000).optional(),
                     price: z.number().int().min(1).max(32767).optional(),
                     type: z.enum(["TEXT", "OFFER"]).default("TEXT"),
@@ -652,7 +652,7 @@ export const discussionRouter = createTRPCRouter({
         }),
 
     sendTyping: privateProcedure
-        .input(z.object({ discussionId: z.cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session.user.id;
             const name = ctx.session.user.name ?? "Quelqu'un";
@@ -676,7 +676,7 @@ export const discussionRouter = createTRPCRouter({
         }),
 
     onMessage: privateProcedure
-        .input(z.object({ discussionId: z.cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .subscription(async function* ({ ctx, input, signal }) {
             const userId = ctx.session.user.id;
 
@@ -707,7 +707,7 @@ export const discussionRouter = createTRPCRouter({
         }),
 
     onTyping: privateProcedure
-        .input(z.object({ discussionId: z.cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .subscription(async function* ({ ctx, input, signal }) {
             const userId = ctx.session.user.id;
 
@@ -741,7 +741,7 @@ export const discussionRouter = createTRPCRouter({
         }),
 
     onReadReceipt: privateProcedure
-        .input(z.object({ discussionId: z.cuid() }))
+        .input(z.object({ discussionId: z.uuid() }))
         .subscription(async function* ({ ctx, input, signal }) {
             const userId = ctx.session.user.id;
 
@@ -774,7 +774,7 @@ export const discussionRouter = createTRPCRouter({
     devSendSystemMessage: privateProcedure
         .input(
             z.object({
-                discussionId: z.string().cuid(),
+                discussionId: z.uuid(),
                 content: z.string().optional(),
                 imageUrls: z.array(z.string()).optional(),
                 buttonLabel: z.string().optional(),

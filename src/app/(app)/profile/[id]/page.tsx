@@ -3,7 +3,6 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 
 import { trpc } from "@/trpc/server";
-import { TRPCClientError } from "@trpc/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +11,7 @@ import { FileText, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReviewsDialog } from "./reviews-dialog";
 import { ListingsGrid } from "./listings-grid";
+import ReportButton from "@/components/report/report-button";
 
 type Params = {
     id: string;
@@ -24,6 +24,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
     const { id } = await params;
     const user = await getUser(id);
+    if (!user) {
+        return {
+            title: "Utilisateur non trouvé",
+            description: "L'utilisateur que vous recherchez n'existe pas.",
+        };
+    }
+
     return {
         title: `Profil de ${user?.username?.slice(0, 15) ?? "Utilisateur"}${(user?.username?.length ?? 0) > 15 ? "..." : ""}`,
         description: `Découvrez en détails le profil de ${user?.username ?? "cet utilisateur"}`,
@@ -33,14 +40,8 @@ export async function generateMetadata({
 const getUser = cache(async (id: string) => {
     try {
         return await trpc.user.getPublicProfile({ userId: id });
-    } catch (error) {
-        if (
-            error instanceof TRPCClientError &&
-            error.data?.code === "NOT_FOUND"
-        ) {
-            notFound();
-        }
-        throw error;
+    } catch {
+        return null;
     }
 });
 
@@ -170,7 +171,7 @@ async function ProfileHeader({ userId }: { userId: string }) {
 
     return (
         <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
-            <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
+            <div className="flex flex-col items-center gap-6 md:flex-row md:items-start ">
                 <Avatar className="size-24 border-4 border-background text-3xl font-semibold shadow-lg">
                     {user.image ? (
                         <AvatarImage
@@ -226,6 +227,13 @@ async function ProfileHeader({ userId }: { userId: string }) {
                     </div>
                 </div>
             </div>
+            <ReportButton
+                type="USER"
+                width="full"
+                reportedId={user.id}
+                userId={user.id}
+                tooltipText={`Signaler l'utilisateur ${displayName}`}
+            />
         </div>
     );
 }
@@ -259,7 +267,10 @@ export default async function ProfilePage({
     params: Promise<Params>;
 }) {
     const { id } = await params;
+
     const user = await getUser(id);
+
+    if (!user) notFound();
 
     return (
         <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">

@@ -1,5 +1,5 @@
 import CreatePostForm from "@/components/create-post/create-post-form";
-import RequiredLogin from "@/components/required-login";
+import RequiredLogin from "@/components/auth/required-login";
 import { Metadata } from "next";
 import { trpc } from "@/trpc/server";
 import { inferRouterOutputs } from "@trpc/server";

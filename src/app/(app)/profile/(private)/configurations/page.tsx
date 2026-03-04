@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeft, Cpu, Plus } from "lucide-react";
+import { Cpu, Plus } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { ConfigurationCard } from "@/components/profile/configuration-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Metadata } from "next";
+import NavBack from "@/components/nav/nav-back";
 
 export const metadata: Metadata = {
     title: "Mes configurations",
@@ -114,29 +115,15 @@ async function HeaderAction() {
 export default function ConfigurationsPage() {
     return (
         <section className="mx-auto w-full max-w-4xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-4">
-                    <Link
-                        href="/profile"
-                        className={cn(
-                            buttonVariants({ variant: "ghost", size: "icon" })
-                        )}
-                    >
-                        <ArrowLeft className="size-5" />
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-semibold">
-                            Mes configurations
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            Gérez vos configurations PC enregistrées
-                        </p>
-                    </div>
-                </div>
+            <NavBack
+                href="/profile"
+                title="Mes configurations"
+                desc="Gérez vos configurations PC enregistrées"
+            >
                 <Suspense fallback={<Skeleton className="h-9 w-40" />}>
                     <HeaderAction />
                 </Suspense>
-            </div>
+            </NavBack>
 
             <Suspense fallback={<ConfigurationsSkeleton />}>
                 <ConfigurationsContent />

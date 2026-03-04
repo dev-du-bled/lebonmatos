@@ -56,8 +56,9 @@ export default function FavoriteButton({ post, className }: FavoritePostProps) {
         }
     };
 
-    if (!session) return null;
-    if (post.seller?.id === session?.user?.id) return null;
+    if (!session || (post.seller?.id && session.user?.id === post.seller?.id)) {
+        return null;
+    }
 
     return (
         <TooltipProvider>

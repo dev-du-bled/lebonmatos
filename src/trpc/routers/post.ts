@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { postCreateSchema } from "@/lib/schema/post";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
-import { utapi } from "@/lib/utapi";
+import { deleteUploadThingImages } from "@/lib/utapi";
 import { ComponentType } from "@prisma/client";
 import { Components } from "@/utils/components";
 import { CityData } from "@/utils/location";
@@ -47,7 +47,7 @@ const getComponentDetails = (
 
 export const postRouter = createTRPCRouter({
     getUserListings: publicProcedure
-        .input(z.object({ userId: z.string() }))
+        .input(z.object({ userId: z.uuid() }))
         .query(async ({ input }) => {
             const posts = await prisma.post.findMany({
                 where: { userId: input.userId },
@@ -142,7 +142,7 @@ export const postRouter = createTRPCRouter({
         }),
 
     deletePost: privateProcedure
-        .input(z.object({ id: z.cuid() }))
+        .input(z.object({ id: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.id },
@@ -162,14 +162,7 @@ export const postRouter = createTRPCRouter({
                 });
             }
 
-            if (post.images.length > 0) {
-                const keys = post.images.map((img: string) => {
-                    const url = new URL(img);
-                    const pathname = url.pathname.split("/").pop();
-                    return pathname?.split("?")[0] ?? img;
-                });
-                await utapi.deleteFiles(keys);
-            }
+            await deleteUploadThingImages(post.images);
 
             await prisma.post.delete({
                 where: { id: input.id },
@@ -221,7 +214,7 @@ export const postRouter = createTRPCRouter({
         }),
 
     editPost: privateProcedure
-        .input(postCreateSchema.extend({ id: z.cuid() }))
+        .input(postCreateSchema.extend({ id: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.id },
@@ -279,7 +272,7 @@ export const postRouter = createTRPCRouter({
         }),
 
     favoritePost: privateProcedure
-        .input(z.object({ postId: z.cuid() }))
+        .input(z.object({ postId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.postId },
@@ -333,7 +326,7 @@ export const postRouter = createTRPCRouter({
         }),
 
     buyPost: privateProcedure
-        .input(z.object({ postId: z.cuid() }))
+        .input(z.object({ postId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const buyerId = ctx.session.user.id;
 
@@ -388,41 +381,40 @@ export const postRouter = createTRPCRouter({
     getPost: publicProcedure
         .input(
             z.object({
-                postId: z.cuid(),
+                postId: z.uuid(),
                 sellerData: z.boolean().default(true),
             })
         )
         .query(async ({ ctx, input }) => {
+            const session = await ctx.getSession();
             const post = await prisma.post.findUnique({
                 where: { id: input.postId },
                 include: {
-                    user: {
-                        select: {
-                            id: true,
-                            username: true,
-                            image: true,
-                        },
-                    },
+                    user: true,
                     component: true,
                     location: true,
-                    Favorites: ctx.session?.user
+                    Favorites: session?.user
                         ? {
                               where: {
-                                  userId: ctx.session.user.id,
+                                  userId: session.user.id,
                               },
                           }
                         : false,
                 },
             });
 
-            if (!post) return null;
+            if (!post || post.user.banned)
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
 
             let hasReviewedSeller = false;
-            if (ctx.session?.user) {
+            if (session?.user) {
                 const existing = await prisma.rating.findFirst({
                     where: {
                         userId: post.userId,
-                        raterId: ctx.session.user.id,
+                        raterId: session.user.id,
                     },
                 });
                 hasReviewedSeller = !!existing;
@@ -474,9 +466,9 @@ export const postRouter = createTRPCRouter({
             // canLeaveReview is true only for the buyer who hasn't reviewed yet.
             // boughtById is intentionally never forwarded to the client.
             const canLeaveReview =
-                !!ctx.session?.user &&
+                !!session?.user &&
                 postScalars.isSold &&
-                postScalars.boughtById === ctx.session.user.id &&
+                postScalars.boughtById === session.user.id &&
                 !hasReviewedSeller;
 
             return {
@@ -485,7 +477,7 @@ export const postRouter = createTRPCRouter({
                 description: post.description,
                 price: post.price,
                 isSold: postScalars.isSold,
-                ...(ctx.session?.user && {
+                ...(session?.user && {
                     isFavorited: post.Favorites.length > 0,
                     hasReviewedSeller,
                     canLeaveReview,
@@ -532,7 +524,7 @@ export const postRouter = createTRPCRouter({
     getSimilarPosts: publicProcedure
         .input(
             z.object({
-                id: z.cuid(),
+                id: z.uuid(),
                 type: z.enum(ComponentType),
             })
         )

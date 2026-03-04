@@ -1231,11 +1231,7 @@ export default function ConversationView({
                 </Link>
 
                 <Link
-                    href={
-                        discussion.otherParty.username
-                            ? `/profile/${discussion.otherParty.username}`
-                            : "#"
-                    }
+                    href={`/profile/${discussion.otherParty.id}`}
                     className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity"
                 >
                     <Avatar className="size-8">

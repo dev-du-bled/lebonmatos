@@ -9,11 +9,13 @@
 
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { useSession } from "./auth/session-provider";
+import { useSession } from "./session-provider";
 
 export default function RequiredLoginClient({
     children,
+    requireAdmin = false,
 }: {
+    requireAdmin?: boolean;
     children?: React.ReactNode | null;
 }) {
     const router = useRouter();
@@ -24,6 +26,11 @@ export default function RequiredLoginClient({
     // Redirect to login if session is loaded and user is not authenticated
     if (!isPending && !session?.user) {
         router.push("/login?redirect=" + pathname);
+        return null;
+    }
+
+    if (requireAdmin && session?.user.role !== "admin") {
+        router.push("/");
         return null;
     }
 

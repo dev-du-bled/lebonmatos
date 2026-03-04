@@ -43,18 +43,12 @@ export default function ComparatorCard({
         <article className="border rounded-lg bg-background shadow-sm overflow-hidden h-full flex flex-col">
             {/* IMAGE */}
             <div className="relative h-48">
-                {data.imageSrc ? (
-                    <Image
-                        src={data.imageSrc}
-                        alt={data.title}
-                        fill
-                        className="object-cover rounded-t-lg"
-                    />
-                ) : (
-                    <div className="h-full flex items-center justify-center bg-muted text-muted-foreground">
-                        No Image
-                    </div>
-                )}
+                <Image
+                    src={data.imageSrc ?? "/images/fallback.webp"}
+                    alt={data.title}
+                    fill
+                    className="object-cover rounded-t-lg"
+                />
                 {/* ACTIONS */}
                 <div className="absolute top-3 right-3 flex gap-2">
                     <Button

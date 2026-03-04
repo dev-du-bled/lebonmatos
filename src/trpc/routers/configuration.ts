@@ -8,12 +8,12 @@ import type { SelectedPost } from "@/components/configurator/component-selector"
 
 const configurationItemSchema = z.object({
     componentType: z.enum(ComponentType),
-    postId: z.string().nullable(),
+    postId: z.uuid().nullable(),
     quantity: z.number().min(1).max(10).default(1),
 });
 
 const saveConfigurationSchema = z.object({
-    id: z.string().optional(), // If provided, update existing configuration
+    id: z.uuid().optional(), // If provided, update existing configuration
     name: z
         .string()
         .min(1, "Le nom ne peut pas être vide")
@@ -136,7 +136,7 @@ export const configurationRouter = createTRPCRouter({
 
     // Get a configuration by ID (public if isPublic, or owner only)
     get: publicProcedure
-        .input(z.object({ id: z.string() }))
+        .input(z.object({ id: z.uuid() }))
         .query(async ({ ctx, input }) => {
             const configuration = await prisma.configuration.findUnique({
                 where: { id: input.id },
@@ -167,7 +167,8 @@ export const configurationRouter = createTRPCRouter({
             }
 
             // Check access rights
-            const userId = ctx.session?.user?.id;
+            const session = await ctx.getSession();
+            const userId = session?.user?.id;
             if (!configuration.isPublic && configuration.userId !== userId) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
@@ -213,7 +214,7 @@ export const configurationRouter = createTRPCRouter({
 
     // Delete a configuration
     delete: privateProcedure
-        .input(z.object({ id: z.string() }))
+        .input(z.object({ id: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session.user.id;
 
@@ -244,7 +245,7 @@ export const configurationRouter = createTRPCRouter({
 
     // Clone a configuration (for sharing feature)
     clone: privateProcedure
-        .input(z.object({ id: z.string(), name: z.string().optional() }))
+        .input(z.object({ id: z.uuid(), name: z.string().optional() }))
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session.user.id;
 
@@ -301,7 +302,7 @@ export const configurationRouter = createTRPCRouter({
     searchPosts: publicProcedure
         .input(
             z.object({
-                componentType: z.nativeEnum(ComponentType),
+                componentType: z.enum(ComponentType),
                 query: z.string().optional(),
                 limit: z.number().min(1).max(50).default(20),
             })

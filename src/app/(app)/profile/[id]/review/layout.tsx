@@ -1,4 +1,4 @@
-import RequiredLogin from "@/components/required-login";
+import RequiredLogin from "@/components/auth/required-login";
 
 export default function ReviewLayout({
     children,
