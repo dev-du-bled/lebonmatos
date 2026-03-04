@@ -70,6 +70,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/src/utils/components.ts ./src/uti
 COPY --from=builder --chown=nextjs:nodejs /app/src/lib/compatibility.ts ./src/lib/compatibility.ts
 COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pg ./node_modules/pg
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/postgres-array ./node_modules/postgres-array
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/adapter-pg
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/driver-adapter-utils ./node_modules/@prisma/driver-adapter-utils
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/meilisearch ./node_modules/meilisearch
 
 # Copy entrypoint script
