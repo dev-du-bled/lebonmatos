@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
     Carousel,
     CarouselContent,
@@ -10,10 +11,10 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { trpc } from "@/trpc/server";
+import { getUser } from "@/utils/getUser";
 import { getComponentSpecs, getEnumDisplay } from "@/utils/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
-import { Star } from "lucide-react";
 import PostCard from "@/components/post/post-card";
 import { BuyButtons, ContactButton } from "@/components/post/post-buttons";
 import { Metadata } from "next";
@@ -21,6 +22,9 @@ import { cache } from "react";
 import PostMap from "@/components/post/post-map";
 import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
+import z from "zod";
+import Link from "next/link";
+import { ReviewsDialog } from "@/app/(app)/profile/[id]/reviews-dialog";
 
 type Params = {
     id: string;
@@ -53,9 +57,25 @@ export default async function PostPage({
 }) {
     const { id } = await params;
 
+    if (!z.cuid().safeParse(id).success) notFound();
+
     const post = await getPost(id);
 
     if (!post) notFound();
+
+    const currentUser = await getUser(false);
+    const [sellerStats, sellerFirstPage] = post.seller?.id
+        ? await Promise.all([
+              trpc.user.getReviewStats({ userId: post.seller.id }),
+              trpc.user.getReceivedReviews({
+                  userId: post.seller.id,
+                  limit: 10,
+              }),
+          ])
+        : [
+              { average: 0, count: 0 },
+              { reviews: [], nextCursor: undefined },
+          ];
 
     const similarPost = await trpc.posts.getSimilarPosts({
         id: post.id,
@@ -63,104 +83,61 @@ export default async function PostPage({
     });
 
     return (
-        <div className="container px-6 sm:mx-auto my-10 min-h-screen transition-all space-y-10">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* COLONNE GAUCHE (Contenu principal : Image, Vendeur, Description) */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Image */}
-                    <div className="relative rounded-xl shadow-md overflow-hidden bg-muted">
-                        <Carousel className="w-full relative">
-                            <CarouselContent className="ml-0">
-                                {(post.images.length > 0
-                                    ? post.images
-                                    : ["/images/fallback.webp"]
-                                ).map((image, index) => (
-                                    <CarouselItem key={index} className="pl-0">
-                                        <AspectRatio ratio={4 / 3}>
-                                            <Image
-                                                src={
-                                                    image ||
-                                                    "/images/fallback.webp"
-                                                }
-                                                alt={`Image ${index + 1}`}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        </AspectRatio>
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            <CarouselPrevious className="left-4" />
-                            <CarouselNext className="right-4" />
-                        </Carousel>
-                        {/* Bouton favoris en haut à droite */}
-                        <div className="absolute top-4 right-4 z-10">
-                            <FavoriteButton
-                                post={{
-                                    id: post.id,
-                                    isFavorited: post.isFavorited,
-                                }}
-                            />
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-6 pt-20 pointer-events-none">
-                            <h1 className="text-2xl md:text-4xl font-bold text-white">
-                                {post.title}
-                            </h1>
-                            <p className="text-2xl font-semibold text-primary mt-2">
-                                {post.price} €
-                            </p>
-                        </div>
+        <div className="container mx-auto px-6 my-10 min-h-screen transition-all space-y-10">
+            <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8 lg:items-start">
+                {/* Image - mobile: 1er, desktop: col 1-2 row 1 */}
+                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-1 relative rounded-xl shadow-md overflow-hidden bg-muted">
+                    <Carousel className="w-full relative">
+                        <CarouselContent className="ml-0">
+                            {(post.images.length > 0
+                                ? post.images
+                                : ["/images/fallback.webp"]
+                            ).map((image: string, index: number) => (
+                                <CarouselItem key={index} className="pl-0">
+                                    <AspectRatio ratio={4 / 3}>
+                                        <Image
+                                            src={
+                                                image || "/images/fallback.webp"
+                                            }
+                                            alt={`Image ${index + 1}`}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </AspectRatio>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="left-4" />
+                        <CarouselNext className="right-4" />
+                    </Carousel>
+                    {/* Bouton favoris en haut à droite */}
+                    <div className="absolute top-4 right-4 z-10">
+                        <FavoriteButton
+                            post={{
+                                id: post.id,
+                                isFavorited: post.isFavorited,
+                            }}
+                        />
                     </div>
-
-                    {/* Vendeur (placé sous l'image) */}
-
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-14 w-14 border">
-                            <AvatarImage src="" />
-                            <AvatarFallback className="bg-muted text-lg">
-                                {post.seller?.name.charAt(0)}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                            <p className="font-semibold text-lg">
-                                {post.seller?.name}
-                            </p>
-                            {post.seller?.rating &&
-                                post.seller.rating.count > 0 && (
-                                    <div className="flex items-center gap-1 mt-0.5">
-                                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                        <span className="text-sm text-muted-foreground">
-                                            {post.seller.rating.avg.toFixed(1)}{" "}
-                                            ({post.seller.rating.count} avis)
-                                        </span>
-                                    </div>
-                                )}
-                        </div>
-                        <div className="hidden sm:block">
-                            <ContactButton />
-                        </div>
-                    </div>
-
-                    {/* Description */}
-                    <div className="py-4">
-                        <h2 className="text-2xl font-semibold mb-4">
-                            Description
-                        </h2>
-                        <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-line">
-                            {post.description}
+                    <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-6 pt-20 pointer-events-none">
+                        <h1 className="text-2xl md:text-4xl font-bold text-white">
+                            {post.title}
+                        </h1>
+                        <p className="text-2xl font-semibold text-primary mt-2">
+                            {post.price} €
                         </p>
                     </div>
-
-                    {/* Carte (placée sous la description) */}
-                    <PostMap location={post.location} />
                 </div>
 
-                {/* COLONNE DROITE (Sidebar : Actions, Specs) */}
-                <div className="space-y-6 sticky top-24">
+                {/* Sidebar (Actions + Specs) - mobile: 2e, desktop: col 3 rows 1-4 sticky */}
+                <div className="lg:col-start-3 lg:row-start-1 lg:row-span-3 space-y-6 lg:sticky lg:top-24">
                     {/* Actions */}
-                    <BuyButtons />
+                    <BuyButtons
+                        postId={post.id}
+                        sellerId={post.seller?.id ?? ""}
+                    />
 
-                    {/* Spécifications (Liste compacte) */}
+                    {/* Spécifications */}
                     <Card className="gap-0">
                         <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
@@ -199,6 +176,80 @@ export default async function PostPage({
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Vendeur - mobile: 3e, desktop: col 1-2 row 2 */}
+                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-2 flex items-center justify-between gap-4">
+                    {/* Infos vendeur */}
+                    <div className="flex items-center gap-3 min-w-0">
+                        <Link
+                            href={
+                                post.seller?.id === currentUser?.id
+                                    ? "/profile"
+                                    : `/profile/${post.seller?.id}`
+                            }
+                            className="shrink-0"
+                        >
+                            <Avatar className="h-14 w-14 border">
+                                {post.seller?.image ? (
+                                    <AvatarImage
+                                        src={post.seller.image}
+                                        alt={`Avatar de ${post.seller.username ?? "vendeur"}`}
+                                        className="object-cover"
+                                    />
+                                ) : null}
+                                <AvatarFallback className="bg-muted text-lg">
+                                    {(post.seller?.username ?? "?").charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                        </Link>
+                        <div className="min-w-0">
+                            <Link
+                                href={
+                                    post.seller?.id === currentUser?.id
+                                        ? "/profile"
+                                        : `/profile/${post.seller?.id}`
+                                }
+                                className="font-semibold text-lg hover:underline underline-offset-2"
+                            >
+                                {post.seller?.username ??
+                                    "Utilisateur supprimé"}
+                            </Link>
+                            {post.seller && (
+                                <ReviewsDialog
+                                    userId={post.seller.id}
+                                    initialReviews={sellerFirstPage.reviews}
+                                    initialNextCursor={
+                                        sellerFirstPage.nextCursor
+                                    }
+                                    average={sellerStats.average}
+                                    count={sellerStats.count}
+                                    username={
+                                        post.seller.username ?? "Utilisateur"
+                                    }
+                                />
+                            )}
+                        </div>
+                    </div>
+                    <div className="hidden sm:block">
+                        <ContactButton
+                            postId={post.id}
+                            sellerId={post.seller?.id ?? ""}
+                        />
+                    </div>
+                </div>
+
+                {/* Description - mobile: 4e, desktop: col 1-2 row 3 */}
+                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-3 py-4">
+                    <h2 className="text-2xl font-semibold mb-4">Description</h2>
+                    <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-line">
+                        {post.description}
+                    </p>
+                </div>
+
+                {/* Carte - mobile: 5e (sous specs), desktop: col 1-2 row 4 */}
+                <div className="lg:col-span-2 lg:col-start-1 lg:row-start-4">
+                    <PostMap location={post.location} />
+                </div>
             </div>
 
             {/* Annonces similaires */}
@@ -209,14 +260,16 @@ export default async function PostPage({
                     </h2>
                     <Carousel className="w-full">
                         <CarouselContent className="-ml-4">
-                            {similarPost.map((p) => (
-                                <CarouselItem
-                                    key={p.id}
-                                    className="pl-4 basis-4/5 sm:basis-1/2 lg:basis-1/4"
-                                >
-                                    <PostCard {...p} />
-                                </CarouselItem>
-                            ))}
+                            {similarPost.map(
+                                (p: (typeof similarPost)[number]) => (
+                                    <CarouselItem
+                                        key={p.id}
+                                        className="pl-4 basis-4/5 sm:basis-1/2 lg:basis-1/4"
+                                    >
+                                        <PostCard {...p} />
+                                    </CarouselItem>
+                                )
+                            )}
                         </CarouselContent>
                         <CarouselPrevious className="-left-4" />
                         <CarouselNext className="-right-4" />

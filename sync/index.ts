@@ -6,6 +6,7 @@ import {
     TYPE_TO_TABLE,
     COMPONENT_QUERIES_BASE,
 } from "./utils";
+import { buildComponentDetails } from "@/utils/components";
 
 let client: Client;
 let meilisearch: MeiliSearch;
@@ -19,34 +20,61 @@ async function syncPost(id: string) {
 
     if (rows.length > 0) {
         const post = rows[0];
-        let enrichedPost = { ...post };
 
-        if (!(post.componentId && post.componentType)) return;
+        // Extract first image if available
+        const firstImage =
+            post.images && post.images.length > 0 ? post.images[0] : null;
 
-        // Flatten the post and the relevant component data
+        // If post has no component, return as-is with first image
+        if (!post.componentId || !post.componentType) {
+            const task = await wrappMeiliTask(
+                meilisearch
+                    .index("posts")
+                    .addDocuments([{ ...post, firstImage }])
+            );
+            console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+            return;
+        }
+
+        // Get the table name for this component type
         const tableName = TYPE_TO_TABLE[post.componentType];
-        if (!(tableName && COMPONENT_QUERIES_BASE[tableName])) return;
+        if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
+            console.warn(
+                `No query found for component type: ${post.componentType}`
+            );
+            const task = await wrappMeiliTask(
+                meilisearch
+                    .index("posts")
+                    .addDocuments([{ ...post, firstImage }])
+            );
+            console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+            return;
+        }
 
+        // Fetch the specific component data
         const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
         const { rows: componentData } = await client.query(componentQuery, [
             post.componentId,
         ]);
 
-        // Destructure id to avoid overwriting post.id
-        const { id, estimatedPrice, color, ...componentFields } =
-            componentData[0];
+        // Build nested component structure
+        if (componentData.length > 0) {
+            const enrichedPost = {
+                ...post,
+                firstImage,
+                component: {
+                    ...buildComponentDetails(componentData[0]),
+                },
+            };
 
-        enrichedPost = {
-            ...post,
-            componentEstimatedPrice: estimatedPrice,
-            componentColor: color,
-            ...componentFields,
-        };
-
-        const task = await wrappMeiliTask(
-            meilisearch.index("posts").addDocuments([enrichedPost])
-        );
-        console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+            const task = await wrappMeiliTask(
+                meilisearch.index("posts").addDocuments([enrichedPost])
+            );
+            console.log(`Synced post with id '${id}' at ${task.finishedAt}`);
+        } else {
+            await meilisearch.index("posts").deleteDocument(id);
+            console.log(`Pruned old post ${id}`);
+        }
     } else {
         await meilisearch.index("posts").deleteDocument(id);
         console.log(`Pruned old post ${id}`);

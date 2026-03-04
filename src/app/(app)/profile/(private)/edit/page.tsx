@@ -2,6 +2,12 @@ import { TRPCError } from "@trpc/server";
 import { notFound, redirect } from "next/navigation";
 import ProfileEditForm from "@/components/profile/profile-edit-form";
 import { trpc } from "@/trpc/server";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Modifier mon profil",
+    description: "Modifiez les informations de votre profil",
+};
 
 export default async function ProfileEditPage() {
     let profile;

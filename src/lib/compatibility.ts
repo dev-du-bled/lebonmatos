@@ -1,4 +1,18 @@
-import { ComponentType } from "@prisma/client";
+import {
+    Case,
+    CaseFan,
+    ComponentType,
+    Cpu,
+    CpuCooler,
+    Gpu,
+    Hdd,
+    Motherboard,
+    Psu,
+    Ram,
+    SoundCard,
+    Ssd,
+    WirelessNetworkCard,
+} from "@prisma/client";
 
 // Map CPU microarchitecture to socket
 const MICROARCH_TO_SOCKET: Record<string, string> = {
@@ -27,21 +41,24 @@ const RAM_TYPE_COMPATIBILITY: Record<string, string[]> = {
     DDR3: ["LGA1151", "AM3+"],
 };
 
+type CompDetails<T> = Omit<T, "id" | "componentId">;
+
 export type ComponentWithDetails = {
     id: string;
     type: ComponentType;
     name: string;
-    Cpu?: { microarch: string } | null;
-    Motherboard?: {
-        socket: string;
-        formFactor: string;
-        memorySlots: number;
-        maxMemory: number;
-    } | null;
-    Ram?: { type: string | null; modules: number; size: number } | null;
-    Case?: { type: string } | null;
-    Psu?: { wattage: number } | null;
-    Gpu?: { length: number | null } | null;
+    Cpu?: CompDetails<Cpu> | null;
+    Gpu?: CompDetails<Gpu> | null;
+    Motherboard?: CompDetails<Motherboard> | null;
+    Ram?: CompDetails<Ram> | null;
+    Ssd?: CompDetails<Ssd> | null;
+    Hdd?: CompDetails<Hdd> | null;
+    Psu?: CompDetails<Psu> | null;
+    CpuCooler?: CompDetails<CpuCooler> | null;
+    Case?: CompDetails<Case> | null;
+    CaseFan?: CompDetails<CaseFan> | null;
+    SoundCard?: CompDetails<SoundCard> | null;
+    WirelessNetworkCard?: CompDetails<WirelessNetworkCard> | null;
 };
 
 export type ConfigurationSlot = {

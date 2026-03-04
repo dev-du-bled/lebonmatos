@@ -6,6 +6,7 @@ import {
     COMPONENT_QUERIES_BASE,
     TYPE_TO_TABLE,
 } from "./utils";
+import { buildComponentDetails } from "@/utils/components";
 
 const pg_url = process.env["DATABASE_URL"];
 if (!pg_url)
@@ -53,12 +54,17 @@ async function syncAll() {
                 `Enriching ${posts.length} posts with component data...`
             );
 
-            // Flatten the post and the relevant component data
+            // Enrich posts with component data
             const enrichedPosts = await Promise.all(
                 posts.map(async (post) => {
                     const tableName = TYPE_TO_TABLE[post.componentType];
                     if (!tableName || !COMPONENT_QUERIES_BASE[tableName])
                         return;
+
+                    const firstImage =
+                        post.images && post.images.length > 0
+                            ? post.images[0]
+                            : null;
 
                     // Fetch the specific component data
                     const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
@@ -67,17 +73,20 @@ async function syncAll() {
                         [post.componentId]
                     );
 
-                    // Merge post data with component data
-                    // Disabling eslint since id isn't explicetly used, but having it there removes it from componentData,
-                    // so it doesn't overide the post's id
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const { id, estimatedPrice, color, ...componentFields } =
-                        componentData[0];
+                    if (componentData.length > 0) {
+                        return {
+                            ...post,
+                            firstImage,
+                            component: {
+                                // build the details as expected by the ui
+                                ...buildComponentDetails(componentData[0]),
+                            },
+                        };
+                    }
+
                     return {
                         ...post,
-                        componentEstimatedPrice: estimatedPrice,
-                        componentColor: color,
-                        ...componentFields,
+                        firstImage,
                     };
                 })
             );

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
     return (
-        <div className="container px-6 sm:mx-auto my-10 min-h-screen transition-all space-y-10">
+        <div className="container mx-auto px-6 my-10 min-h-screen transition-all space-y-10">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* COLONNE GAUCHE */}
                 <div className="lg:col-span-2 space-y-6">

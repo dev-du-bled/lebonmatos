@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { DynamicLogo } from "../dynamic-logo";
 import { SearchIcon } from "lucide-react";
 import { Button } from "../ui/button";
-import { UserMenu } from "./user-menu";
+import dynamic from "next/dynamic";
+
+const UserMenu = dynamic(() => import("./user-menu").then((m) => m.UserMenu), {
+    ssr: false,
+});
 import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
@@ -15,10 +19,29 @@ import { useHotkey, formatForDisplay } from "@tanstack/react-hotkeys";
 export default function Header({ className }: { className?: string }) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
+    const mobileRef = useRef<HTMLDivElement>(null);
+    const desktopRef = useRef<HTMLElement>(null);
 
     useHotkey("Mod+K", () => {
         setSearchOpen((open) => !open);
     });
+
+    useEffect(() => {
+        const update = () => {
+            const h =
+                (mobileRef.current?.offsetHeight ?? 0) ||
+                (desktopRef.current?.offsetHeight ?? 0);
+            document.documentElement.style.setProperty(
+                "--header-height",
+                `${h}px`
+            );
+        };
+        update();
+        const observer = new ResizeObserver(update);
+        if (mobileRef.current) observer.observe(mobileRef.current);
+        if (desktopRef.current) observer.observe(desktopRef.current);
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -32,10 +55,11 @@ export default function Header({ className }: { className?: string }) {
 
     return (
         <>
-            <div className={cn("md:hidden", className)}>
+            <div ref={mobileRef} className={cn("md:hidden", className)}>
                 <MobileHeader />
             </div>
             <header
+                ref={desktopRef}
                 className={cn(
                     "sticky top-0 z-50 hidden w-full m-auto items-center justify-between bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 box-border p-5 md:flex",
                     isScrolled && "border-b",

@@ -4,6 +4,7 @@ import { userRouter } from "./user";
 import { componentRouter } from "./components";
 import { postRouter } from "./post";
 import { configurationRouter } from "./configuration";
+import { discussionRouter } from "./discussion";
 export const appRouter = createTRPCRouter({
     hello: publicProcedure
         .input(
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
     components: componentRouter,
     posts: postRouter,
     configuration: configurationRouter,
+    discussions: discussionRouter,
 });
 // export type definition of API
 export type AppRouter = typeof appRouter;

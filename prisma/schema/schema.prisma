@@ -18,6 +18,7 @@ model User {
   sessions          Session[]
   accounts          Account[]
   posts             Post[]
+  purchasedPosts    Post[]       @relation("boughtBy")
   favorites         Favorite[]
   reports           Report[]
   discussionsBuyer  Discussion[] @relation("discussionBuyer")
@@ -96,6 +97,9 @@ model Post {
   user               User                @relation(fields: [userId], references: [id])
   images             String[]
   ConfigurationItems ConfigurationItem[]
+  isSold             Boolean             @default(false)
+  boughtById         String?
+  boughtBy           User?               @relation("boughtBy", fields: [boughtById], references: [id], onDelete: SetNull)
 
   @@map("post")
 }
@@ -160,28 +164,41 @@ model Report {
 }
 
 model Discussion {
-  id       String    @id @default(cuid())
-  buyerId  String
-  buyer    User      @relation("discussionBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
-  postId   String
-  post     Post?     @relation(fields: [postId], references: [id])
-  messages Message[]
-  sellerId String?
-  seller   User?     @relation("discussionSeller", fields: [sellerId], references: [id])
+  id        String    @id @default(cuid())
+  buyerId   String
+  buyer     User      @relation("discussionBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post?     @relation(fields: [postId], references: [id])
+  messages  Message[]
+  sellerId  String?
+  seller    User?     @relation("discussionSeller", fields: [sellerId], references: [id])
+  createdAt DateTime  @default(now())
 
+  @@unique([postId, buyerId])
   @@map("discussion")
 }
 
+enum MessageType {
+  TEXT
+  OFFER
+  SYSTEM
+}
+
 model Message {
-  id           String     @id @default(cuid())
+  id           String      @id @default(cuid())
   discussionId String
-  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
-  price        Int?       @db.SmallInt
+  discussion   Discussion  @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  type         MessageType @default(TEXT)
+  price        Int?        @db.SmallInt
   content      String?
-  authorID     String
-  author       User       @relation(fields: [authorID], references: [id], onDelete: Cascade)
-  sendedAt     DateTime   @default(now())
-  viewed       Boolean    @default(false)
+  authorID     String?
+  author       User?       @relation(fields: [authorID], references: [id], onDelete: Cascade)
+  sendedAt     DateTime    @default(now())
+  viewed       Boolean     @default(false)
+  imageUrls    String[]
+  buttonLabel  String?
+  buttonUrl    String?
+  buttonAction String?
 
   @@map("message")
 }
@@ -197,6 +214,7 @@ model Rating {
   comment   String?
   createdAt DateTime @default(now())
 
+  @@unique([userId, raterId])
   @@map("rating")
 }
 
