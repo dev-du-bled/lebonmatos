@@ -170,7 +170,7 @@ export function DevToolbox() {
                 <Button
                     variant="outline"
                     size="icon"
-                    className={`fixed ${positionClasses[position]} z-50 size-10 rounded-full shadow-lg border-2 border-dashed border-orange-500 bg-background/80 backdrop-blur-sm hover:bg-orange-500/10 hover:border-solid transition-all duration-200 cursor-pointer`}
+                    className={`fixed ${positionClasses[position]} z-70 size-10 rounded-full shadow-lg border-2 border-dashed border-orange-500 bg-background/80 backdrop-blur-sm hover:bg-orange-500/10 hover:border-solid transition-all duration-200 cursor-pointer`}
                 >
                     <WrenchIcon className="size-5 text-orange-500" />
                     <span className="sr-only">Ouvrir la toolbox dev</span>

@@ -11,7 +11,7 @@ const globalForPubSub = global as unknown as {
 
 export const messageEmitter: EventEmitter =
     globalForPubSub.pgEmitter ?? new EventEmitter();
-messageEmitter.setMaxListeners(200);
+messageEmitter.setMaxListeners(0);
 
 function startListener(): Promise<void> {
     if (globalForPubSub.pgListenerReady) return globalForPubSub.pgListenerReady;

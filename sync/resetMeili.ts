@@ -15,6 +15,7 @@ const meilisearch = new MeiliSearch({
 
 const indexes = [
     "posts",
+    "components",
     "cpu",
     "gpu",
     "motherboard",
@@ -40,12 +41,18 @@ try {
             })
         );
 
-        // Make posts filterable by their component type
         if (index === "posts") {
             await wrappMeiliTask(
                 meilisearch
                     .index(index)
-                    .updateFilterableAttributes(["componentType"])
+                    .updateFilterableAttributes([
+                        "componentType",
+                        "componentId",
+                        "locationCity",
+                        "_geo",
+                        "price",
+                        "componentColor",
+                    ])
             );
         }
 

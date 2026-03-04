@@ -1,6 +1,6 @@
 import { meilisearch } from "@/lib/meilisearch";
 import z from "zod";
-import { createTRPCRouter, privateProcedure } from "../init";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { ComponentType } from "@prisma/client";
 import { ReturnedComponent } from "@/utils/components";
 
@@ -42,5 +42,24 @@ export const componentRouter = createTRPCRouter({
                     data,
                 };
             });
+        }),
+
+    searchAll: publicProcedure
+        .input(
+            z.object({
+                query: z.string().min(1),
+                limit: z.number().min(1).max(20).default(10),
+            })
+        )
+        .query(async ({ input }) => {
+            const index = meilisearch.index("components");
+            const results = await index.search(input.query, {
+                limit: input.limit,
+            });
+            return results.hits as {
+                id: string;
+                name: string;
+                type: ComponentType;
+            }[];
         }),
 });

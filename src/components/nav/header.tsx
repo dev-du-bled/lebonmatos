@@ -13,12 +13,18 @@ const UserMenu = dynamic(() => import("./user-menu").then((m) => m.UserMenu), {
 import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
+import { SearchModal } from "./search-modal";
+import { useHotkey, formatForDisplay } from "@tanstack/react-hotkeys";
 
 export default function Header({ className }: { className?: string }) {
     const [isScrolled, setIsScrolled] = useState(false);
-    const [modifierKey, setModifierKey] = useState<string | null>(null);
+    const [searchOpen, setSearchOpen] = useState(false);
     const mobileRef = useRef<HTMLDivElement>(null);
     const desktopRef = useRef<HTMLElement>(null);
+
+    useHotkey("Mod+K", () => {
+        setSearchOpen((open) => !open);
+    });
 
     useEffect(() => {
         const update = () => {
@@ -38,12 +44,6 @@ export default function Header({ className }: { className?: string }) {
     }, []);
 
     useEffect(() => {
-        setModifierKey(
-            typeof window !== "undefined" &&
-                /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
-                ? "⌘"
-                : "Ctrl"
-        );
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 0);
         };
@@ -76,19 +76,24 @@ export default function Header({ className }: { className?: string }) {
                                 Publier
                             </Button>
                         </Link>
-                        <button className="flex h-9 w-full max-w-50 items-center justify-between rounded-md bg-secondary px-3 text-sm text-muted-foreground">
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            className="flex cursor-text h-9 w-full max-w-50 items-center justify-between rounded-md bg-secondary px-3 text-sm text-muted-foreground"
+                        >
                             <div className="flex items-center gap-2">
                                 <SearchIcon className="size-4 shrink-0 opacity-50" />
                                 <span>Rechercher</span>
                             </div>
-                            {modifierKey && (
-                                <Kbd className="border">{modifierKey}+K</Kbd>
-                            )}
+                            <Kbd className="border">
+                                {formatForDisplay("Mod+K")}
+                            </Kbd>
                         </button>
                         <UserMenu />
                     </div>
                 </div>
             </header>
+
+            <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
         </>
     );
 }

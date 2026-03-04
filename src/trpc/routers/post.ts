@@ -7,6 +7,7 @@ import { Components } from "@/utils/components";
 import { CityData } from "@/utils/location";
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@/lib/prisma";
+import { meilisearch } from "@/lib/meilisearch";
 
 // return wich component to fetch based on the component type
 const getComponentIncludes = (componentType: ComponentType) => ({
@@ -642,4 +643,67 @@ export const postRouter = createTRPCRouter({
             gpus,
         };
     }),
+
+    search: publicProcedure
+        .input(
+            z.object({
+                query: z.string().optional(),
+                componentId: z.string().uuid().optional(),
+                location: z
+                    .object({ lat: z.number(), lon: z.number() })
+                    .optional(),
+                priceMin: z.number().min(0).optional(),
+                priceMax: z.number().min(0).optional(),
+                colors: z
+                    .array(z.enum(["Black", "White", "Gray", "Silver"]))
+                    .optional(),
+                limit: z.number().min(1).max(50).default(20),
+                offset: z.number().min(0).default(0),
+            })
+        )
+        .query(async ({ input }) => {
+            const index = meilisearch.index("posts");
+            const filters: string[] = [];
+
+            if (input.componentId) {
+                filters.push(`componentId = "${input.componentId}"`);
+            }
+            if (input.location) {
+                filters.push(
+                    `_geoRadius(${input.location.lat}, ${input.location.lon}, 30000)`
+                );
+            }
+            if (input.priceMin !== undefined) {
+                filters.push(`price >= ${input.priceMin}`);
+            }
+            if (input.priceMax !== undefined) {
+                filters.push(`price <= ${input.priceMax}`);
+            }
+            if (input.colors && input.colors.length > 0) {
+                const colorFilters = input.colors
+                    .map((c) => `componentColor = "${c}"`)
+                    .join(" OR ");
+                filters.push(`(${colorFilters})`);
+            }
+
+            const results = await index.search(input.query ?? "", {
+                limit: input.limit,
+                offset: input.offset,
+                filter: filters.length > 0 ? filters.join(" AND ") : undefined,
+            });
+
+            return {
+                hits: results.hits as Array<{
+                    id: string;
+                    title: string;
+                    price: number;
+                    componentType: ComponentType;
+                    componentName: string;
+                    locationCity: string | null;
+                    images: string[];
+                    userId: string;
+                }>,
+                totalHits: results.estimatedTotalHits ?? 0,
+            };
+        }),
 });

@@ -1,9 +1,10 @@
+import { cn } from "@/lib/utils";
 import { CityData, searchAddress } from "@/utils/location";
 import { Dispatch, SetStateAction, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ScrollArea } from "../ui/scroll-area";
-import { XIcon, Loader2 } from "lucide-react";
+import { XIcon, Loader2, MapPin } from "lucide-react";
 import {
     InputGroup,
     InputGroupInput,
@@ -15,12 +16,14 @@ interface LocationSelectorProps {
     defaultValue?: CityData;
     onChange: Dispatch<SetStateAction<CityData | undefined>>;
     disabled?: boolean;
+    className?: string;
 }
 
 export default function LocationSelector({
     defaultValue,
     onChange,
     disabled,
+    className,
     ...props
 }: LocationSelectorProps) {
     const [addressSuggestions, setAddressSuggestions] = useState<CityData[]>(
@@ -62,7 +65,10 @@ export default function LocationSelector({
             }}
         >
             <PopoverTrigger asChild>
-                <InputGroup>
+                <InputGroup className={cn("relative", className)}>
+                    <InputGroupAddon align="inline-start" className="pl-4">
+                        <MapPin className="size-4" />
+                    </InputGroupAddon>
                     <InputGroupInput
                         placeholder="Rechercher une localisation"
                         disabled={disabled}
@@ -73,11 +79,10 @@ export default function LocationSelector({
                         }}
                         {...props}
                     />
-                    <InputGroupAddon align="inline-end">
+                    {inputValue.length > 0 && (
                         <button
-                            className="opacity-50 hover:opacity-100 transition-opacity"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors shrink-0"
                             type="button"
-                            hidden={inputValue.length === 0}
                             onClick={() => {
                                 setInputValue("");
                                 onChange(undefined);
@@ -86,7 +91,7 @@ export default function LocationSelector({
                         >
                             <XIcon className="size-4" />
                         </button>
-                    </InputGroupAddon>
+                    )}
                 </InputGroup>
             </PopoverTrigger>
             <PopoverContent

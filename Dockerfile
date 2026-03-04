@@ -11,7 +11,7 @@ WORKDIR /app
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 COPY package.json bun.lock* ./
-RUN bun install --no-save --frozen-lockfile
+RUN bun install --frozen-lockfile --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -63,6 +63,18 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/effect ./node_module
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/fast-check ./node_modules/fast-check
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pure-rand ./node_modules/pure-rand
 
+# Copy files needed for init scripts (seed, meilisearch sync)
+COPY --from=builder --chown=nextjs:nodejs /app/data ./data
+COPY --from=builder --chown=nextjs:nodejs /app/sync ./sync
+COPY --from=builder --chown=nextjs:nodejs /app/src/utils/components.ts ./src/utils/components.ts
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/compatibility.ts ./src/lib/compatibility.ts
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pg ./node_modules/pg
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/postgres-array ./node_modules/postgres-array
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/adapter-pg
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/driver-adapter-utils ./node_modules/@prisma/driver-adapter-utils
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/meilisearch ./node_modules/meilisearch
+
 # Copy entrypoint script
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
 
@@ -70,6 +82,5 @@ USER nextjs
 
 EXPOSE 3000
 
-# Use entrypoint to run migrations before starting the app
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["bun", "./server.js"]
