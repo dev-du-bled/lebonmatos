@@ -10,7 +10,7 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ListingCard } from "./listing-card";
+import { ListingCard } from "@/components/profile/listing-card";
 
 type Listing = {
     id: string;

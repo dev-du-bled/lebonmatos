@@ -17,7 +17,10 @@ import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
 import { Search, Heart, Loader2 } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 
-import { PostCard, type SelectedPost } from "@/components/post-card";
+import {
+    PostCard,
+    type SelectedPost,
+} from "@/components/configurator/post-card";
 export type { SelectedPost };
 
 type ComponentSelectorProps = {
@@ -91,7 +94,7 @@ export function ComponentSelector({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-full max-w-[95vw] sm:max-w-150 max-h-[85vh]">
+            <DialogContent className="w-full max-w-[95vw] sm:max-w-150">
                 <DialogHeader>
                     <DialogTitle>
                         Sélectionner un{" "}
@@ -106,7 +109,7 @@ export function ComponentSelector({
                     }
                     className="w-full"
                 >
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="w-full">
                         <TabsTrigger
                             value="search"
                             className="flex items-center gap-2"
@@ -114,23 +117,22 @@ export function ComponentSelector({
                             <Search className="size-4" />
                             Recherche
                         </TabsTrigger>
-                        <TabsTrigger
-                            value="favorites"
-                            className="flex items-center gap-2"
-                            disabled={!isAuthenticated}
-                        >
-                            <Heart className="size-4" />
-                            Favoris
-                            {!isAuthenticated && (
-                                <span className="text-xs text-muted-foreground">
-                                    (connexion requise)
-                                </span>
-                            )}
-                        </TabsTrigger>
+                        {isAuthenticated && (
+                            <TabsTrigger
+                                value="favorites"
+                                className="flex items-center gap-2"
+                            >
+                                <Heart className="size-4" />
+                                Favoris
+                            </TabsTrigger>
+                        )}
                     </TabsList>
 
-                    <TabsContent value="search" className="mt-4">
-                        <div className="space-y-4 w-full">
+                    <TabsContent
+                        value="search"
+                        className="mt-4 min-h-[calc(40vh+3.25rem)]"
+                    >
+                        <div className="space-y-3">
                             <div className="relative">
                                 <Input
                                     placeholder={`Rechercher un ${COMPONENT_TYPE_LABELS[componentType].toLowerCase()}...`}
@@ -149,10 +151,10 @@ export function ComponentSelector({
                                 )}
                             </div>
 
-                            <ScrollArea className="h-100 -mr-4 pr-2">
-                                <div className="w-full pr-2">
+                            <ScrollArea className="h-[40vh] -mr-4 pr-1">
+                                <div className="space-y-2 pr-3">
                                     {searchQuery$.isLoading ? (
-                                        <div className="space-y-2 w-full">
+                                        <>
                                             {Array.from({ length: 5 }).map(
                                                 (_, i) => (
                                                     <Skeleton
@@ -161,7 +163,7 @@ export function ComponentSelector({
                                                     />
                                                 )
                                             )}
-                                        </div>
+                                        </>
                                     ) : filteredSearchResults?.length === 0 ? (
                                         <div className="text-center text-muted-foreground py-8">
                                             {excludePostIds.length > 0 &&
@@ -170,50 +172,49 @@ export function ComponentSelector({
                                                 : "Aucune annonce trouvée"}
                                         </div>
                                     ) : (
-                                        <div className="space-y-2 w-full">
-                                            {filteredSearchResults?.map(
-                                                (post) => (
-                                                    <PostCard
-                                                        key={post.id}
-                                                        post={
-                                                            post as SelectedPost
-                                                        }
-                                                        onSelect={handleSelect}
-                                                    />
-                                                )
-                                            )}
-                                        </div>
+                                        filteredSearchResults?.map((post) => (
+                                            <PostCard
+                                                key={post.id}
+                                                post={post as SelectedPost}
+                                                onSelect={handleSelect}
+                                            />
+                                        ))
                                     )}
                                 </div>
                             </ScrollArea>
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="favorites" className="mt-4">
-                        <ScrollArea className="h-100 -mr-4 pr-4">
-                            {!isAuthenticated ? (
-                                <div className="text-center text-muted-foreground py-8">
-                                    Connectez-vous pour voir vos favoris
-                                </div>
-                            ) : favoritesQuery$.isLoading ? (
-                                <div className="space-y-2 w-full pr-2">
-                                    {Array.from({ length: 5 }).map((_, i) => (
-                                        <Skeleton
-                                            key={i}
-                                            className="h-20 w-full"
-                                        />
-                                    ))}
-                                </div>
-                            ) : filteredFavorites?.length === 0 ? (
-                                <div className="text-center text-muted-foreground py-8">
-                                    {excludePostIds.length > 0 &&
-                                    favoritesQuery$.data?.length !== 0
-                                        ? "Tous vos favoris sont déjà ajoutés"
-                                        : "Aucun favori pour ce type de composant"}
-                                </div>
-                            ) : (
-                                <div className="space-y-2 w-full pr-2">
-                                    {filteredFavorites?.map((post) => (
+                    <TabsContent
+                        value="favorites"
+                        className="mt-4 min-h-[calc(40vh+3.25rem)]"
+                    >
+                        <ScrollArea className="h-[40vh] -mr-4 pr-1">
+                            <div className="space-y-2 pr-3">
+                                {!isAuthenticated ? (
+                                    <div className="text-center text-muted-foreground py-8">
+                                        Connectez-vous pour voir vos favoris
+                                    </div>
+                                ) : favoritesQuery$.isLoading ? (
+                                    <>
+                                        {Array.from({ length: 5 }).map(
+                                            (_, i) => (
+                                                <Skeleton
+                                                    key={i}
+                                                    className="h-20 w-full"
+                                                />
+                                            )
+                                        )}
+                                    </>
+                                ) : filteredFavorites?.length === 0 ? (
+                                    <div className="text-center text-muted-foreground py-8">
+                                        {excludePostIds.length > 0 &&
+                                        favoritesQuery$.data?.length !== 0
+                                            ? "Tous vos favoris sont déjà ajoutés"
+                                            : "Aucun favori pour ce type de composant"}
+                                    </div>
+                                ) : (
+                                    filteredFavorites?.map((post) => (
                                         <PostCard
                                             key={post.id}
                                             post={
@@ -227,9 +228,9 @@ export function ComponentSelector({
                                             }
                                             onSelect={handleSelect}
                                         />
-                                    ))}
-                                </div>
-                            )}
+                                    ))
+                                )}
+                            </div>
                         </ScrollArea>
                     </TabsContent>
                 </Tabs>

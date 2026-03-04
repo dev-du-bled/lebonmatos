@@ -1,4 +1,4 @@
-import { type SelectedPost } from "@/components/post-card";
+import { type SelectedPost } from "@/components/configurator/post-card";
 
 export type Annonce = {
     id: string;

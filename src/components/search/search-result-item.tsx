@@ -26,7 +26,7 @@ export const SearchResultItem = memo(function SearchResultItem({
             href={`/post/${post.id}`}
             className="flex items-stretch gap-4 border rounded-lg overflow-hidden my-1.5 hover:bg-muted/50 transition-colors"
         >
-            <div className="relative w-28 min-h-24 sm:w-44 sm:min-h-32 shrink-0 bg-muted">
+            <div className="relative w-28 xs:w-36 min-h-24 sm:w-44 sm:min-h-32 shrink-0 bg-muted">
                 <Image
                     src={post.images[0] || "/images/fallback.webp"}
                     alt={post.title}
@@ -39,7 +39,6 @@ export const SearchResultItem = memo(function SearchResultItem({
                 >
                     <FavoriteButton
                         post={{ id: post.id, seller: { id: post.userId } }}
-                        className="size-7 bg-background/80 hover:bg-background"
                     />
                 </div>
             </div>

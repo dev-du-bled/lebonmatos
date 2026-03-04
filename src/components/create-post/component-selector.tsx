@@ -227,7 +227,8 @@ export default function ComponentSelector({
                                         Sélectionnez le type de composant que
                                         vous vendez :
                                     </p>
-                                    <div className="grid grid-cols-2 gap-2 px-4 pb-4">
+                                    <ScrollArea className="max-h-125">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 px-4 pb-4">
                                         {componentTypes.map((type) => {
                                             const Icon =
                                                 componentTypeIcons[type];
@@ -249,6 +250,7 @@ export default function ComponentSelector({
                                             );
                                         })}
                                     </div>
+                                    </ScrollArea>
                                 </>
                             ) : (
                                 /* Step 2: Search Component */

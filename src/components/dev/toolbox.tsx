@@ -176,7 +176,7 @@ export function DevToolbox() {
                     <span className="sr-only">Ouvrir la toolbox dev</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-xl">
+            <DialogContent className="sm:max-w-xl max-w-[calc(100vw-2rem)] w-full">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <WrenchIcon className="size-5 text-orange-500" />
@@ -348,7 +348,7 @@ export function DevToolbox() {
                                 </Tooltip>
                             </TooltipProvider>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Button
                                 variant="outline"
                                 onClick={createDefaultUser}
