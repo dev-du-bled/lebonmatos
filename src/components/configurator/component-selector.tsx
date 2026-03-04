@@ -17,7 +17,8 @@ import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
 import { Search, Heart, Loader2 } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 
-import { PostCard, SelectedPost } from "@/components/post-card";
+import { PostCard, type SelectedPost } from "@/components/post-card";
+export type { SelectedPost };
 
 type ComponentSelectorProps = {
     open: boolean;
