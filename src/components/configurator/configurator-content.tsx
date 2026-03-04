@@ -91,7 +91,7 @@ export function ConfiguratorContent() {
                     : `${loadedConfig.name} (copie)`,
                 isOwner,
                 isPublic: loadedConfig.isPublic,
-                slots: ALL_COMPONENT_TYPES.map((type) => {
+                slots: ALL_COMPONENT_TYPES.map((type): ConfigurationSlot => {
                     const items = loadedConfig.items.filter(
                         (item) => item.componentType === type
                     );
@@ -101,16 +101,8 @@ export function ConfiguratorContent() {
                     const item = items[0];
                     return {
                         componentType: type,
-                        post: item.post
-                            ? {
-                                  id: item.post.id,
-                                  title: item.post.title,
-                                  price: item.post.price,
-                                  images: item.post.images,
-                                  component: item.post
-                                      .component as SelectedPost["component"],
-                              }
-                            : null,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        post: (item.post as any) ?? null,
                         quantity: item.quantity,
                     };
                 }),
@@ -141,7 +133,8 @@ export function ConfiguratorContent() {
                 ...prev,
                 slots: prev.slots.map((slot) =>
                     slot.componentType === selectedType
-                        ? { ...slot, post }
+                        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          { ...slot, post: post as any }
                         : slot
                 ),
             }));

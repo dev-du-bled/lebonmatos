@@ -17,7 +17,10 @@ import { useDebouncedCallback } from "use-debounce";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SearchFilters } from "@/components/search/search-filters";
+import {
+    SearchFilters,
+    type ComponentColor,
+} from "@/components/search/search-filters";
 import { SearchResultsList } from "@/components/search/search-results-list";
 import {
     SearchPaginationCompact,
@@ -82,7 +85,7 @@ export default function SearchPage() {
         [number, number]
     >([0, PRICE_MAX_DEFAULT]);
     const [priceActive, setPriceActive] = useState(false);
-    const [selectedColors, setSelectedColors] = useState<string[]>([]);
+    const [selectedColors, setSelectedColors] = useState<ComponentColor[]>([]);
 
     useEffect(() => {
         setQuery(urlQuery);
@@ -138,10 +141,13 @@ export default function SearchPage() {
         [debouncePrice]
     );
 
-    const handleSelectedColorsChange = useCallback((colors: string[]) => {
-        setSelectedColors(colors);
-        setPage(0);
-    }, []);
+    const handleSelectedColorsChange = useCallback(
+        (colors: ComponentColor[]) => {
+            setSelectedColors(colors);
+            setPage(0);
+        },
+        []
+    );
 
     const handleResetFilters = useCallback(() => {
         setPriceRange([0, PRICE_MAX_DEFAULT]);
