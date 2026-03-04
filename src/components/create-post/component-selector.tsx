@@ -141,65 +141,57 @@ export default function ComponentSelector({
                 <>
                     {/* Trigger Button */}
                     <Dialog open={open} onOpenChange={setOpen}>
-                        <DialogTrigger asChild>
-                            <Button
-                                disabled={disabled}
-                                variant="outline"
-                                className={cn(
-                                    "w-full justify-start h-12 px-4 py-3 text-left font-normal [&>span]:w-full",
-                                    !selectedComponent &&
-                                        "text-muted-foreground",
-                                    errored &&
-                                        "border-destructive ring-1 ring-destructive/50"
-                                )}
-                            >
-                                {variant === "inline" &&
-                                selectedComponent &&
-                                SelectedIcon ? (
-                                    <SelectedIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
-                                ) : (
-                                    <Package className="h-5 w-5 shrink-0 text-muted-foreground" />
-                                )}
-                                <span
+                        <div className="relative">
+                            <DialogTrigger asChild>
+                                <Button
+                                    disabled={disabled}
+                                    variant="outline"
                                     className={cn(
-                                        "truncate flex-1",
+                                        "w-full justify-start h-12 px-4 py-3 text-left font-normal [&>span]:w-full",
+                                        !selectedComponent &&
+                                            "text-muted-foreground",
                                         variant === "inline" &&
-                                            selectedComponent
-                                            ? "text-foreground"
-                                            : "text-muted-foreground"
+                                            selectedComponent &&
+                                            "pr-9",
+                                        errored &&
+                                            "border-destructive ring-1 ring-destructive/50"
                                     )}
                                 >
-                                    {variant === "inline" && selectedComponent
-                                        ? selectedComponent.name
-                                        : "Sélectionner un composant..."}
-                                </span>
-                                {variant === "inline" && selectedComponent && (
+                                    {variant === "inline" &&
+                                    selectedComponent &&
+                                    SelectedIcon ? (
+                                        <SelectedIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
+                                    ) : (
+                                        <Package className="h-5 w-5 shrink-0 text-muted-foreground" />
+                                    )}
                                     <span
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-disabled={disabled}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (!disabled) clearSelection();
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (
-                                                e.key === "Enter" ||
-                                                e.key === " "
-                                            ) {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                if (!disabled) clearSelection();
-                                            }
-                                        }}
-                                        className="p-0.5 rounded hover:bg-muted transition-colors shrink-0 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
-                                        aria-label="Supprimer le composant"
+                                        className={cn(
+                                            "truncate flex-1",
+                                            variant === "inline" &&
+                                                selectedComponent
+                                                ? "text-foreground"
+                                                : "text-muted-foreground"
+                                        )}
                                     >
-                                        <X className="h-4 w-4 text-muted-foreground" />
+                                        {variant === "inline" &&
+                                        selectedComponent
+                                            ? selectedComponent.name
+                                            : "Sélectionner un composant..."}
                                     </span>
-                                )}
-                            </Button>
-                        </DialogTrigger>
+                                </Button>
+                            </DialogTrigger>
+                            {variant === "inline" && selectedComponent && (
+                                <button
+                                    type="button"
+                                    disabled={disabled}
+                                    onClick={clearSelection}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-muted transition-colors shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+                                    aria-label="Supprimer le composant"
+                                >
+                                    <X className="h-4 w-4 text-muted-foreground" />
+                                </button>
+                            )}
+                        </div>
 
                         <DialogContent className="sm:max-w-lg p-0 gap-0">
                             <DialogHeader className="px-4 pt-4 pb-2">
