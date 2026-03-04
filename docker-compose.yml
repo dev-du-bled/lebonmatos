@@ -28,8 +28,8 @@ services:
 
     lbm_app:
         build: .
-        ports:
-            - 80:3000
+        expose:
+            - 3000
         env_file:
             - .env.docker
         depends_on:
