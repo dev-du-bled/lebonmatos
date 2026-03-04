@@ -40,6 +40,8 @@ services:
 
 volumes:
     lbm_data:
-        driver: local
+        external: true
+        name: lbm_data
     lbm_search_data:
-        driver: local
+        external: true
+        name: lbm_search_data
