@@ -302,7 +302,7 @@ export const configurationRouter = createTRPCRouter({
     searchPosts: publicProcedure
         .input(
             z.object({
-                componentType: z.enum(ComponentType),
+                componentType: z.enum(ComponentType).optional(),
                 query: z.string().optional(),
                 limit: z.number().min(1).max(50).default(20),
             })
@@ -312,7 +312,9 @@ export const configurationRouter = createTRPCRouter({
 
             const searchParams = {
                 limit: input.limit,
-                filter: `componentType = ${input.componentType}`,
+                filter: input.componentType
+                    ? `componentType = "${input.componentType}"`
+                    : undefined,
             };
 
             const results = await index.search(input.query || "", searchParams);

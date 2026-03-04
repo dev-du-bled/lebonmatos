@@ -22,10 +22,14 @@ export const POST_QUERY_BASE = `
         p.images,
         c.name as "componentName",
         c.type as "componentType",
-        u.name as "userName"
+        c.color as "componentColor",
+        u.name as "userName",
+        l.city as "locationCity",
+        json_build_object('lat', l.lat, 'lng', l.lon) as "_geo"
     FROM post p
     LEFT JOIN component c ON p."componentId" = c.id
     LEFT JOIN "user" u ON p."userId" = u.id
+    LEFT JOIN location l ON l."postId" = p.id
 `;
 
 export const TYPE_TO_TABLE: Record<string, string> = {

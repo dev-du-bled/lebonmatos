@@ -32,6 +32,20 @@ async function syncAll() {
     await client.connect();
 
     try {
+        console.log("Fetching all components...");
+        const { rows: components } = await client.query(
+            `SELECT id, name, type FROM component`
+        );
+        if (components.length > 0) {
+            console.log(
+                `Syncing ${components.length} components to Meilisearch...`
+            );
+            const compTask = await wrappMeiliTask(
+                meilisearch.index("components").addDocuments(components)
+            );
+            console.log(`Synced components at ${compTask.finishedAt}`);
+        }
+
         console.log("Fetching all posts...");
         const { rows: posts } = await client.query(POST_QUERY_BASE);
 
@@ -40,59 +54,51 @@ async function syncAll() {
                 `Enriching ${posts.length} posts with component data...`
             );
 
-            // Enrich each post with its component-specific data
-            const enrichedPosts = await Promise.all(
-                posts.map(async (post) => {
-                    // Extract first image if available
-                    const firstImage =
-                        post.images && post.images.length > 0
-                            ? post.images[0]
-                            : null;
+            // Enrich posts with component data
+            const enrichedPosts = (
+                await Promise.all(
+                    posts.map(async (post) => {
+                        const firstImage =
+                            post.images && post.images.length > 0
+                                ? post.images[0]
+                                : null;
 
-                    // If post has no component, return as-is with first image
-                    if (!post.componentId || !post.componentType) {
-                        return {
-                            ...post,
-                            firstImage,
-                        };
-                    }
+                        const tableName = TYPE_TO_TABLE[post.componentType];
+                        if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
+                            console.warn(
+                                `Post ${post.id}: no query for component type '${post.componentType}', skipping enrichment`
+                            );
+                            return {
+                                ...post,
+                                firstImage,
+                            };
+                        }
 
-                    // Get the table name for this component type
-                    const tableName = TYPE_TO_TABLE[post.componentType];
-                    if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
-                        console.warn(
-                            `No query found for component type: ${post.componentType}`
+                        // Fetch the specific component data
+                        const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
+                        const { rows: componentData } = await client.query(
+                            componentQuery,
+                            [post.componentId]
                         );
+
+                        if (componentData.length > 0) {
+                            return {
+                                ...post,
+                                firstImage,
+                                component: {
+                                    // build the details as expected by the ui
+                                    ...buildComponentDetails(componentData[0]),
+                                },
+                            };
+                        }
+
                         return {
                             ...post,
                             firstImage,
                         };
-                    }
-
-                    // Fetch the specific component data
-                    const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
-                    const { rows: componentData } = await client.query(
-                        componentQuery,
-                        [post.componentId]
-                    );
-
-                    if (componentData.length > 0) {
-                        return {
-                            ...post,
-                            firstImage,
-                            component: {
-                                // build the details as expected by the ui
-                                ...buildComponentDetails(componentData[0]),
-                            },
-                        };
-                    }
-
-                    return {
-                        ...post,
-                        firstImage,
-                    };
-                })
-            );
+                    })
+                )
+            ).filter(Boolean);
 
             console.log(
                 `Pushing ${enrichedPosts.length} enriched posts to Meilisearch...`

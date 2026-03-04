@@ -11,26 +11,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/client";
-import {
-    COMPONENT_TYPE_LABELS,
-    ComponentWithDetails,
-} from "@/lib/compatibility";
-import { Search, Heart, Plus, ArrowUpRight, Loader2 } from "lucide-react";
-import Image from "next/image";
+import { COMPONENT_TYPE_LABELS } from "@/lib/compatibility";
+import { Search, Heart, Loader2 } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
-import Link from "next/link";
-import { formatComponentDetails } from "@/lib/utils";
 
-export type SelectedPost = {
-    id: string;
-    title: string;
-    price: number;
-    images: string[];
-    component: ComponentWithDetails;
-};
+import { PostCard, SelectedPost } from "@/components/post-card";
 
 type ComponentSelectorProps = {
     open: boolean;
@@ -228,7 +215,15 @@ export function ComponentSelector({
                                     {filteredFavorites?.map((post) => (
                                         <PostCard
                                             key={post.id}
-                                            post={post as SelectedPost}
+                                            post={
+                                                {
+                                                    ...post,
+                                                    componentName:
+                                                        post.component.name,
+                                                    componentType:
+                                                        post.component.type,
+                                                } as unknown as SelectedPost
+                                            }
                                             onSelect={handleSelect}
                                         />
                                     ))}
@@ -239,75 +234,5 @@ export function ComponentSelector({
                 </Tabs>
             </DialogContent>
         </Dialog>
-    );
-}
-
-function PostCard({
-    post,
-    onSelect,
-}: {
-    post: SelectedPost;
-    onSelect: (post: SelectedPost) => void;
-}) {
-    const imageUrl = post.images?.[0];
-    const details = formatComponentDetails(post.component);
-
-    return (
-        <div className="flex flex-col xs:flex-row items-start xs:items-center gap-3 xs:gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors w-full box-border min-w-0">
-            <Link
-                href={`/post/${post.id}`}
-                target="blank"
-                className="relative w-full xs:w-16 h-30 xs:h-16 shrink-0 bg-muted rounded-md overflow-hidden group"
-            >
-                <Image
-                    src={imageUrl || "/images/fallback.webp"}
-                    alt={post.title}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform"
-                />
-            </Link>
-
-            <div className="flex-1 w-full">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                    <Link
-                        href={`/post/${post.id}`}
-                        target="blank"
-                        className="group flex gap-1 items-start"
-                    >
-                        <h4 className="font-medium group-hover:underline text-sm xs:text-base wrap-anywhere line-clamp-2">
-                            {post.title}
-                        </h4>
-                        <ArrowUpRight className="size-4 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-0.5" />
-                    </Link>
-                    <p className="font-semibold shrink-0 xs:hidden whitespace-nowrap">
-                        {post.price} &euro;
-                    </p>
-                </div>
-
-                <p className="text-sm text-muted-foreground wrap-break-word">
-                    {post.component.name}
-                </p>
-                <p className="text-xs text-muted-foreground wrap-break-word">
-                    {details}
-                </p>
-            </div>
-
-            <div className="flex xs:flex-col items-center xs:items-end gap-2 xs:gap-0 w-full xs:w-auto shrink-0">
-                <p className="font-semibold hidden xs:block whitespace-nowrap">
-                    {post.price} &euro;
-                </p>
-                <Button
-                    size="sm"
-                    className="w-full xs:w-auto xs:mt-1"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onSelect(post);
-                    }}
-                >
-                    <Plus className="size-4 mr-1" />
-                    Ajouter
-                </Button>
-            </div>
-        </div>
     );
 }
