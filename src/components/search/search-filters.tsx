@@ -3,11 +3,7 @@
 import { memo, useState, forwardRef } from "react";
 import { Filter, ChevronRight, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -17,22 +13,8 @@ import { cn } from "@/lib/utils";
 const PRICE_MAX_DEFAULT = 2000;
 const COLORS = ["Black", "White", "Gray", "Silver"];
 
-function ActiveDot({
-    visible,
-    className,
-}: {
-    visible: boolean;
-    className?: string;
-}) {
-    return (
-        <Circle
-            className={cn(
-                "size-2 fill-primary text-primary",
-                visible ? "opacity-100" : "opacity-0",
-                className
-            )}
-        />
-    );
+function ActiveDot({ visible, className }: { visible: boolean; className?: string }) {
+    return <Circle className={cn("size-2 fill-primary text-primary", visible ? "opacity-100" : "opacity-0", className)} />;
 }
 
 const FilterMenuItem = forwardRef<
@@ -115,10 +97,7 @@ const PriceFilter = memo(function PriceFilter({
                     min={0}
                     max={priceRange[1]}
                     onChange={(val) => {
-                        const clamped = Math.max(
-                            0,
-                            Math.min(val, priceRange[1])
-                        );
+                        const clamped = Math.max(0, Math.min(val, priceRange[1]));
                         onPriceRangeChange([clamped, priceRange[1]]);
                         onPriceActiveChange(true);
                     }}
@@ -128,10 +107,7 @@ const PriceFilter = memo(function PriceFilter({
                     min={priceRange[0]}
                     max={PRICE_MAX_DEFAULT}
                     onChange={(val) => {
-                        const clamped = Math.min(
-                            PRICE_MAX_DEFAULT,
-                            Math.max(val, priceRange[0])
-                        );
+                        const clamped = Math.min(PRICE_MAX_DEFAULT, Math.max(val, priceRange[0]));
                         onPriceRangeChange([priceRange[0], clamped]);
                         onPriceActiveChange(true);
                     }}
@@ -154,7 +130,7 @@ const ColorFilter = memo(function ColorFilter({
                 className="w-full text-left px-4 py-2.5 text-xs font-sans text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-b"
                 onClick={() => onSelectedColorsChange([])}
             >
-                Tout déselectionner
+                Tout désélectionner
             </button>
             {COLORS.map((color) => (
                 <label
@@ -166,9 +142,7 @@ const ColorFilter = memo(function ColorFilter({
                         checked={selectedColors.includes(color)}
                         onChange={(e) => {
                             onSelectedColorsChange(
-                                e.target.checked
-                                    ? [...selectedColors, color]
-                                    : selectedColors.filter((c) => c !== color)
+                                e.target.checked ? [...selectedColors, color] : selectedColors.filter((c) => c !== color)
                             );
                         }}
                         className="accent-primary size-3.5"
@@ -209,16 +183,11 @@ export const SearchFilters = memo(function SearchFilters({
                 <Button variant="outline" className="h-12 font-normal w-28">
                     <Filter className="size-4" />
                     Filtres
-                    <ActiveDot
-                        visible={hasActiveFilters}
-                        className="ml-0.5 transition-opacity"
-                    />
+                    <ActiveDot visible={hasActiveFilters} className="ml-0.5 transition-opacity" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-56 p-0">
-                <div className="px-4 py-3 font-sans font-semibold text-sm border-b">
-                    Filtres
-                </div>
+                <div className="px-4 py-3 font-sans font-semibold text-sm border-b">Filtres</div>
 
                 <Popover open={priceOpen} onOpenChange={setPriceOpen}>
                     <PopoverTrigger asChild>
@@ -233,26 +202,14 @@ export const SearchFilters = memo(function SearchFilters({
 
                 <Popover open={colorOpen} onOpenChange={setColorOpen}>
                     <PopoverTrigger asChild>
-                        <FilterMenuItem
-                            label="Couleur"
-                            active={selectedColors.length > 0}
-                            className="border-b"
-                        />
+                        <FilterMenuItem label="Couleur" active={selectedColors.length > 0} className="border-b" />
                     </PopoverTrigger>
-                    <ColorFilter
-                        selectedColors={selectedColors}
-                        onSelectedColorsChange={onSelectedColorsChange}
-                    />
+                    <ColorFilter selectedColors={selectedColors} onSelectedColorsChange={onSelectedColorsChange} />
                 </Popover>
 
                 <div className="px-4 py-3">
-                    <Button
-                        className="w-full"
-                        size="sm"
-                        variant={hasActiveFilters ? "default" : "outline"}
-                        onClick={onReset}
-                    >
-                        Reinitialiser les filtres
+                    <Button className="w-full" size="sm" variant={hasActiveFilters ? "default" : "outline"} onClick={onReset}>
+                        Réinitialiser les filtres
                     </Button>
                 </div>
             </PopoverContent>
