@@ -55,48 +55,50 @@ async function syncAll() {
             );
 
             // Enrich posts with component data
-            const enrichedPosts = (await Promise.all(
-                posts.map(async (post) => {
-                    const firstImage =
-                        post.images && post.images.length > 0
-                            ? post.images[0]
-                            : null;
+            const enrichedPosts = (
+                await Promise.all(
+                    posts.map(async (post) => {
+                        const firstImage =
+                            post.images && post.images.length > 0
+                                ? post.images[0]
+                                : null;
 
-                    const tableName = TYPE_TO_TABLE[post.componentType];
-                    if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
-                        console.warn(
-                            `Post ${post.id}: no query for component type '${post.componentType}', skipping enrichment`
+                        const tableName = TYPE_TO_TABLE[post.componentType];
+                        if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
+                            console.warn(
+                                `Post ${post.id}: no query for component type '${post.componentType}', skipping enrichment`
+                            );
+                            return {
+                                ...post,
+                                firstImage,
+                            };
+                        }
+
+                        // Fetch the specific component data
+                        const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
+                        const { rows: componentData } = await client.query(
+                            componentQuery,
+                            [post.componentId]
                         );
+
+                        if (componentData.length > 0) {
+                            return {
+                                ...post,
+                                firstImage,
+                                component: {
+                                    // build the details as expected by the ui
+                                    ...buildComponentDetails(componentData[0]),
+                                },
+                            };
+                        }
+
                         return {
                             ...post,
                             firstImage,
                         };
-                    }
-
-                    // Fetch the specific component data
-                    const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
-                    const { rows: componentData } = await client.query(
-                        componentQuery,
-                        [post.componentId]
-                    );
-
-                    if (componentData.length > 0) {
-                        return {
-                            ...post,
-                            firstImage,
-                            component: {
-                                // build the details as expected by the ui
-                                ...buildComponentDetails(componentData[0]),
-                            },
-                        };
-                    }
-
-                    return {
-                        ...post,
-                        firstImage,
-                    };
-                })
-            )).filter(Boolean);
+                    })
+                )
+            ).filter(Boolean);
 
             console.log(
                 `Pushing ${enrichedPosts.length} enriched posts to Meilisearch...`
