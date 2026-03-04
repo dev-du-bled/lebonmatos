@@ -15,7 +15,9 @@ import { cn } from "@/lib/utils";
 // not sure if it is worth it, but maybe fetching the available options for color as well as the minimum/max price
 // from the database/meili would be nice ? For now it's going to stay hardcoded -Lyna
 const PRICE_MAX_DEFAULT = 2000;
-const COLORS = ["Black", "White", "Gray", "Silver"];
+const COMPONENT_COLORS = ["Black", "White", "Gray", "Silver"] as const;
+export type ComponentColor = (typeof COMPONENT_COLORS)[number];
+const COLORS = COMPONENT_COLORS;
 
 function ActiveDot({
     visible,
@@ -155,8 +157,8 @@ const ColorFilter = memo(function ColorFilter({
     selectedColors,
     onSelectedColorsChange,
 }: {
-    selectedColors: string[];
-    onSelectedColorsChange: (colors: string[]) => void;
+    selectedColors: ComponentColor[];
+    onSelectedColorsChange: (colors: ComponentColor[]) => void;
 }) {
     return (
         <PopoverContent side="left" align="start" className="w-48 p-0">
@@ -201,10 +203,10 @@ export const SearchFilters = memo(function SearchFilters({
 }: {
     priceRange: [number, number];
     priceActive: boolean;
-    selectedColors: string[];
+    selectedColors: ComponentColor[];
     onPriceRangeChange: (range: [number, number]) => void;
     onPriceActiveChange: (active: boolean) => void;
-    onSelectedColorsChange: (colors: string[]) => void;
+    onSelectedColorsChange: (colors: ComponentColor[]) => void;
     onReset: () => void;
 }) {
     const [filtersOpen, setFiltersOpen] = useState(false);
