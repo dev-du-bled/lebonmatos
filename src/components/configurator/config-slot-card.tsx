@@ -21,7 +21,6 @@ import Image from "next/image";
 import { type ConfigurationSlot } from "@/lib/compatibility";
 import { formatComponentDetails } from "@/lib/utils";
 
-
 type ConfigSlotCardProps = {
     componentType: ComponentType;
     post: ConfigurationSlot["post"];

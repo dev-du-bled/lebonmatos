@@ -5,7 +5,6 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { ComponentType } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
-
 const configurationItemSchema = z.object({
     componentType: z.enum(ComponentType),
     postId: z.uuid().nullable(),

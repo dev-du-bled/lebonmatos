@@ -102,7 +102,7 @@ export function ConfiguratorContent() {
                     return {
                         componentType: type,
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        post: item.post as any ?? null,
+                        post: (item.post as any) ?? null,
                         quantity: item.quantity,
                     };
                 }),
@@ -133,8 +133,8 @@ export function ConfiguratorContent() {
                 ...prev,
                 slots: prev.slots.map((slot) =>
                     slot.componentType === selectedType
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        ? { ...slot, post: post as any }
+                        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          { ...slot, post: post as any }
                         : slot
                 ),
             }));
