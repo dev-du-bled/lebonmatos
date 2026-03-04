@@ -96,6 +96,7 @@ export default function ReportButton({
         handleSubmit,
         setValue,
         reset,
+        clearErrors,
     } = useForm<CreateReportInput>({
         resolver: zodResolver(createReportSchema),
         mode: "onChange",
@@ -142,6 +143,8 @@ export default function ReportButton({
     const handleSelectType = (type: REPORT_TYPE) => {
         setSelectedType(type);
         setValue("reason", type, { shouldValidate: true });
+        setValue("details", null);
+        clearErrors("details");
     };
 
     const onSubmit = (data: CreateReportInput) => {

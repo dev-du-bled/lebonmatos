@@ -5,33 +5,52 @@ const reportBaseSchema = z.object({
     reason: z.enum(Object.values(REPORT_TYPE)),
     details: z
         .string()
-        .min(10, {
-            message: "Les détails doivent comporter au moins 10 caractères.",
-        })
         .max(500, {
             message: "Les détails ne peuvent dépasser 500 caractères.",
         })
         .nullable(),
 });
 
-const detailsRequiredForOther = (data: {
-    reason: string;
-    details: string | null;
-}) =>
-    data.reason !== "OTHER" ||
-    (data.details !== null && data.details.trim().length > 0);
-
-const detailsRequiredMsg = {
-    message: 'Les détails sont obligatoires pour le type "Autre"',
-    path: ["details"],
-};
-
 export const createReportSchema = reportBaseSchema
     .extend({
         type: z.enum(["POST", "USER", "REVIEW"]),
         reportedId: z.uuid(),
     })
-    .refine(detailsRequiredForOther, detailsRequiredMsg);
+    .superRefine((data, ctx) => {
+        const trimmed = data.details?.trim() ?? "";
+        if (data.reason === "OTHER") {
+            if (trimmed.length === 0) {
+                ctx.addIssue({
+                    code: "custom",
+                    message:
+                        'Les détails sont obligatoires pour le type "Autre"',
+                    path: ["details"],
+                });
+            } else if (trimmed.length < 10) {
+                ctx.addIssue({
+                    origin: "custom",
+                    code: "too_small",
+                    minimum: 10,
+                    type: "string",
+                    inclusive: true,
+                    message:
+                        "Les détails doivent comporter au moins 10 caractères.",
+                    path: ["details"],
+                });
+            }
+        } else if (trimmed.length > 0 && trimmed.length < 10) {
+            ctx.addIssue({
+                origin: "custom",
+                code: "too_small",
+                minimum: 10,
+                type: "string",
+                inclusive: true,
+                message:
+                    "Les détails doivent comporter au moins 10 caractères.",
+                path: ["details"],
+            });
+        }
+    });
 
 export type CreateReportInput = z.infer<typeof createReportSchema>;
 

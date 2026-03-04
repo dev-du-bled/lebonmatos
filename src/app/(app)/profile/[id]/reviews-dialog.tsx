@@ -23,6 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { trpc } from "@/trpc/client";
+import ReportButton from "@/components/report/report-button";
 
 export type Review = {
     id: string;
@@ -146,9 +147,18 @@ function ReviewCard({ review }: { review: Review }) {
                     >
                         {displayName}
                     </Link>
-                    <span className="text-xs text-muted-foreground shrink-0">
-                        {date}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs text-muted-foreground">
+                            {date}
+                        </span>
+                        <ReportButton
+                            type="REVIEW"
+                            width="icon"
+                            reportedId={review.id}
+                            userId={review.rater.id}
+                            tooltipText="Signaler cet avis"
+                        />
+                    </div>
                 </div>
                 <StarRating value={review.rating} />
                 {review.comment && (

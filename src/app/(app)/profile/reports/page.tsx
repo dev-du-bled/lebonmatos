@@ -48,9 +48,9 @@ type MyReport = {
         id: string;
         rating: number;
         comment: string | null;
-        user: { id: string; name: string | null } | null;
+        user: { id: string; displayUsername: string | null } | null;
     } | null;
-    reportedUser: { id: string; name: string | null } | null;
+    reportedUser: { id: string; displayUsername: string | null } | null;
 };
 
 function ReportCardSkeleton() {
@@ -173,40 +173,56 @@ function ReportCard({ report }: { report: MyReport }) {
                         </div>
                     )}
 
-                    {report.type === "REVIEW" && report.rating && (
+                    {report.type === "REVIEW" && (
                         <div className="flex flex-col gap-1 text-sm">
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-muted-foreground">
-                                    Avis :
-                                </span>
-                                <span className="inline-flex items-center gap-1 font-medium">
-                                    <Star className="size-3.5 fill-yellow-400 text-yellow-400" />
-                                    {report.rating.rating}/5
-                                </span>
-                                {report.rating.user && (
-                                    <span className="text-muted-foreground text-xs">
-                                        — {report.rating.user.name}
+                            {report.rating ? (
+                                <>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="shrink-0">Avis :</span>
+                                        <span className="inline-flex items-center gap-1 font-medium">
+                                            <Star className="size-3.5 fill-yellow-400 text-yellow-400" />
+                                            {report.rating.rating}/5
+                                        </span>
+                                        {report.rating.user && (
+                                            <span className="text-muted-foreground text-xs">
+                                                —{" "}
+                                                {report.rating.user
+                                                    .displayUsername ??
+                                                    "Utilisateur supprimé"}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {report.rating.comment && (
+                                        <p
+                                            className="max-w-md truncate text-xs text-muted-foreground"
+                                            title={report.rating.comment}
+                                        >
+                                            {report.rating.comment}
+                                        </p>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="flex items-start gap-2">
+                                    <span className="shrink-0">Avis :</span>
+                                    <span className="font-medium text-muted-foreground italic">
+                                        {report.contentSnapshot ??
+                                            "Contenu supprimé"}
+                                        {report.status === "RESOLVED" && (
+                                            <span className="ml-1 not-italic text-xs">
+                                                (supprimé suite au traitement)
+                                            </span>
+                                        )}
                                     </span>
-                                )}
-                            </div>
-                            {report.rating.comment && (
-                                <p
-                                    className="max-w-md truncate text-xs text-muted-foreground"
-                                    title={report.rating.comment}
-                                >
-                                    {report.rating.comment}
-                                </p>
+                                </div>
                             )}
                         </div>
                     )}
 
                     {report.type === "USER" && report.reportedUser && (
                         <div className="flex items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">
-                                Utilisateur :
-                            </span>
+                            <span className="shrink-0">Utilisateur :</span>
                             <span className="font-medium">
-                                {report.reportedUser.name ?? "—"}
+                                {report.reportedUser.displayUsername ?? "—"}
                             </span>
                         </div>
                     )}
@@ -242,10 +258,7 @@ async function ReportsContent() {
     return (
         <div className="grid gap-4">
             {reports.map((report) => (
-                <ReportCard
-                    key={report.id}
-                    report={report as unknown as MyReport}
-                />
+                <ReportCard key={report.id} report={report as MyReport} />
             ))}
         </div>
     );
