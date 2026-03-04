@@ -74,6 +74,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/postgres-array ./nod
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/adapter-pg
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/driver-adapter-utils ./node_modules/@prisma/driver-adapter-utils
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/meilisearch ./node_modules/meilisearch
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@better-auth ./node_modules/@better-auth
 
 # Copy entrypoint script
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./

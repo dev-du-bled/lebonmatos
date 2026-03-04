@@ -2,10 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 
-import {
-    ComponentSelector,
-    type SelectedPost,
-} from "@/components/configurator/component-selector";
+import { ComponentSelector } from "@/components/configurator/component-selector";
+import { type SelectedPost } from "@/components/configurator/component-selector";
 import { ComponentType } from "@prisma/client";
 
 import {
@@ -73,7 +71,7 @@ export default function ComparatorContent() {
         } else {
             // Premier ajout : on mémorise le type pour toute la session de comparaison
             if (!selected.length) {
-                const type = post.component.type ?? pickerType;
+                const type = post.componentType ?? pickerType;
                 if (type) setComparisonType(type);
             }
             setSelected((p) => [...p, post]);

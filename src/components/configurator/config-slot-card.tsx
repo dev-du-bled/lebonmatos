@@ -18,12 +18,12 @@ import {
 } from "@/lib/compatibility";
 import { Plus, Trash2, AlertCircle } from "lucide-react";
 import Image from "next/image";
-import type { SelectedPost } from "./component-selector";
+import { type ConfigurationSlot } from "@/lib/compatibility";
 import { formatComponentDetails } from "@/lib/utils";
 
 type ConfigSlotCardProps = {
     componentType: ComponentType;
-    post: SelectedPost | null;
+    post: ConfigurationSlot["post"];
     quantity: number;
     issues: CompatibilityIssue[];
     onOpenSelector: (type: ComponentType) => void;
