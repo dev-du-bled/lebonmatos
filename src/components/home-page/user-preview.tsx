@@ -13,8 +13,7 @@ interface UserPreviewProps {
 
 export default async function UserPreview({ user }: UserPreviewProps) {
     const profile = await trpc.user.getPublicProfile({ userId: user.id });
-    const displayName =
-        user.displayUsername ?? user.username ?? "Utilisateur supprimé";
+    const displayName = user.username ?? "Utilisateur supprimé";
 
     return (
         <div className="flex flex-row items-center gap-2">
