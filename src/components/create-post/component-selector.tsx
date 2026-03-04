@@ -193,7 +193,7 @@ export default function ComponentSelector({
                             )}
                         </div>
 
-                        <DialogContent className="sm:max-w-lg p-0 gap-0">
+                        <DialogContent className="xs:max-w-lg p-0 gap-0">
                             <DialogHeader className="px-4 pt-4 pb-2">
                                 <DialogTitle>
                                     {selectedType ? (
