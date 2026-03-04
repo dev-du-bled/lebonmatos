@@ -190,7 +190,7 @@ export default function SearchPageClient({
             </span>
 
             {/* Barre de recherche desktop */}
-            <div className="hidden sm:flex flex-row gap-2.5 w-full">
+            <div className="hidden lg:flex flex-row gap-2.5 w-full">
                 <InputGroup className="w-full h-12">
                     <InputGroupAddon align="inline-start">
                         <Search className="size-4" />
@@ -238,7 +238,7 @@ export default function SearchPageClient({
             </div>
 
             {/* Barre de recherche mobile */}
-            <div className="flex sm:hidden flex-row gap-2 w-full">
+            <div className="flex lg:hidden flex-row gap-2 w-full">
                 <InputGroup className="w-full h-12">
                     <InputGroupAddon align="inline-start">
                         <Search className="size-4" />
@@ -331,7 +331,9 @@ export default function SearchPageClient({
                         </div>
                         <DrawerFooter>
                             <Button
-                                variant={hasActiveFilters ? "default" : "outline"}
+                                variant={
+                                    hasActiveFilters ? "default" : "outline"
+                                }
                                 size="sm"
                                 onClick={handleResetFilters}
                             >

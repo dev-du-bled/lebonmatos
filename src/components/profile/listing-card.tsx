@@ -48,7 +48,10 @@ interface ListingCardProps {
     showActions?: boolean;
 }
 
-export function ListingCard({ listing, showActions = false }: ListingCardProps) {
+export function ListingCard({
+    listing,
+    showActions = false,
+}: ListingCardProps) {
     const router = useRouter();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isSoldDialogOpen, setIsSoldDialogOpen] = useState(false);
@@ -261,9 +264,9 @@ export function ListingCard({ listing, showActions = false }: ListingCardProps) 
                                     <br />
                                     Si cet article a été acheté via la
                                     messagerie, pensez à mettre à jour son
-                                    statut depuis la conversation. L&apos;acheteur
-                                    pourra alors laisser un avis et vous
-                                    recommander.
+                                    statut depuis la conversation.
+                                    L&apos;acheteur pourra alors laisser un avis
+                                    et vous recommander.
                                 </DialogDescription>
                             </DialogHeader>
                             <DialogFooter>

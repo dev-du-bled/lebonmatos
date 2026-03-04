@@ -228,28 +228,32 @@ export default function ComponentSelector({
                                         vous vendez :
                                     </p>
                                     <ScrollArea className="max-h-125">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 px-4 pb-4">
-                                        {componentTypes.map((type) => {
-                                            const Icon =
-                                                componentTypeIcons[type];
-                                            return (
-                                                <Button
-                                                    key={type}
-                                                    variant="outline"
-                                                    className="h-auto py-3 px-3 justify-start text-left gap-3"
-                                                    onClick={() =>
-                                                        setSelectedType(type)
-                                                    }
-                                                >
-                                                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                                    <span className="truncate flex-1">
-                                                        {getEnumDisplay(type)}
-                                                    </span>
-                                                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                                </Button>
-                                            );
-                                        })}
-                                    </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 px-4 pb-4">
+                                            {componentTypes.map((type) => {
+                                                const Icon =
+                                                    componentTypeIcons[type];
+                                                return (
+                                                    <Button
+                                                        key={type}
+                                                        variant="outline"
+                                                        className="h-auto py-3 px-3 justify-start text-left gap-3"
+                                                        onClick={() =>
+                                                            setSelectedType(
+                                                                type
+                                                            )
+                                                        }
+                                                    >
+                                                        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                                        <span className="truncate flex-1">
+                                                            {getEnumDisplay(
+                                                                type
+                                                            )}
+                                                        </span>
+                                                        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                                    </Button>
+                                                );
+                                            })}
+                                        </div>
                                     </ScrollArea>
                                 </>
                             ) : (

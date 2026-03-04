@@ -57,7 +57,11 @@ export default function FavoriteButton({ post, className }: FavoritePostProps) {
         }
     };
 
-    if (!session || post.isSold || (post.seller?.id && session.user?.id === post.seller?.id)) {
+    if (
+        !session ||
+        post.isSold ||
+        (post.seller?.id && session.user?.id === post.seller?.id)
+    ) {
         return null;
     }
 

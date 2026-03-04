@@ -10,7 +10,9 @@ import {
 } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { Label } from "../ui/label";
 
 // not sure if it is worth it, but maybe fetching the available options for color as well as the minimum/max price
 // from the database/meili would be nice ? For now it's going to stay hardcoded -Lyna
@@ -182,36 +184,36 @@ export const ColorFilterContent = memo(function ColorFilterContent({
 }) {
     return (
         <>
-            <button
-                className="w-full text-left py-1 text-xs font-sans text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => onSelectedColorsChange([])}
-            >
-                Tout désélectionner
-            </button>
             <div className="flex flex-wrap gap-2 mt-1">
                 {COLORS.map((color) => (
-                    <label
+                    <Label
                         key={color}
-                        className="flex items-center gap-2 text-sm font-sans cursor-pointer"
+                        className="flex items-center gap-2 text-sm font-sans"
                     >
-                        <input
-                            type="checkbox"
+                        <Checkbox
                             checked={selectedColors.includes(color)}
-                            onChange={(e) => {
+                            onCheckedChange={(checked) => {
                                 onSelectedColorsChange(
-                                    e.target.checked
+                                    checked
                                         ? [...selectedColors, color]
                                         : selectedColors.filter(
                                               (c) => c !== color
                                           )
                                 );
                             }}
-                            className="accent-primary size-3.5"
                         />
                         {color}
-                    </label>
+                    </Label>
                 ))}
             </div>
+            <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto py-1 px-0 text-xs text-muted-foreground "
+                onClick={() => onSelectedColorsChange([])}
+            >
+                Tout désélectionner
+            </Button>
         </>
     );
 });
