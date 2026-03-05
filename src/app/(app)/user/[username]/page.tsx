@@ -97,7 +97,7 @@ async function ProfileHeader({ usernameParam }: { usernameParam: string }) {
     const user = await getUser(usernameParam);
     if (!user) return null;
 
-    const displayName = user.displayUsername ?? user.username ?? "Utilisateur";
+    const displayName = user.username ?? "Utilisateur";
     const initials = displayName
         .split(/\s+/)
         .map((segment: string) => segment[0])
@@ -135,11 +135,6 @@ async function ProfileHeader({ usernameParam }: { usernameParam: string }) {
                         <h1 className="text-2xl font-semibold sm:text-3xl">
                             {displayName}
                         </h1>
-                        {user.username && (
-                            <p className="text-sm text-muted-foreground">
-                                @{user.username}
-                            </p>
-                        )}
                     </div>
                     {user.bio && (
                         <p className="max-w-md text-sm text-muted-foreground">

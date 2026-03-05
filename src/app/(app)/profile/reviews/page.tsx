@@ -60,9 +60,7 @@ async function ReviewsContent() {
         <div className="grid gap-4">
             {reviews.map((review) => {
                 const displayName =
-                    review.recipient.displayUsername ??
-                    review.recipient.username ??
-                    "Utilisateur supprimé";
+                    review.recipient.username ?? "Utilisateur supprimé";
                 const initials = displayName
                     .split(/\s+/)
                     .map((s: string) => s[0])

@@ -110,11 +110,6 @@ async function ProfileHeader() {
                         <h1 className="text-2xl font-semibold sm:text-3xl">
                             {displayName}
                         </h1>
-                        {user.username && user.username !== displayName && (
-                            <p className="text-sm text-muted-foreground">
-                                @{user.username}
-                            </p>
-                        )}
                     </div>
 
                     {user.bio && (
