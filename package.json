@@ -18,7 +18,8 @@
         "sync:start": "bun sync/index.ts",
         "sync:reset": "bun sync/resetMeili.ts",
         "sync:all": "bun run sync:reset && bun sync/syncAll.ts",
-        "postinstall": "bun run prisma:generate"
+        "postinstall": "bun run prisma:generate",
+        "tests:run": "playwright test"
     },
     "dependencies": {
         "@base-ui/react": "^1.2.0",
