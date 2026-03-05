@@ -54,10 +54,7 @@ const SOCKET_DEFAULT_MEMORY_TYPE: Record<string, string> = {
 const AMBIGUOUS_DDR_SOCKETS = ["LGA1700"];
 
 // Determine motherboard memory type from socket + name
-function getMotherboardMemoryType(
-    socket: string,
-    name: string
-): string | null {
+function getMotherboardMemoryType(socket: string, name: string): string | null {
     const upperName = name.toUpperCase();
 
     // For ambiguous sockets, check the board name
@@ -184,9 +181,7 @@ export function checkCompatibility(
 
         // Check mixed RAM types (e.g. DDR4 + DDR5)
         const ramTypes = new Set(
-            rams
-                .map((r) => r.post?.component?.Ram?.type)
-                .filter(Boolean)
+            rams.map((r) => r.post?.component?.Ram?.type).filter(Boolean)
         );
         if (ramTypes.size > 1) {
             issues.push({
@@ -250,7 +245,8 @@ export function checkCompatibility(
 
         if (gpu?.Gpu) {
             // Estimate GPU power based on VRAM (rough approximation)
-            const gpuPower = gpu.Gpu.memory >= 12 ? 250 : gpu.Gpu.memory >= 8 ? 150 : 75;
+            const gpuPower =
+                gpu.Gpu.memory >= 12 ? 250 : gpu.Gpu.memory >= 8 ? 150 : 75;
             estimatedWattage += gpuPower;
         }
 
