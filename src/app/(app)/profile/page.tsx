@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { PublicProfileDialog } from "@/components/profile/public-profile-dialog";
-import { ReviewsDialog } from "@/app/(app)/profile/[id]/reviews-dialog";
+import { ReviewsDialog } from "@/app/(app)/user/[username]/reviews-dialog";
 import { Metadata } from "next";
 import { ProfileHeaderSkeleton } from "./skeleton";
 

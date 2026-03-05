@@ -14,11 +14,11 @@ import {
 import { ReviewForm } from "./review-form";
 import NavBack from "@/components/nav/nav-back";
 
-type Params = { id: string };
+type Params = { username: string };
 
-const getUser = cache(async (id: string) => {
+const getUser = cache(async (username: string) => {
     try {
-        return await trpc.user.getPublicProfile({ userId: id });
+        return await trpc.user.getPublicProfileByUsername({ username });
     } catch {
         return null;
     }
@@ -29,8 +29,8 @@ export async function generateMetadata({
 }: {
     params: Promise<Params>;
 }): Promise<Metadata> {
-    const { id } = await params;
-    const user = await getUser(id);
+    const { username } = await params;
+    const user = await getUser(username);
     const name = user?.username ?? "cet utilisateur";
     return {
         title: `Laisser un avis pour ${name}`,
@@ -45,14 +45,16 @@ export default async function ReviewPage({
     params: Promise<Params>;
     searchParams: Promise<{ from?: string }>;
 }) {
-    const { id } = await params;
+    const { username } = await params;
     const { from } = await searchParams;
-    const backHref = from ?? `/profile/${id}`;
-    const user = await getUser(id);
+    const user = await getUser(username);
 
     if (!user) return notFound();
 
-    const displayName = user.username ?? "Utilisateur supprimé";
+    const backHref = from ?? `/user/${user.username ?? username}`;
+
+    const displayName =
+        user.displayUsername ?? user.username ?? "Utilisateur supprimé";
     const initials = displayName
         .split(/\s+/)
         .map((s) => s[0])

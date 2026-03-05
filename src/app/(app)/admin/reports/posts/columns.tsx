@@ -36,7 +36,12 @@ export type ReportRow = {
     messageId: string | null;
     reportedAt: Date | string;
     post: { id: string; title: string | null } | null;
-    user: { id: string; name: string | null; email: string | null } | null;
+    user: {
+        id: string;
+        name: string | null;
+        email: string | null;
+        username: string | null;
+    } | null;
 };
 
 function SortableHeader({
@@ -111,7 +116,11 @@ function RowActions({
                 {report.user && (
                     <DropdownMenuItem asChild>
                         <Link
-                            href={`/profile/${report.user.id}`}
+                            href={
+                                report.user.username
+                                    ? `/user/${report.user.username}`
+                                    : "#"
+                            }
                             target="_blank"
                             rel="noreferrer"
                         >

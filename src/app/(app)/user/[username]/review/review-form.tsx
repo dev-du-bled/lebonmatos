@@ -70,7 +70,7 @@ export function ReviewForm({
                 comment: values.comment?.trim() || undefined,
             });
             toast.success("Avis publié avec succès !");
-            router.push(backHref ?? `/profile/${userId}`);
+            router.push(backHref ?? "/");
             router.refresh();
         } catch (error) {
             if (error instanceof TRPCClientError) {

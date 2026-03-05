@@ -115,6 +115,22 @@ async function buildPublicProfilePayload(userId: string) {
     return mapPublicProfileResult(user, await getRating(userId));
 }
 
+async function buildPublicProfilePayloadByUsername(username: string) {
+    const user = await prisma.user.findUnique({
+        where: { username },
+        select: publicProfileSelect,
+    });
+
+    if (!user) {
+        throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Utilisateur introuvable",
+        });
+    }
+
+    return mapPublicProfileResult(user, await getRating(user.id));
+}
+
 async function deleteUserImage(image: string) {
     const imageKey = image.split("/").pop();
     if (imageKey) {
@@ -294,6 +310,11 @@ export const userRouter = createTRPCRouter({
         .input(z.object({ userId: z.uuid() }))
         .query(async ({ input }) => {
             return buildPublicProfilePayload(input.userId);
+        }),
+    getPublicProfileByUsername: publicProcedure
+        .input(z.object({ username: z.string().min(1) }))
+        .query(async ({ input }) => {
+            return buildPublicProfilePayloadByUsername(input.username);
         }),
     updateProfile: privateProcedure
         .input(profileUpdateSchema)

@@ -83,7 +83,13 @@ async function ReviewsContent() {
                     <Card key={review.id} className="p-5">
                         <CardContent className="p-0">
                             <div className="flex items-start gap-4">
-                                <Link href={`/profile/${review.recipient.id}`}>
+                                <Link
+                                    href={
+                                        review.recipient.username
+                                            ? `/user/${review.recipient.username}`
+                                            : "#"
+                                    }
+                                >
                                     <Avatar className="size-10 shrink-0">
                                         {review.recipient.image ? (
                                             <AvatarImage
@@ -100,7 +106,11 @@ async function ReviewsContent() {
                                 <div className="flex-1 space-y-1.5">
                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                         <Link
-                                            href={`/profile/${review.recipient.id}`}
+                                            href={
+                                                review.recipient.username
+                                                    ? `/user/${review.recipient.username}`
+                                                    : "#"
+                                            }
                                             className="font-semibold hover:underline"
                                         >
                                             {displayName}

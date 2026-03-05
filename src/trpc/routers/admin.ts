@@ -15,6 +15,7 @@ const userSelect = {
     banned: true,
     banReason: true,
     banExpires: true,
+    username: true,
 } satisfies Prisma.UserSelect;
 
 const ALLOWED_SORT_FIELDS = [

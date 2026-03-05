@@ -607,6 +607,7 @@ export const discussionRouter = createTRPCRouter({
                 where: { id: input.discussionId },
                 include: {
                     post: { select: { id: true, isSold: true } },
+                    seller: { select: { username: true } },
                 },
             });
 
@@ -641,7 +642,9 @@ export const discussionRouter = createTRPCRouter({
             const systemMsg = await createSystemMessage(input.discussionId, {
                 content: "Article marqué comme vendu !",
                 buttonLabel: "Laisser un avis",
-                buttonUrl: `/profile/${userId}/review?from=/messages/${input.discussionId}`,
+                buttonUrl: discussion.seller?.username
+                    ? `/user/${discussion.seller.username}/review?from=/messages/${input.discussionId}`
+                    : `/messages/${input.discussionId}`,
                 buttonAction: "buyer_only",
             });
 

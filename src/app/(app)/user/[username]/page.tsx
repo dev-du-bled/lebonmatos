@@ -13,7 +13,7 @@ import ReportButton from "@/components/report/report-button";
 import { PublicProfileHeaderSkeleton, ListingsSkeleton } from "./skeleton";
 
 type Params = {
-    id: string;
+    username: string;
 };
 
 export async function generateMetadata({
@@ -21,8 +21,8 @@ export async function generateMetadata({
 }: {
     params: Promise<Params>;
 }): Promise<Metadata> {
-    const { id } = await params;
-    const user = await getUser(id);
+    const { username } = await params;
+    const user = await getUser(username);
     if (!user) {
         return {
             title: "Utilisateur non trouvé",
@@ -36,9 +36,9 @@ export async function generateMetadata({
     };
 }
 
-const getUser = cache(async (id: string) => {
+const getUser = cache(async (username: string) => {
     try {
-        return await trpc.user.getPublicProfile({ userId: id });
+        return await trpc.user.getPublicProfileByUsername({ username });
     } catch {
         return null;
     }
@@ -93,11 +93,11 @@ function getMemberSince(createdAt: Date): { label: string; tier: MemberTier } {
     return { label, tier };
 }
 
-async function ProfileHeader({ userId }: { userId: string }) {
-    const user = await getUser(userId);
+async function ProfileHeader({ usernameParam }: { usernameParam: string }) {
+    const user = await getUser(usernameParam);
     if (!user) return null;
 
-    const displayName = user.username ?? "Utilisateur";
+    const displayName = user.displayUsername ?? user.username ?? "Utilisateur";
     const initials = displayName
         .split(/\s+/)
         .map((segment: string) => segment[0])
@@ -135,7 +135,7 @@ async function ProfileHeader({ userId }: { userId: string }) {
                         <h1 className="text-2xl font-semibold sm:text-3xl">
                             {displayName}
                         </h1>
-                        {user.username && user.username !== displayName && (
+                        {user.username && (
                             <p className="text-sm text-muted-foreground">
                                 @{user.username}
                             </p>
@@ -207,14 +207,14 @@ async function ListingsContent({ userId }: { userId: string }) {
     return <ListingsGrid listings={listings} />;
 }
 
-export default async function ProfilePage({
+export default async function UserProfilePage({
     params,
 }: {
     params: Promise<Params>;
 }) {
-    const { id } = await params;
+    const { username } = await params;
 
-    const user = await getUser(id);
+    const user = await getUser(username);
 
     if (!user) notFound();
 
@@ -222,7 +222,7 @@ export default async function ProfilePage({
         <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
             <div className="mb-8">
                 <Suspense fallback={<PublicProfileHeaderSkeleton />}>
-                    <ProfileHeader userId={id} />
+                    <ProfileHeader usernameParam={username} />
                 </Suspense>
             </div>
 

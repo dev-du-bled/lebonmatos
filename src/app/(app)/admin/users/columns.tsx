@@ -35,6 +35,7 @@ export type UserRow = {
     banned: boolean | null;
     banReason?: string | null;
     banExpires?: Date | string | null;
+    username?: string | null;
 };
 
 function SortableHeader({
@@ -100,7 +101,7 @@ function RowActions({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link
-                        href={`/profile/${user.id}`}
+                        href={user.username ? `/user/${user.username}` : "#"}
                         target="_blank"
                         rel="noreferrer"
                     >
