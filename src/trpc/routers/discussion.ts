@@ -638,12 +638,22 @@ export const discussionRouter = createTRPCRouter({
                 },
             });
 
+            // Vérifier que la relation post est bien résolue (sécurité côté serveur)
+            if (!discussion.post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Annonce introuvable",
+                });
+            }
+
+            const postId = discussion.post.id;
+
             // Créer le message système avec bouton "Laisser un avis"
             const systemMsg = await createSystemMessage(input.discussionId, {
                 content: "Article marqué comme vendu !",
                 buttonLabel: "Laisser un avis",
                 buttonUrl: discussion.seller?.username
-                    ? `/user/${discussion.seller.username}/review?postId=${discussion.post!.id}&from=/messages/${input.discussionId}`
+                    ? `/user/${discussion.seller.username}/review?postId=${postId}&from=/messages/${input.discussionId}`
                     : `/messages/${input.discussionId}`,
                 buttonAction: "buyer_only",
             });

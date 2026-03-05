@@ -68,8 +68,7 @@ export default async function ReviewPage({
 
     const backHref = from ?? `/user/${user.username ?? username}`;
 
-    const displayName =
-        user.displayUsername ?? user.username ?? "Utilisateur supprimé";
+    const displayName = user.username ?? "Utilisateur supprimé";
     const initials = displayName
         .split(/\s+/)
         .map((s) => s[0])
