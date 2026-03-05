@@ -4,14 +4,13 @@ import { notFound } from "next/navigation";
 
 import { trpc } from "@/trpc/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 import { FileText, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReviewsDialog } from "./reviews-dialog";
 import { ListingsGrid } from "./listings-grid";
 import ReportButton from "@/components/report/report-button";
+import { PublicProfileHeaderSkeleton, ListingsSkeleton } from "./skeleton";
 
 type Params = {
     id: string;
@@ -92,59 +91,6 @@ function getMemberSince(createdAt: Date): { label: string; tier: MemberTier } {
                   };
 
     return { label, tier };
-}
-
-function ProfileHeaderSkeleton() {
-    return (
-        <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
-            <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
-                <Skeleton className="size-24 rounded-full" />
-                <div className="space-y-2">
-                    <div className="space-y-1">
-                        <Skeleton className="h-8 w-40" />
-                        <Skeleton className="h-4 w-24" />
-                    </div>
-                    <Skeleton className="h-4 w-64" />
-                    <Skeleton className="h-4 w-20" />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function ListingCardSkeleton() {
-    return (
-        <Card className="overflow-hidden p-0 gap-0">
-            <div className="flex flex-col sm:flex-row">
-                <Skeleton className="h-40 w-full sm:h-auto sm:w-48 shrink-0 rounded-none aspect-square sm:aspect-auto" />
-                <CardContent className="flex flex-1 flex-col justify-between gap-4 p-4">
-                    <div className="space-y-2">
-                        <div className="flex justify-between items-start gap-2">
-                            <Skeleton className="h-5 w-3/4" />
-                            <Skeleton className="h-6 w-20 shrink-0" />
-                        </div>
-                        <Skeleton className="h-3 w-1/3" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-2/3" />
-                    </div>
-                    <div className="flex items-center justify-end gap-2">
-                        <Skeleton className="h-8 w-24" />
-                        <Skeleton className="h-8 w-24" />
-                    </div>
-                </CardContent>
-            </div>
-        </Card>
-    );
-}
-
-function ListingsSkeleton() {
-    return (
-        <div className="grid gap-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-                <ListingCardSkeleton key={i} />
-            ))}
-        </div>
-    );
 }
 
 async function ProfileHeader({ userId }: { userId: string }) {
@@ -275,7 +221,7 @@ export default async function ProfilePage({
     return (
         <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
             <div className="mb-8">
-                <Suspense fallback={<ProfileHeaderSkeleton />}>
+                <Suspense fallback={<PublicProfileHeaderSkeleton />}>
                     <ProfileHeader userId={id} />
                 </Suspense>
             </div>

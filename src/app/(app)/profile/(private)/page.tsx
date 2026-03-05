@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { NavCard } from "@/components/nav/nav-card";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -16,6 +15,7 @@ import { trpc } from "@/trpc/server";
 import { PublicProfileDialog } from "@/components/profile/public-profile-dialog";
 import { ReviewsDialog } from "@/app/(app)/profile/[id]/reviews-dialog";
 import { Metadata } from "next";
+import { ProfileHeaderSkeleton } from "./skeleton";
 
 type QuickAction = {
     title: string;
@@ -73,27 +73,6 @@ export const metadata: Metadata = {
     title: "Mon profil",
     description: "Gérer les paramètres de votre compte",
 };
-
-function ProfileHeaderSkeleton() {
-    return (
-        <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
-            <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
-                <Skeleton className="size-24 rounded-full" />
-                <div className="space-y-2">
-                    <div className="space-y-1">
-                        <Skeleton className="h-8 w-40" />
-                        <Skeleton className="h-4 w-24" />
-                    </div>
-                    <Skeleton className="h-4 w-64" />
-                    <div className="flex items-center justify-center gap-2 md:justify-start">
-                        <Skeleton className="h-4 w-20" />
-                    </div>
-                </div>
-            </div>
-            <Skeleton className="h-10 w-32" />
-        </div>
-    );
-}
 
 async function ProfileHeader() {
     const user = await trpc.user.getProfile();

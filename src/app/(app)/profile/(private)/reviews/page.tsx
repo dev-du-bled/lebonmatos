@@ -1,47 +1,18 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeft, MessageSquare, Star } from "lucide-react";
+import { MessageSquare, Star } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Metadata } from "next";
+import NavBack from "@/components/nav/nav-back";
+import { ReviewsSkeleton } from "./skeleton";
 
 export const metadata: Metadata = {
     title: "Mes avis",
     description: "Les avis que vous avez laissés",
 };
-
-function ReviewCardSkeleton() {
-    return (
-        <Card className="p-5">
-            <div className="flex items-start gap-4">
-                <Skeleton className="size-10 rounded-full shrink-0" />
-                <div className="flex-1 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-4 w-20" />
-                    </div>
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-2/3" />
-                </div>
-            </div>
-        </Card>
-    );
-}
-
-function ReviewsSkeleton() {
-    return (
-        <div className="grid gap-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-                <ReviewCardSkeleton key={i} />
-            ))}
-        </div>
-    );
-}
 
 function StarRating({ value }: { value: number }) {
     return (
@@ -157,22 +128,11 @@ async function ReviewsContent() {
 export default function ReviewsPage() {
     return (
         <section className="mx-auto w-full max-w-4xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
-            <div className="mb-8 flex items-center gap-4">
-                <Link
-                    href="/profile"
-                    className={cn(
-                        buttonVariants({ variant: "ghost", size: "icon" })
-                    )}
-                >
-                    <ArrowLeft className="size-5" />
-                </Link>
-                <div>
-                    <h1 className="text-2xl font-semibold">Mes avis</h1>
-                    <p className="text-sm text-muted-foreground">
-                        Les avis que vous avez laissés aux vendeurs
-                    </p>
-                </div>
-            </div>
+            <NavBack
+                href="/profile"
+                title="Mes avis"
+                desc="Les avis que vous avez laissés aux vendeurs"
+            />
 
             <Suspense fallback={<ReviewsSkeleton />}>
                 <ReviewsContent />
