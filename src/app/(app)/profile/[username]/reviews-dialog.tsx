@@ -107,9 +107,7 @@ function ReviewsSummary({
 }
 
 function ReviewCard({ review }: { review: Review }) {
-    const displayName =
-        review.rater.username ??
-        "Utilisateur supprimé";
+    const displayName = review.rater.username ?? "Utilisateur supprimé";
     const initials = displayName
         .split(/\s+/)
         .map((s) => s[0])

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { MessageSquare, ShoppingBag, Star } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Metadata } from "next";
