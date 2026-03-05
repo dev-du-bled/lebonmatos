@@ -1,6 +1,10 @@
 name: CI
 
 on:
+    push:
+        branches:
+            # to test only cause dispatch doesnt work for whatever reason
+            - tests/e2e
     pull_request:
     workflow_dispatch:
 
