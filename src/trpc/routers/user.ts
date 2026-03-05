@@ -240,6 +240,52 @@ export const userRouter = createTRPCRouter({
         }));
     }),
 
+    getReviewEligibility: privateProcedure
+        .input(z.object({ postId: z.uuid() }))
+        .query(async ({ ctx, input }) => {
+            const raterId = ctx.session!.user.id;
+
+            const post = await prisma.post.findUnique({
+                where: { id: input.postId },
+                select: {
+                    isSold: true,
+                    boughtById: true,
+                    userId: true,
+                },
+            });
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Annonce introuvable.",
+                });
+            }
+
+            // L'utilisateur doit être l'acheteur de l'annonce
+            const hasPurchased =
+                post.isSold &&
+                post.boughtById === raterId &&
+                post.userId !== raterId;
+
+            if (!hasPurchased) {
+                return { hasPurchased: false, hasAlreadyReviewed: false };
+            }
+
+            // Vérifie s'il a déjà laissé un avis pour cette annonce
+            const existingReview = await prisma.rating.findFirst({
+                where: {
+                    postId: input.postId,
+                    raterId,
+                },
+                select: { id: true },
+            });
+
+            return {
+                hasPurchased: true,
+                hasAlreadyReviewed: !!existingReview,
+            };
+        }),
+
     addReview: privateProcedure
         .input(
             z.object({
