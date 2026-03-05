@@ -37,10 +37,12 @@ import ComparatorCarousel from "./comparator-carousel";
 import { extractNumber, Trend, humanizeKey } from "./comparator-utils";
 
 import { mapSelectedToAnnonce, Annonce } from "./comparator-mapper";
+import { useSession } from "../auth/session-provider";
 
 /* ===================================== */
 
 export default function ComparatorContent() {
+    const { session } = useSession();
     /* ---------- STATE ---------- */
 
     const [selected, setSelected] = useState<SelectedPost[]>([]);
@@ -226,7 +228,7 @@ export default function ComparatorContent() {
                         <DialogTitle>Choisir un composant</DialogTitle>
                     </DialogHeader>
 
-                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                         {componentTypes.map((type) => {
                             const Icon = componentTypeIcons[type];
 
@@ -264,7 +266,7 @@ export default function ComparatorContent() {
                     ComponentType.CPU
                 }
                 onSelect={handleSelect}
-                isAuthenticated={false}
+                isAuthenticated={session?.user !== undefined}
                 excludePostIds={selected.map((s) => s.id)}
             />
         </div>
