@@ -67,7 +67,8 @@ export function formatComponentData(type: ComponentType, data: Components) {
     const formattedData = entries.map((key) => {
         if (key === "id" || key === "componentId") return null;
         if ((data as Record<string, unknown>)[key] === null) return null;
-        const displayKey = mapping[key] || key;
+        const displayKey = mapping[key];
+        if (!displayKey) return null;
 
         return displayKey;
     });

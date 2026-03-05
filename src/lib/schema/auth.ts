@@ -52,6 +52,32 @@ export const signupSchema = z
         path: ["confirmPassword"],
     });
 
+/**
+ * Schema pour le formulaire "Mot de passe oublie"
+ */
+export const forgotPasswordSchema = z.object({
+    email: z.email({
+        error: "Veuillez entrer une adresse email valide.",
+    }),
+});
+
+/**
+ * Schema pour le formulaire de reinitialisation du mot de passe
+ */
+export const resetPasswordSchema = z
+    .object({
+        newPassword: z.string().min(6, {
+            error: "Le mot de passe doit contenir au moins 6 caracteres.",
+        }),
+        confirmPassword: z.string(),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+        error: "Les mots de passe ne correspondent pas",
+        path: ["confirmPassword"],
+    });
+
 // Types
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type SignupFormData = z.infer<typeof signupSchema>;
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

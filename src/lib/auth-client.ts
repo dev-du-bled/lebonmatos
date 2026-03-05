@@ -6,7 +6,12 @@ const createClient = () =>
         plugins: [usernameClient(), adminClient()],
     });
 
-type AuthClient = ReturnType<typeof createClient>;
+type AuthClient = ReturnType<typeof createClient> & {
+    requestPasswordReset: (params: {
+        email: string;
+        redirectTo: string;
+    }) => Promise<{ data: unknown; error: unknown }>;
+};
 
 const globalForAuth = globalThis as unknown as {
     authClient: AuthClient;
