@@ -15,23 +15,10 @@ echo "Running database migrations..."
 bunx prisma migrate deploy --schema=./prisma/schema/schema.prisma
 echo "Migrations applied."
 
-# --- Seed component data if needed ---
-COMPONENT_COUNT=$(bun -e "
-import { Client } from 'pg';
-const c = new Client(process.env.DATABASE_URL);
-await c.connect();
-const { rows } = await c.query('SELECT COUNT(*)::int as count FROM component');
-await c.end();
-console.log(rows[0].count);
-" 2>/dev/null || echo "0")
-
-if [ "$COMPONENT_COUNT" = "0" ]; then
-    echo "Seeding component data..."
-    bun ./prisma/seed/data.ts
-    echo "Component data seeded."
-else
-    echo "Component data exists ($COMPONENT_COUNT components), skipping seed."
-fi
+# --- Seed component data (idempotent, skips existing) ---
+echo "Seeding component data..."
+bun ./prisma/seed/data.ts
+echo "Component data seeded."
 
 # --- Initialize Meilisearch ---
 if [ -n "$MEILI_HOST" ]; then

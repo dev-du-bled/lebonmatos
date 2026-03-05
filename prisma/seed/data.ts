@@ -21,6 +21,14 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+async function getExistingNames(type: ComponentType): Promise<Set<string>> {
+    const existing = await prisma.component.findMany({
+        where: { type },
+        select: { name: true },
+    });
+    return new Set(existing.map((c) => c.name));
+}
+
 async function main() {
     await addCpu();
     await addMb();
@@ -36,9 +44,11 @@ async function main() {
 }
 
 async function addCpu() {
-    console.log("Adding CPUs");
+    const existing = await getExistingNames(ComponentType.CPU);
+    const toAdd = cpu.filter((c) => !existing.has(c.name));
+    console.log(`Adding CPUs (${toAdd.length} new, ${existing.size} existing)`);
     await Promise.all(
-        cpu.map((c) =>
+        toAdd.map((c) =>
             prisma.component.create({
                 data: {
                     name: c.name,
@@ -62,9 +72,13 @@ async function addCpu() {
 }
 
 async function addMb() {
-    console.log("Adding Motherboards");
+    const existing = await getExistingNames(ComponentType.MOTHERBOARD);
+    const toAdd = mb.filter((m) => !existing.has(m.name));
+    console.log(
+        `Adding Motherboards (${toAdd.length} new, ${existing.size} existing)`
+    );
     await Promise.all(
-        mb.map((m) =>
+        toAdd.map((m) =>
             prisma.component.create({
                 data: {
                     name: m.name,
@@ -86,9 +100,11 @@ async function addMb() {
 }
 
 async function addRam() {
-    console.log("Adding RAM");
+    const existing = await getExistingNames(ComponentType.RAM);
+    const toAdd = ram.filter((r) => !existing.has(r.name));
+    console.log(`Adding RAM (${toAdd.length} new, ${existing.size} existing)`);
     await Promise.all(
-        ram.map((r) =>
+        toAdd.map((r) =>
             prisma.component.create({
                 data: {
                     name: r.name,
@@ -111,9 +127,16 @@ async function addRam() {
 }
 
 async function addDisk() {
-    console.log("Adding Disks");
+    const existingSsd = await getExistingNames(ComponentType.SSD);
+    const existingHdd = await getExistingNames(ComponentType.HDD);
+    const toAdd = disk.filter((d) =>
+        d.type === "SSD" ? !existingSsd.has(d.name) : !existingHdd.has(d.name)
+    );
+    console.log(
+        `Adding Disks (${toAdd.length} new, ${existingSsd.size + existingHdd.size} existing)`
+    );
     await Promise.all(
-        disk.map((d) => {
+        toAdd.map((d) => {
             const data = {
                 capacity: d.capacity,
                 cache: d.cache,
@@ -155,9 +178,11 @@ async function addDisk() {
 }
 
 async function addGpu() {
-    console.log("Adding GPUs");
+    const existing = await getExistingNames(ComponentType.GPU);
+    const toAdd = gpu.filter((g) => !existing.has(g.name));
+    console.log(`Adding GPUs (${toAdd.length} new, ${existing.size} existing)`);
     await Promise.all(
-        gpu.map((g) =>
+        toAdd.map((g) =>
             prisma.component.create({
                 data: {
                     name: g.name,
@@ -180,9 +205,11 @@ async function addGpu() {
 }
 
 async function addPsu() {
-    console.log("Adding PSUs");
+    const existing = await getExistingNames(ComponentType.POWER_SUPPLY);
+    const toAdd = psu.filter((p) => !existing.has(p.name));
+    console.log(`Adding PSUs (${toAdd.length} new, ${existing.size} existing)`);
     await Promise.all(
-        psu.map((p) =>
+        toAdd.map((p) =>
             prisma.component.create({
                 data: {
                     name: p.name,
@@ -204,9 +231,13 @@ async function addPsu() {
 }
 
 async function addCpuCooler() {
-    console.log("Adding CPU Coolers");
+    const existing = await getExistingNames(ComponentType.CPU_COOLER);
+    const toAdd = cpucooler.filter((c) => !existing.has(c.name));
+    console.log(
+        `Adding CPU Coolers (${toAdd.length} new, ${existing.size} existing)`
+    );
     await Promise.all(
-        cpucooler.map((c) => {
+        toAdd.map((c) => {
             const isRpmArray = Array.isArray(c.rpm);
             const isNoiseArray = Array.isArray(c.noise_level);
 
@@ -240,9 +271,13 @@ async function addCpuCooler() {
 }
 
 async function addSoundCard() {
-    console.log("Adding Sound Cards");
+    const existing = await getExistingNames(ComponentType.SOUND_CARD);
+    const toAdd = soundCard.filter((s) => !existing.has(s.name));
+    console.log(
+        `Adding Sound Cards (${toAdd.length} new, ${existing.size} existing)`
+    );
     await Promise.all(
-        soundCard.map((s) =>
+        toAdd.map((s) =>
             prisma.component.create({
                 data: {
                     name: s.name,
@@ -266,9 +301,13 @@ async function addSoundCard() {
 }
 
 async function addCaseFan() {
-    console.log("Adding Case Fans");
+    const existing = await getExistingNames(ComponentType.CASE_FAN);
+    const toAdd = caseFan.filter((c) => !existing.has(c.name));
+    console.log(
+        `Adding Case Fans (${toAdd.length} new, ${existing.size} existing)`
+    );
     await Promise.all(
-        caseFan.map((c) => {
+        toAdd.map((c) => {
             const isRpmArray = Array.isArray(c.rpm);
             const isAirflowArray = Array.isArray(c.airflow);
             const isNoiseArray = Array.isArray(c.noise_level);
@@ -314,9 +353,13 @@ async function addCaseFan() {
 }
 
 async function addCase() {
-    console.log("Adding Cases");
+    const existing = await getExistingNames(ComponentType.CASE);
+    const toAdd = cases.filter((c) => !existing.has(c.name));
+    console.log(
+        `Adding Cases (${toAdd.length} new, ${existing.size} existing)`
+    );
     await Promise.all(
-        cases.map((c) =>
+        toAdd.map((c) =>
             prisma.component.create({
                 data: {
                     name: c.name,
@@ -340,9 +383,15 @@ async function addCase() {
 }
 
 async function addNetCard() {
-    console.log("Adding Network Cards");
+    const existing = await getExistingNames(
+        ComponentType.WIRELESS_NETWORK_CARD
+    );
+    const toAdd = netCard.filter((n) => !existing.has(n.name));
+    console.log(
+        `Adding Network Cards (${toAdd.length} new, ${existing.size} existing)`
+    );
     await Promise.all(
-        netCard.map((n) =>
+        toAdd.map((n) =>
             prisma.component.create({
                 data: {
                     name: n.name,
