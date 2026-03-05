@@ -22,7 +22,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaWithCount } from "@/components/ui/textarea-with-count";
 import { Label } from "@/components/ui/label";
 import { REPORT_TYPE } from "@prisma/client";
 import { trpc } from "@/trpc/client";
@@ -71,6 +71,7 @@ interface ReportButtonProps {
     reportedId: string;
     userId?: string; // userId props to hidde button if users try to report themselves, their own post or review
     tooltipText?: string;
+    isSold?: boolean;
 }
 
 export default function ReportButton({
@@ -79,6 +80,7 @@ export default function ReportButton({
     reportedId,
     userId,
     tooltipText,
+    isSold,
 }: ReportButtonProps) {
     const { session } = useSession();
     const [open, setOpen] = useState(false);
@@ -92,9 +94,9 @@ export default function ReportButton({
         formState: { isValid, errors },
         register,
         handleSubmit,
-        watch,
         setValue,
         reset,
+        clearErrors,
     } = useForm<CreateReportInput>({
         resolver: zodResolver(createReportSchema),
         mode: "onChange",
@@ -105,8 +107,6 @@ export default function ReportButton({
             details: null,
         },
     });
-
-    const details = watch("details") ?? "";
 
     const { mutate: createReport, isPending } =
         trpc.reports.createReport.useMutation({
@@ -143,6 +143,8 @@ export default function ReportButton({
     const handleSelectType = (type: REPORT_TYPE) => {
         setSelectedType(type);
         setValue("reason", type, { shouldValidate: true });
+        setValue("details", null);
+        clearErrors("details");
     };
 
     const onSubmit = (data: CreateReportInput) => {
@@ -152,7 +154,7 @@ export default function ReportButton({
         });
     };
 
-    if (!session || session.user?.id === userId) return null;
+    if (!session || session.user?.id === userId || isSold) return null;
 
     return (
         <Dialog
@@ -262,32 +264,21 @@ export default function ReportButton({
                                     </span>
                                 )}
                             </Label>
-                            <Textarea
+                            <TextareaWithCount
                                 id="report-details"
                                 placeholder="Décrivez le problème en quelques mots..."
                                 {...register("details")}
-                                value={details}
                                 onChange={(e) =>
                                     setValue("details", e.target.value, {
                                         shouldValidate: true,
                                     })
                                 }
                                 rows={4}
+                                maxLength={500}
                                 disabled={isPending}
                                 aria-invalid={!!errors.details}
+                                error={errors.details?.message}
                             />
-                            <div className="flex justify-between items-center">
-                                {errors.details ? (
-                                    <p className="text-xs text-destructive">
-                                        {errors.details.message}
-                                    </p>
-                                ) : (
-                                    <span />
-                                )}
-                                <p className="text-xs text-muted-foreground">
-                                    {details.length}/500
-                                </p>
-                            </div>
                         </div>
                         <div className="flex gap-2 justify-end">
                             <Button

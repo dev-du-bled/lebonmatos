@@ -20,6 +20,7 @@ import { Plus, Trash2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { type ConfigurationSlot } from "@/lib/compatibility";
 import { formatComponentDetails } from "@/lib/utils";
+import Link from "next/link";
 
 type ConfigSlotCardProps = {
     componentType: ComponentType;
@@ -124,9 +125,15 @@ export function ConfigSlotCard({
                             />
                         </div>
                         <div className="flex-1 space-y-1">
-                            <p className="font-medium wrap-anywhere line-clamp-2 text-base">
-                                {post.title}
-                            </p>
+                            <Link
+                                href={`/post/${post.id}`}
+                                target="_blank"
+                                className="block w-fit hover:underline"
+                            >
+                                <p className="font-medium wrap-anywhere line-clamp-2 text-base">
+                                    {post.title}
+                                </p>
+                            </Link>
                             <p className="text-sm text-muted-foreground wrap-break-word">
                                 {post.component.name}
                             </p>

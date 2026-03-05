@@ -510,8 +510,8 @@ export const discussionRouter = createTRPCRouter({
     acceptOffer: privateProcedure
         .input(
             z.object({
-                discussionId: z.string().cuid(),
-                messageId: z.string().cuid(),
+                discussionId: z.uuid(),
+                messageId: z.uuid(),
             })
         )
         .mutation(async ({ ctx, input }) => {
@@ -597,7 +597,7 @@ export const discussionRouter = createTRPCRouter({
     markAsSoldFromConversation: privateProcedure
         .input(
             z.object({
-                discussionId: z.string().cuid(),
+                discussionId: z.uuid(),
             })
         )
         .mutation(async ({ ctx, input }) => {

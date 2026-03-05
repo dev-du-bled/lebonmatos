@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { ListingCard } from "./listing-card";
+import { ListingCard } from "@/components/profile/listing-card";
 import { Metadata } from "next";
 import NavBack from "@/components/nav/nav-back";
 
@@ -86,7 +86,7 @@ async function ListingsContent() {
     return (
         <div className="grid gap-4">
             {listings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
+                <ListingCard key={listing.id} listing={listing} showActions />
             ))}
         </div>
     );

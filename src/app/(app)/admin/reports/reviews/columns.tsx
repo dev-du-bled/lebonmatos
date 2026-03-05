@@ -34,6 +34,7 @@ export type ReportRow = {
     userId: string | null;
     messageId: string | null;
     ratingId: string | null;
+    contentSnapshot: string | null;
     reportedAt: Date | string;
     post: { id: string; title: string | null } | null;
     rating: {
@@ -196,7 +197,9 @@ export function makeColumns(
                 const rating = row.original.rating;
                 if (!rating)
                     return (
-                        <span className="text-muted-foreground text-sm">—</span>
+                        <span className="text-muted-foreground text-sm italic">
+                            {row.original.contentSnapshot ?? "—"}
+                        </span>
                     );
                 return (
                     <div className="flex flex-col gap-0.5">

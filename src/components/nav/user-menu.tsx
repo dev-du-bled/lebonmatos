@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 
-import { BellIcon, MessageCircleIcon, UserIcon } from "lucide-react";
+import { MessageCircleIcon, UserIcon } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -53,9 +53,6 @@ export function UserMenu() {
 
     return (
         <div>
-            <Button variant="ghost" size="icon">
-                <BellIcon className="size-4 shrink-0 opacity-50" />
-            </Button>
             <Link className="shrink-0 relative inline-flex" href="/messages">
                 <Button variant="ghost" size="icon">
                     <MessageCircleIcon className="size-4 shrink-0 opacity-50" />

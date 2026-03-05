@@ -15,7 +15,7 @@ import { getUser } from "@/utils/getUser";
 import { getComponentSpecs, getEnumDisplay } from "@/utils/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
-import PostCard from "@/components/post/post-card";
+import PostCard from "@/components/post/suggested-post-card";
 import { BuyButtons, ContactButton } from "@/components/post/post-buttons";
 import { Metadata } from "next";
 import { cache } from "react";
@@ -120,11 +120,13 @@ export default async function PostPage({
                             width="icon"
                             reportedId={post.id}
                             userId={post.seller?.id}
+                            isSold={post.isSold}
                         />
                         <FavoriteButton
                             post={{
                                 id: post.id,
                                 isFavorited: post.isFavorited,
+                                isSold: post.isSold,
                                 seller: post.seller
                                     ? { id: post.seller.id }
                                     : undefined,

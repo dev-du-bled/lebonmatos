@@ -1,4 +1,4 @@
-import { type SelectedPost } from "@/components/post-card";
+import { type SelectedPost } from "@/components/configurator/post-card";
 
 export type Annonce = {
     id: string;
@@ -12,96 +12,111 @@ export type Annonce = {
 export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
     return selected.map((c) => {
         const specs: Record<string, string | number | undefined> = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const comp = ((c as any).component ?? {}) as Record<string, any>;
 
         switch (c.componentType) {
-            case "CPU":
-                specs["microarch"] = c.microarch;
-                specs["coreCount"] = c.coreCount;
-                specs["coreClock"] = c.coreClock;
-                specs["boostClock"] = c.boostClock;
+            case "CPU": {
+                const d = comp.Cpu ?? {};
+                specs["microarch"] = d.microarch;
+                specs["coreCount"] = d.coreCount;
+                specs["coreClock"] = d.coreClock;
+                specs["boostClock"] = d.boostClock;
                 break;
-
-            case "GPU":
-                specs["chipset"] = c.chipset;
-                specs["memory"] = c.memory;
-                specs["coreClock"] = c.coreClock;
-                specs["boostClock"] = c.boostClock;
-                specs["length"] = c.length;
+            }
+            case "GPU": {
+                const d = comp.Gpu ?? {};
+                specs["chipset"] = d.chipset;
+                specs["memory"] = d.memory;
+                specs["coreClock"] = d.coreClock;
+                specs["boostClock"] = d.boostClock;
+                specs["length"] = d.length;
                 break;
-
-            case "MOTHERBOARD":
-                specs["socket"] = c.socket;
-                specs["formFactor"] = c.formFactor;
-                specs["maxMemory"] = c.maxMemory;
-                specs["memorySlots"] = c.memorySlots;
+            }
+            case "MOTHERBOARD": {
+                const d = comp.Motherboard ?? {};
+                specs["socket"] = d.socket;
+                specs["formFactor"] = d.formFactor;
+                specs["maxMemory"] = d.maxMemory;
+                specs["memorySlots"] = d.memorySlots;
                 break;
-
-            case "RAM":
-                specs["type"] = c.ramType ?? c.type;
-                specs["speed"] = c.speed;
-                specs["modules"] = c.modules;
-                specs["size"] = c.size;
-                specs["casLatency"] = c.casLatency;
+            }
+            case "RAM": {
+                const d = comp.Ram ?? {};
+                specs["type"] = d.type ?? d.ramType;
+                specs["speed"] = d.speed;
+                specs["modules"] = d.modules;
+                specs["size"] = d.size;
+                specs["casLatency"] = d.casLatency;
                 break;
-
-            case "SSD":
-                specs["capacity"] = c.capacity;
-                specs["cache"] = c.cache;
-                specs["interface"] = c.interface;
-                specs["formFactor"] = c.formFactor;
+            }
+            case "SSD": {
+                const d = comp.Ssd ?? {};
+                specs["capacity"] = d.capacity;
+                specs["cache"] = d.cache;
+                specs["interface"] = d.interface;
+                specs["formFactor"] = d.formFactor;
                 break;
-
-            case "HDD":
-                specs["capacity"] = c.capacity;
-                specs["cache"] = c.cache;
-                specs["interface"] = c.interface;
-                specs["formFactor"] = c.formFactor;
+            }
+            case "HDD": {
+                const d = comp.Hdd ?? {};
+                specs["capacity"] = d.capacity;
+                specs["cache"] = d.cache;
+                specs["interface"] = d.interface;
+                specs["formFactor"] = d.formFactor;
                 break;
-
-            case "POWER_SUPPLY":
-                specs["type"] = c.psuType ?? c.type;
-                specs["wattage"] = c.wattage;
-                specs["efficiency"] = c.efficiency;
-                specs["modular"] = c.modular;
+            }
+            case "POWER_SUPPLY": {
+                const d = comp.Psu ?? {};
+                specs["type"] = d.type ?? d.psuType;
+                specs["wattage"] = d.wattage;
+                specs["efficiency"] = d.efficiency;
+                specs["modular"] = d.modular;
                 break;
-
-            case "CPU_COOLER":
-                specs["rpmIdle"] = c.rpmIdle;
-                specs["rpmMax"] = c.rpmMax;
-                specs["noiseIdle"] = c.noiseIdle;
-                specs["noiseMax"] = c.noiseMax;
-                specs["size"] = c.size;
+            }
+            case "CPU_COOLER": {
+                const d = comp.CpuCooler ?? {};
+                specs["rpmIdle"] = d.rpmIdle;
+                specs["rpmMax"] = d.rpmMax;
+                specs["noiseIdle"] = d.noiseIdle;
+                specs["noiseMax"] = d.noiseMax;
+                specs["size"] = d.size;
                 break;
-
-            case "CASE":
-                specs["type"] = c.caseType ?? c.type;
-                specs["sidePanel"] = c.sidePanel;
-                specs["volume"] = c.volume;
-                specs["bays3_5"] = c.bays3_5;
+            }
+            case "CASE": {
+                const d = comp.Case ?? {};
+                specs["type"] = d.type ?? d.caseType;
+                specs["sidePanel"] = d.sidePanel;
+                specs["volume"] = d.volume;
+                specs["bays3_5"] = d.bays3_5;
                 break;
-
-            case "CASE_FAN":
-                specs["size"] = c.size;
-                specs["rpmIdle"] = c.rpmIdle;
-                specs["rpmMax"] = c.rpmMax;
-                specs["noiseIdle"] = c.noiseIdle;
-                specs["noiseMax"] = c.noiseMax;
-                specs["airflowIdle"] = c.airflowIdle;
-                specs["airflowMax"] = c.airflowMax;
+            }
+            case "CASE_FAN": {
+                const d = comp.CaseFan ?? {};
+                specs["size"] = d.size;
+                specs["rpmIdle"] = d.rpmIdle;
+                specs["rpmMax"] = d.rpmMax;
+                specs["noiseIdle"] = d.noiseIdle;
+                specs["noiseMax"] = d.noiseMax;
+                specs["airflowIdle"] = d.airflowIdle;
+                specs["airflowMax"] = d.airflowMax;
                 break;
-
-            case "SOUND_CARD":
-                specs["channels"] = c.channels;
-                specs["snr"] = c.snr;
-                specs["sampleRate"] = c.sampleRate;
-                specs["interface"] = c.interface;
-                specs["chipset"] = c.chipset;
+            }
+            case "SOUND_CARD": {
+                const d = comp.SoundCard ?? {};
+                specs["channels"] = d.channels;
+                specs["snr"] = d.snr;
+                specs["sampleRate"] = d.sampleRate;
+                specs["interface"] = d.interface;
+                specs["chipset"] = d.chipset;
                 break;
-
-            case "WIRELESS_NETWORK_CARD":
-                specs["interface"] = c.interface;
-                specs["protocol"] = c.protocol;
+            }
+            case "WIRELESS_NETWORK_CARD": {
+                const d = comp.WirelessNetworkCard ?? {};
+                specs["interface"] = d.interface;
+                specs["protocol"] = d.protocol;
                 break;
+            }
         }
 
         // Supprimer les clés undefined pour ne pas polluer l'affichage

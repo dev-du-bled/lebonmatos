@@ -107,7 +107,7 @@ export const reportsRouter = createTRPCRouter({
             if (type === "POST") {
                 const post = await prisma.post.findUnique({
                     where: { id: reportedId },
-                    select: { userId: true, title: true },
+                    select: { userId: true, title: true, isSold: true },
                 });
 
                 if (!post) {
@@ -120,6 +120,12 @@ export const reportsRouter = createTRPCRouter({
                     throw new TRPCError({
                         code: "FORBIDDEN",
                         message: "You cannot report your own post",
+                    });
+                }
+                if (post.isSold) {
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: "You cannot report a sold post",
                     });
                 }
 
@@ -346,11 +352,13 @@ export const reportsRouter = createTRPCRouter({
                                 id: true,
                                 rating: true,
                                 comment: true,
-                                user: { select: { id: true, name: true } },
+                                user: {
+                                    select: { id: true, displayUsername: true },
+                                },
                             },
                         },
                         reportedUser: {
-                            select: { id: true, name: true },
+                            select: { id: true, displayUsername: true },
                         },
                     },
                 }),

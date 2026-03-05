@@ -106,7 +106,7 @@ export const postRouter = createTRPCRouter({
     }),
 
     markAsSold: privateProcedure
-        .input(z.object({ id: z.cuid() }))
+        .input(z.object({ id: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.id },
@@ -277,7 +277,7 @@ export const postRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const post = await prisma.post.findUnique({
                 where: { id: input.postId },
-                select: { userId: true },
+                select: { userId: true, isSold: true },
             });
 
             if (!post) {
@@ -291,6 +291,13 @@ export const postRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: "BAD_REQUEST",
                     message: "You cant favorite your own post",
+                });
+            }
+
+            if (post.isSold) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "You cannot favorite a sold post",
                 });
             }
 

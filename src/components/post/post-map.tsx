@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { CityData } from "@/utils/location";
 import { Skeleton } from "../ui/skeleton";
-const MapComponent = dynamic(() => import("@/components/map"), {
+const MapComponent = dynamic(() => import("@/components/post/map"), {
     ssr: false,
     loading: () => <Skeleton className="h-100 w-full rounded-md" />,
 });

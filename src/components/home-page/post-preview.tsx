@@ -18,7 +18,7 @@ export default async function PostPreview({
             href={`/post/${post.id}`}
             className={cn(
                 "flex flex-col flex-1 rounded-lg overflow-hidden select-none cursor-pointer border border-border bg-card transition-all duration-200",
-                fullHeight ? "" : "hover:bg-gray-100"
+                fullHeight ? "" : "hover:bg-muted"
             )}
         >
             <Image

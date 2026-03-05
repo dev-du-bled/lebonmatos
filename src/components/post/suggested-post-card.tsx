@@ -9,7 +9,12 @@ interface PostCardProps {
     images: string[];
 }
 
-export default function PostCard({ id, title, price, images }: PostCardProps) {
+export default function SuggestedPostCard({
+    id,
+    title,
+    price,
+    images,
+}: PostCardProps) {
     return (
         <Link
             key={id}

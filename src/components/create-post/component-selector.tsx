@@ -193,7 +193,7 @@ export default function ComponentSelector({
                             )}
                         </div>
 
-                        <DialogContent className="sm:max-w-lg p-0 gap-0">
+                        <DialogContent className="xs:max-w-lg p-0 gap-0">
                             <DialogHeader className="px-4 pt-4 pb-2">
                                 <DialogTitle>
                                     {selectedType ? (
@@ -227,28 +227,34 @@ export default function ComponentSelector({
                                         Sélectionnez le type de composant que
                                         vous vendez :
                                     </p>
-                                    <div className="grid grid-cols-2 gap-2 px-4 pb-4">
-                                        {componentTypes.map((type) => {
-                                            const Icon =
-                                                componentTypeIcons[type];
-                                            return (
-                                                <Button
-                                                    key={type}
-                                                    variant="outline"
-                                                    className="h-auto py-3 px-3 justify-start text-left gap-3"
-                                                    onClick={() =>
-                                                        setSelectedType(type)
-                                                    }
-                                                >
-                                                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                                    <span className="truncate flex-1">
-                                                        {getEnumDisplay(type)}
-                                                    </span>
-                                                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                                </Button>
-                                            );
-                                        })}
-                                    </div>
+                                    <ScrollArea className="max-h-125">
+                                        <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 px-4 pb-4">
+                                            {componentTypes.map((type) => {
+                                                const Icon =
+                                                    componentTypeIcons[type];
+                                                return (
+                                                    <Button
+                                                        key={type}
+                                                        variant="outline"
+                                                        className="h-auto py-3 px-3 justify-start text-left gap-3"
+                                                        onClick={() =>
+                                                            setSelectedType(
+                                                                type
+                                                            )
+                                                        }
+                                                    >
+                                                        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                                        <span className="truncate flex-1">
+                                                            {getEnumDisplay(
+                                                                type
+                                                            )}
+                                                        </span>
+                                                        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                                    </Button>
+                                                );
+                                            })}
+                                        </div>
+                                    </ScrollArea>
                                 </>
                             ) : (
                                 /* Step 2: Search Component */
