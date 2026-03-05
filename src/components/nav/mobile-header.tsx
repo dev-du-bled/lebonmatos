@@ -13,11 +13,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-
-const UserMenu = dynamic(() => import("./user-menu").then((m) => m.UserMenu), {
-    ssr: false,
-});
+import { UserMenu } from "./user-menu";
 
 export function MobileHeader() {
     const [open, setOpen] = useState(false);

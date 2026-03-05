@@ -1,9 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-
 import { MessageCircleIcon, UserIcon } from "lucide-react";
 import {
     DropdownMenu,
@@ -16,33 +13,10 @@ import {
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useSession } from "../auth/session-provider";
-import { trpc } from "@/trpc/client";
+import { UnreadBadge } from "./unread-badge";
 
 export function UserMenu() {
     const { session } = useSession();
-    const [unreadTotal, setUnreadTotal] = useState(0);
-
-    const { data: discussions } = trpc.discussions.getDiscussions.useQuery(
-        undefined,
-        { enabled: !!session?.user }
-    );
-
-    const utils = trpc.useUtils();
-
-    useEffect(() => {
-        if (discussions) {
-            setUnreadTotal(
-                discussions.reduce((sum, d) => sum + d.unreadCount, 0)
-            );
-        }
-    }, [discussions]);
-
-    trpc.discussions.onNewMessage.useSubscription(undefined, {
-        enabled: !!session?.user,
-        onData: () => {
-            void utils.discussions.getDiscussions.invalidate();
-        },
-    });
 
     if (!session?.user?.name)
         return (
@@ -57,14 +31,7 @@ export function UserMenu() {
                 <Button variant="ghost" size="icon">
                     <MessageCircleIcon className="size-4 shrink-0 opacity-50" />
                 </Button>
-                {unreadTotal > 0 && (
-                    <Badge
-                        variant="destructive"
-                        className="absolute -top-1 -right-1 size-4 p-0 text-[10px] flex items-center justify-center pointer-events-none"
-                    >
-                        {unreadTotal > 9 ? "9+" : unreadTotal}
-                    </Badge>
-                )}
+                <UnreadBadge />
             </Link>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
