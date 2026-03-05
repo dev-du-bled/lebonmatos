@@ -166,10 +166,7 @@ export function ResetPasswordForm() {
                             />
 
                             <Field>
-                                <Button
-                                    type="submit"
-                                    disabled={isLoading}
-                                >
+                                <Button type="submit" disabled={isLoading}>
                                     {isLoading
                                         ? "Reinitialisation..."
                                         : "Reinitialiser le mot de passe"}
@@ -177,9 +174,7 @@ export function ResetPasswordForm() {
                             </Field>
 
                             <FieldDescription className="text-center">
-                                <Link href="/login">
-                                    Retour a la connexion
-                                </Link>
+                                <Link href="/login">Retour a la connexion</Link>
                             </FieldDescription>
                         </FieldGroup>
                     </form>

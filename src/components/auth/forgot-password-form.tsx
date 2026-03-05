@@ -119,9 +119,7 @@ export function ForgotPasswordForm() {
                             )}
 
                             <FieldDescription className="text-center">
-                                <Link href="/login">
-                                    Retour a la connexion
-                                </Link>
+                                <Link href="/login">Retour a la connexion</Link>
                             </FieldDescription>
                         </FieldGroup>
                     </form>

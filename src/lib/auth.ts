@@ -25,8 +25,7 @@ export const auth = betterAuth({
             await resend.emails.send({
                 from: "LeBonMatos <no-reply@lbm.underscore.systems>",
                 to: user.email,
-                subject:
-                    "Reinitialiser votre mot de passe - LeBonMatos",
+                subject: "Reinitialiser votre mot de passe - LeBonMatos",
                 react: ResetPasswordEmail({
                     url,
                     userName: user.name,

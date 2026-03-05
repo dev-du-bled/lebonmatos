@@ -11,8 +11,7 @@ import {
     Tailwind,
 } from "@react-email/components";
 
-const baseUrl =
-    process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
 interface ResetPasswordEmailProps {
     url: string;
@@ -59,8 +58,7 @@ export default function ResetPasswordEmail({
                         <Text className="text-sm leading-6 text-[#737373]">
                             Si vous n&apos;avez pas demande cette
                             reinitialisation, vous pouvez ignorer cet email en
-                            toute securite. Votre mot de passe restera
-                            inchange.
+                            toute securite. Votre mot de passe restera inchange.
                         </Text>
                         <Hr className="my-6 border-[#e5e5e5]" />
                         <Text className="text-center text-xs leading-4 text-[#a1a1a1]">
