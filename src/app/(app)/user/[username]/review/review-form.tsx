@@ -41,10 +41,10 @@ const LABELS: Record<number, string> = {
 };
 
 export function ReviewForm({
-    userId,
+    postId,
     backHref,
 }: {
-    userId: string;
+    postId: string;
     backHref?: string;
 }) {
     const router = useRouter();
@@ -65,7 +65,7 @@ export function ReviewForm({
     async function onSubmit(values: ReviewFormValues) {
         try {
             await mutation.mutateAsync({
-                userId,
+                postId,
                 rating: values.rating,
                 comment: values.comment?.trim() || undefined,
             });
@@ -163,7 +163,7 @@ export function ReviewForm({
                             <FormControl>
                                 <TextareaWithCount
                                     placeholder="Décrivez votre expérience avec cet utilisateur..."
-                                    className="resize-none min-h-[100px]"
+                                    className="resize-none `min-h-25"
                                     maxLength={500}
                                     error={fieldState.error?.message}
                                     {...field}

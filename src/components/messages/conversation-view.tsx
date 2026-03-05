@@ -420,7 +420,7 @@ function MessageBubble({
                         ))}
                     <div
                         className={cn(
-                            "flex flex-col gap-1 max-w-[200px]",
+                            "flex flex-col gap-1 max-w-50",
                             isOwn && "items-end"
                         )}
                     >

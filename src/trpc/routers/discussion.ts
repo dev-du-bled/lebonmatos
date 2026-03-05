@@ -289,13 +289,13 @@ export const discussionRouter = createTRPCRouter({
             const isBuyer = discussion.buyerId === userId;
             const otherParty = isBuyer ? discussion.seller : discussion.buyer;
 
-            // Vérifier si l'acheteur a déjà laissé un avis au vendeur
+            // Vérifier si l'acheteur a déjà laissé un avis pour ce post
             let hasReview = false;
-            if (discussion.sellerId) {
+            if (discussion.post?.id) {
                 const existingReview = await prisma.rating.findUnique({
                     where: {
-                        userId_raterId: {
-                            userId: discussion.sellerId,
+                        postId_raterId: {
+                            postId: discussion.post.id,
                             raterId: discussion.buyerId,
                         },
                     },
@@ -643,7 +643,7 @@ export const discussionRouter = createTRPCRouter({
                 content: "Article marqué comme vendu !",
                 buttonLabel: "Laisser un avis",
                 buttonUrl: discussion.seller?.username
-                    ? `/user/${discussion.seller.username}/review?from=/messages/${input.discussionId}`
+                    ? `/user/${discussion.seller.username}/review?postId=${discussion.post!.id}&from=/messages/${input.discussionId}`
                     : `/messages/${input.discussionId}`,
                 buttonAction: "buyer_only",
             });

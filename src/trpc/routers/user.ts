@@ -222,6 +222,12 @@ export const userRouter = createTRPCRouter({
                         image: true,
                     },
                 },
+                post: {
+                    select: {
+                        id: true,
+                        title: true,
+                    },
+                },
             },
         });
         return reviews.map((r: (typeof reviews)[number]) => ({
@@ -230,13 +236,14 @@ export const userRouter = createTRPCRouter({
             comment: r.comment,
             createdAt: r.createdAt.toISOString(),
             recipient: r.user,
+            post: r.post,
         }));
     }),
 
     addReview: privateProcedure
         .input(
             z.object({
-                userId: z.uuid(),
+                postId: z.uuid(),
                 rating: z.number().int().min(1).max(5),
                 comment: z.string().max(500).optional(),
             })
@@ -244,47 +251,44 @@ export const userRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const raterId = ctx.session!.user.id;
 
-            if (raterId === input.userId) {
+            const post = await prisma.post.findUnique({
+                where: { id: input.postId },
+                select: {
+                    id: true,
+                    userId: true,
+                    isSold: true,
+                    boughtById: true,
+                },
+            });
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Annonce introuvable.",
+                });
+            }
+
+            if (raterId === post.userId) {
                 throw new TRPCError({
                     code: "BAD_REQUEST",
                     message: "Vous ne pouvez pas vous noter vous-même.",
                 });
             }
 
-            const target = await prisma.user.findUnique({
-                where: { id: input.userId },
-                select: { id: true },
-            });
-
-            if (!target) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Utilisateur introuvable.",
-                });
-            }
-
-            const purchase = await prisma.post.findFirst({
-                where: {
-                    userId: input.userId,
-                    boughtById: raterId,
-                    isSold: true,
-                },
-                select: { id: true },
-            });
-
-            if (!purchase) {
+            if (!post.isSold || post.boughtById !== raterId) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
                     message:
-                        "Vous devez avoir acheté un article de cet utilisateur pour laisser un avis.",
+                        "Vous devez avoir acheté cet article pour laisser un avis.",
                 });
             }
 
             try {
                 await prisma.rating.create({
                     data: {
-                        userId: input.userId,
+                        userId: post.userId,
                         raterId,
+                        postId: input.postId,
                         rating: input.rating,
                         comment: input.comment ?? null,
                     },
@@ -297,7 +301,7 @@ export const userRouter = createTRPCRouter({
                     throw new TRPCError({
                         code: "CONFLICT",
                         message:
-                            "Vous avez déjà laissé un avis pour cet utilisateur.",
+                            "Vous avez déjà laissé un avis pour cette annonce.",
                     });
                 }
                 throw error;
