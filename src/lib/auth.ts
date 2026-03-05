@@ -1,6 +1,8 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
+import { resend } from "@/lib/email";
+import ResetPasswordEmail from "@/emails/reset-password";
 import { admin, captcha, username } from "better-auth/plugins";
 
 const forbiddenUsernames = [
@@ -19,6 +21,17 @@ export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
     emailAndPassword: {
         enabled: true,
+        sendResetPassword: async ({ user, url }) => {
+            await resend.emails.send({
+                from: "LeBonMatos <no-reply@lbm.underscore.systems>",
+                to: user.email,
+                subject: "Reinitialiser votre mot de passe - LeBonMatos",
+                react: ResetPasswordEmail({
+                    url,
+                    userName: user.name,
+                }),
+            });
+        },
     },
     trustedOrigins:
         process.env.NODE_ENV === "development"

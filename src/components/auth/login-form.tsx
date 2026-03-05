@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Lock } from "lucide-react";
+import { AlertCircle, CheckCircle, Lock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
 import {
@@ -30,6 +30,7 @@ export function LoginForm() {
     const { executeRecaptcha } = useGoogleReCaptcha();
     const searchParams = useSearchParams();
     const redirect = searchParams.get("redirect");
+    const passwordReset = searchParams.get("passwordReset");
     const form = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
@@ -113,6 +114,15 @@ export function LoginForm() {
                                     </p>
                                 </div>
                                 <div className="flex flex-col gap-2">
+                                    {passwordReset && (
+                                        <div className="bg-green-500/10 text-green-600 dark:text-green-400 flex items-center justify-center gap-2 rounded-md p-3 text-sm font-medium text-center">
+                                            <CheckCircle className="size-4 shrink-0" />
+                                            Votre mot de passe a été modifié
+                                            avec succès. Vous pouvez vous
+                                            connecter.
+                                        </div>
+                                    )}
+
                                     {redirect && (
                                         <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 rounded-md p-3 text-sm font-medium">
                                             <Lock className="size-4" />
@@ -157,11 +167,8 @@ export function LoginForm() {
                                                     Mot de passe
                                                 </FormLabel>
                                                 <Link
-                                                    href="#"
+                                                    href="/forgot-password"
                                                     className="ml-auto text-sm underline-offset-2 hover:underline"
-                                                    onClick={() =>
-                                                        alert("Not implemented")
-                                                    }
                                                 >
                                                     Mot de passe oublié ?
                                                 </Link>
