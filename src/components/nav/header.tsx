@@ -5,11 +5,7 @@ import { cn } from "@/lib/utils";
 import { DynamicLogo } from "../dynamic-logo";
 import { SearchIcon } from "lucide-react";
 import { Button } from "../ui/button";
-import dynamic from "next/dynamic";
-
-const UserMenu = dynamic(() => import("./user-menu").then((m) => m.UserMenu), {
-    ssr: false,
-});
+import { UserMenu } from "./user-menu";
 import { Kbd } from "@/components/ui/kbd";
 import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
