@@ -109,6 +109,7 @@ model Post {
   images             String[]
   ConfigurationItems ConfigurationItem[]
   isSold             Boolean             @default(false)
+  soldAt             DateTime?
   boughtById         String?
   boughtBy           User?               @relation("boughtBy", fields: [boughtById], references: [id], onDelete: SetNull)
 

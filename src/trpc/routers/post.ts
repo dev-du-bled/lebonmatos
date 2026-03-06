@@ -76,6 +76,48 @@ export const postRouter = createTRPCRouter({
             }));
         }),
 
+    getUserPurchases: privateProcedure.query(async ({ ctx }) => {
+        const posts = await prisma.post.findMany({
+            where: {
+                boughtById: ctx.session.user.id,
+                isSold: true,
+            },
+            orderBy: { soldAt: "desc" },
+            include: {
+                component: true,
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayUsername: true,
+                        image: true,
+                    },
+                },
+            },
+        });
+
+        return posts.map((post: (typeof posts)[number]) => ({
+            id: post.id,
+            title: post.title,
+            description: post.description,
+            price: post.price,
+            soldAt: post.soldAt?.toISOString() ?? null,
+            component: {
+                id: post.component.id,
+                name: post.component.name,
+                type: post.component.type,
+            },
+            seller: {
+                id: post.user.id,
+                username: post.user.displayUsername ?? post.user.username,
+                image: post.user.image,
+            },
+            thumbnail: post.images[0]
+                ? { image: post.images[0], alt: null }
+                : null,
+        }));
+    }),
+
     getUserFavorites: privateProcedure.query(async ({ ctx }) => {
         const favorites = await prisma.favorite.findMany({
             where: { userId: ctx.session.user.id },
@@ -136,7 +178,7 @@ export const postRouter = createTRPCRouter({
 
             await prisma.post.update({
                 where: { id: input.id },
-                data: { isSold: true },
+                data: { isSold: true, soldAt: new Date() },
             });
 
             return { success: true };
@@ -351,6 +393,7 @@ export const postRouter = createTRPCRouter({
                 data: {
                     isSold: true,
                     boughtById: buyerId,
+                    soldAt: new Date(),
                 },
             });
 
