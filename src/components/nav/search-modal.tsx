@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo, useCallback } from "react";
+import { useState, memo, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useHotkey } from "@tanstack/react-hotkeys";
@@ -90,6 +90,14 @@ const SearchResults = memo(
         selectedIndex: number;
         onSelect: (component: SearchComponent) => void;
     }) => {
+        const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+        useEffect(() => {
+            if (selectedIndex >= 0) {
+                itemRefs.current[selectedIndex]?.scrollIntoView({ block: "nearest" });
+            }
+        }, [selectedIndex]);
+
         if (!searchValue) return null;
 
         return (
@@ -114,6 +122,7 @@ const SearchResults = memo(
                                     return (
                                         <div
                                             key={component.id}
+                                            ref={(el) => { itemRefs.current[index] = el; }}
                                             onClick={() => onSelect(component)}
                                             className={cn(
                                                 "flex items-center gap-2 cursor-pointer select-none rounded-sm px-2 py-1.5 text-sm hover:bg-accent",
