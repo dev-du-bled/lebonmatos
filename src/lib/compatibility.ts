@@ -322,6 +322,22 @@ export const COMPONENT_TYPE_LABELS: Record<ComponentType, string> = {
     WIRELESS_NETWORK_CARD: "Carte WiFi",
 };
 
+// Indefinite articles for component types (French gender agreement)
+export const COMPONENT_TYPE_ARTICLES: Record<ComponentType, string> = {
+    CPU: "un",
+    GPU: "une",
+    MOTHERBOARD: "une",
+    RAM: "une",
+    SSD: "un",
+    HDD: "un",
+    POWER_SUPPLY: "une",
+    CPU_COOLER: "un",
+    CASE: "un",
+    CASE_FAN: "un",
+    SOUND_CARD: "une",
+    WIRELESS_NETWORK_CARD: "une",
+};
+
 // Check if configuration is complete (has all required components)
 export function isConfigurationComplete(slots: ConfigurationSlot[]): boolean {
     return REQUIRED_COMPONENTS.every((type) =>
