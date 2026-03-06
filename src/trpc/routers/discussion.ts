@@ -635,6 +635,7 @@ export const discussionRouter = createTRPCRouter({
                 data: {
                     isSold: true,
                     boughtById: discussion.buyerId,
+                    soldAt: new Date(),
                 },
             });
 
