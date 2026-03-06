@@ -33,7 +33,7 @@ async function createSystemMessage(
             buttonAction: options.buttonAction ?? null,
         },
         include: {
-            author: { select: { id: true, name: true, image: true } },
+            author: { select: { id: true, username: true, image: true } },
         },
     });
 
@@ -275,7 +275,7 @@ export const discussionRouter = createTRPCRouter({
                     : {}),
                 include: {
                     author: {
-                        select: { id: true, name: true, image: true },
+                        select: { id: true, username: true, image: true },
                     },
                 },
             });
@@ -289,13 +289,13 @@ export const discussionRouter = createTRPCRouter({
             const isBuyer = discussion.buyerId === userId;
             const otherParty = isBuyer ? discussion.seller : discussion.buyer;
 
-            // Vérifier si l'acheteur a déjà laissé un avis au vendeur
+            // Vérifier si l'acheteur a déjà laissé un avis pour ce post
             let hasReview = false;
-            if (discussion.sellerId) {
+            if (discussion.post?.id) {
                 const existingReview = await prisma.rating.findUnique({
                     where: {
-                        userId_raterId: {
-                            userId: discussion.sellerId,
+                        postId_raterId: {
+                            postId: discussion.post.id,
                             raterId: discussion.buyerId,
                         },
                     },
@@ -341,7 +341,7 @@ export const discussionRouter = createTRPCRouter({
                     author: m.author
                         ? {
                               id: m.author.id,
-                              name: m.author.name,
+                              username: m.author.username,
                               image: m.author.image,
                           }
                         : null,
@@ -465,7 +465,7 @@ export const discussionRouter = createTRPCRouter({
                 },
                 include: {
                     author: {
-                        select: { id: true, name: true, image: true },
+                        select: { id: true, username: true, image: true },
                     },
                 },
             });
@@ -480,7 +480,7 @@ export const discussionRouter = createTRPCRouter({
                 author: message.author
                     ? {
                           id: message.author.id,
-                          name: message.author.name,
+                          username: message.author.username,
                           image: message.author.image,
                       }
                     : null,
@@ -607,6 +607,7 @@ export const discussionRouter = createTRPCRouter({
                 where: { id: input.discussionId },
                 include: {
                     post: { select: { id: true, isSold: true } },
+                    seller: { select: { username: true } },
                 },
             });
 
@@ -634,14 +635,27 @@ export const discussionRouter = createTRPCRouter({
                 data: {
                     isSold: true,
                     boughtById: discussion.buyerId,
+                    soldAt: new Date(),
                 },
             });
+
+            // Vérifier que la relation post est bien résolue (sécurité côté serveur)
+            if (!discussion.post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Annonce introuvable",
+                });
+            }
+
+            const postId = discussion.post.id;
 
             // Créer le message système avec bouton "Laisser un avis"
             const systemMsg = await createSystemMessage(input.discussionId, {
                 content: "Article marqué comme vendu !",
                 buttonLabel: "Laisser un avis",
-                buttonUrl: `/profile/${userId}/review?from=/messages/${input.discussionId}`,
+                buttonUrl: discussion.seller?.username
+                    ? `/user/${discussion.seller.username}/review?postId=${postId}&from=/messages/${input.discussionId}`
+                    : `/messages/${input.discussionId}`,
                 buttonAction: "buyer_only",
             });
 
@@ -655,7 +669,7 @@ export const discussionRouter = createTRPCRouter({
         .input(z.object({ discussionId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session.user.id;
-            const name = ctx.session.user.name ?? "Quelqu'un";
+            const name = ctx.session.user.username ?? "Quelqu'un";
 
             const discussion = await prisma.discussion.findUnique({
                 where: { id: input.discussionId },

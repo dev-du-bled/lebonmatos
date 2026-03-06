@@ -24,7 +24,7 @@ import FavoriteButton from "./favorite-button";
 import { notFound } from "next/navigation";
 import ReportButton from "@/components/report/report-button";
 import Link from "next/link";
-import { ReviewsDialog } from "@/app/(app)/profile/[id]/reviews-dialog";
+import { ReviewsDialog } from "@/app/(app)/user/[username]/reviews-dialog";
 
 type Params = {
     id: string;
@@ -205,7 +205,9 @@ export default async function PostPage({
                             href={
                                 post.seller?.id === currentUser?.id
                                     ? "/profile"
-                                    : `/profile/${post.seller?.id}`
+                                    : post.seller?.username
+                                      ? `/user/${post.seller.username}`
+                                      : "#"
                             }
                             className="shrink-0"
                         >
@@ -227,7 +229,9 @@ export default async function PostPage({
                                 href={
                                     post.seller?.id === currentUser?.id
                                         ? "/profile"
-                                        : `/profile/${post.seller?.id}`
+                                        : post.seller?.username
+                                          ? `/user/${post.seller.username}`
+                                          : "#"
                                 }
                                 className="font-semibold text-lg hover:underline underline-offset-2"
                             >

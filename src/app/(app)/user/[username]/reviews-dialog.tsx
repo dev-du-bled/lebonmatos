@@ -107,10 +107,7 @@ function ReviewsSummary({
 }
 
 function ReviewCard({ review }: { review: Review }) {
-    const displayName =
-        review.rater.displayUsername ??
-        review.rater.username ??
-        "Utilisateur supprimé";
+    const displayName = review.rater.username ?? "Utilisateur supprimé";
     const initials = displayName
         .split(/\s+/)
         .map((s) => s[0])
@@ -123,10 +120,30 @@ function ReviewCard({ review }: { review: Review }) {
         month: "long",
         year: "numeric",
     });
+
+    const profileHref = review.rater.username
+        ? `/user/${review.rater.username}`
+        : null;
+
     return (
         <div className="flex items-start gap-4 px-6 py-4">
-            <Link href={`/profile/${review.rater.id}`} className="shrink-0">
-                <Avatar className="size-10">
+            {profileHref ? (
+                <Link href={profileHref} className="shrink-0">
+                    <Avatar className="size-10">
+                        {review.rater.image ? (
+                            <AvatarImage
+                                src={review.rater.image}
+                                alt={`Avatar de ${displayName}`}
+                                className="object-cover"
+                            />
+                        ) : null}
+                        <AvatarFallback className="bg-secondary text-muted-foreground text-sm">
+                            {initials}
+                        </AvatarFallback>
+                    </Avatar>
+                </Link>
+            ) : (
+                <Avatar className="size-10 shrink-0">
                     {review.rater.image ? (
                         <AvatarImage
                             src={review.rater.image}
@@ -138,15 +155,21 @@ function ReviewCard({ review }: { review: Review }) {
                         {initials}
                     </AvatarFallback>
                 </Avatar>
-            </Link>
+            )}
             <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Link
-                        href={`/profile/${review.rater.id}`}
-                        className="font-semibold text-sm hover:underline truncate"
-                    >
-                        {displayName}
-                    </Link>
+                    {profileHref ? (
+                        <Link
+                            href={profileHref}
+                            className="font-semibold text-sm hover:underline truncate"
+                        >
+                            {displayName}
+                        </Link>
+                    ) : (
+                        <span className="font-semibold text-sm truncate">
+                            {displayName}
+                        </span>
+                    )}
                     <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-muted-foreground">
                             {date}
@@ -186,7 +209,7 @@ function ReviewsList({
     const query = trpc.user.getReceivedReviews.useQuery(
         { userId, cursor, limit: 10 },
         {
-            enabled: false, // only fired manually via refetch()
+            enabled: false,
         }
     );
 

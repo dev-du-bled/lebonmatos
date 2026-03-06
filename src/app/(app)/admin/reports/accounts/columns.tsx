@@ -29,11 +29,17 @@ export type UserReportRow = {
     status: REPORT_STATUS;
     details: string | null;
     reportedAt: Date | string;
-    user: { id: string; name: string | null; email: string | null } | null;
+    user: {
+        id: string;
+        name: string | null;
+        email: string | null;
+        username: string | null;
+    } | null;
     reportedUser: {
         id: string;
         name: string | null;
         email: string | null;
+        username: string | null;
     } | null;
 };
 
@@ -99,7 +105,11 @@ function RowActions({
                 {report.user && (
                     <DropdownMenuItem asChild>
                         <Link
-                            href={`/profile/${report.user.id}`}
+                            href={
+                                report.user.username
+                                    ? `/user/${report.user.username}`
+                                    : "#"
+                            }
                             target="_blank"
                             rel="noreferrer"
                         >
@@ -110,7 +120,11 @@ function RowActions({
                 {report.reportedUser && (
                     <DropdownMenuItem asChild>
                         <Link
-                            href={`/profile/${report.reportedUser.id}`}
+                            href={
+                                report.reportedUser.username
+                                    ? `/user/${report.reportedUser.username}`
+                                    : "#"
+                            }
                             target="_blank"
                             rel="noreferrer"
                         >

@@ -411,7 +411,8 @@ function MessageBubble({
                                 />
                                 <AvatarFallback>
                                     {"author" in msg
-                                        ? (msg.author?.name?.charAt(0) ?? "?")
+                                        ? (msg.author?.username?.charAt(0) ??
+                                          "?")
                                         : "?"}
                                 </AvatarFallback>
                             </Avatar>
@@ -420,7 +421,7 @@ function MessageBubble({
                         ))}
                     <div
                         className={cn(
-                            "flex flex-col gap-1 max-w-[200px]",
+                            "flex flex-col gap-1 max-w-50",
                             isOwn && "items-end"
                         )}
                     >
@@ -498,7 +499,7 @@ function MessageBubble({
                             />
                             <AvatarFallback>
                                 {"author" in msg
-                                    ? (msg.author?.name?.charAt(0) ?? "?")
+                                    ? (msg.author?.username?.charAt(0) ?? "?")
                                     : "?"}
                             </AvatarFallback>
                         </Avatar>
@@ -1229,7 +1230,11 @@ export default function ConversationView({
                 </Link>
 
                 <Link
-                    href={`/profile/${discussion.otherParty.id}`}
+                    href={
+                        discussion.otherParty.username
+                            ? `/user/${discussion.otherParty.username}`
+                            : "#"
+                    }
                     className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity"
                 >
                     <Avatar className="size-8">

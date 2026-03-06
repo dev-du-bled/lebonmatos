@@ -105,8 +105,12 @@ model Post {
   images             String[]
   ConfigurationItems ConfigurationItem[]
   isSold             Boolean             @default(false)
+  soldAt             DateTime?
   boughtById         String?
   boughtBy           User?               @relation("boughtBy", fields: [boughtById], references: [id], onDelete: SetNull)
+  ratings            Rating[]
+
+  @@map("post")
 }
 
 model Location {
@@ -219,13 +223,15 @@ model Rating {
   user    User   @relation("ratee", fields: [userId], references: [id], onDelete: Cascade)
   raterId String
   rater   User   @relation("rater", fields: [raterId], references: [id], onDelete: Cascade)
+  postId  String
+  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   rating    Int      @db.SmallInt
   comment   String?
   createdAt DateTime @default(now())
   reports   Report[]
 
-  @@unique([userId, raterId])
+  @@unique([postId, raterId])
 }
 
 model Configuration {

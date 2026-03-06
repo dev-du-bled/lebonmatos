@@ -143,7 +143,6 @@ export const configurationRouter = createTRPCRouter({
                     user: {
                         select: {
                             id: true,
-                            name: true,
                             displayUsername: true,
                             image: true,
                         },
@@ -347,7 +346,6 @@ export const configurationRouter = createTRPCRouter({
                             user: {
                                 select: {
                                     id: true,
-                                    name: true,
                                     displayUsername: true,
                                 },
                             },
