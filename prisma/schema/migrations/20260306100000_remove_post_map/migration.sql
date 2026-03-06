@@ -1,0 +1,2 @@
+-- This migration is empty because the table is already named "Post" in the database.
+-- It only reflects the removal of @@map("post") from the Prisma schema.
