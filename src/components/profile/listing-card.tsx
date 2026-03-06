@@ -3,7 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, EllipsisVertical, Pencil, Trash2 } from "lucide-react";
+import {
+    BadgeCheck,
+    EllipsisVertical,
+    Pencil,
+    Trash2,
+    Undo2,
+} from "lucide-react";
+import { useCancelTimer } from "@/hooks/use-cancel-timer";
 import { trpc } from "@/trpc/client";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +41,7 @@ interface ListingCardProps {
         description: string | null;
         price: number;
         isSold: boolean;
+        soldAt: string | null;
         component: {
             id: string;
             name: string;
@@ -55,6 +63,9 @@ export function ListingCard({
     const router = useRouter();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isSoldDialogOpen, setIsSoldDialogOpen] = useState(false);
+    const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+
+    const { canCancel, remainingSeconds } = useCancelTimer(listing.soldAt);
 
     const deletePost = trpc.posts.deletePost.useMutation({
         onSuccess: () => {
@@ -66,6 +77,13 @@ export function ListingCard({
     const markAsSold = trpc.posts.markAsSold.useMutation({
         onSuccess: () => {
             setIsSoldDialogOpen(false);
+            router.refresh();
+        },
+    });
+
+    const cancelSale = trpc.posts.cancelSale.useMutation({
+        onSuccess: () => {
+            setIsCancelDialogOpen(false);
             router.refresh();
         },
     });
@@ -173,14 +191,16 @@ export function ListingCard({
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                        <DropdownMenuItem asChild>
-                                            <Link
-                                                href={`/create-post?edit=${listing.id}`}
-                                            >
-                                                <Pencil className="size-4" />
-                                                Modifier
-                                            </Link>
-                                        </DropdownMenuItem>
+                                        {!listing.isSold && (
+                                            <DropdownMenuItem asChild>
+                                                <Link
+                                                    href={`/create-post?edit=${listing.id}`}
+                                                >
+                                                    <Pencil className="size-4" />
+                                                    Modifier
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        )}
                                         {!listing.isSold && (
                                             <DropdownMenuItem
                                                 onSelect={() =>
@@ -191,7 +211,27 @@ export function ListingCard({
                                                 Marquer comme vendu
                                             </DropdownMenuItem>
                                         )}
-                                        <DropdownMenuSeparator />
+                                        {listing.isSold && canCancel && (
+                                            <DropdownMenuItem
+                                                onSelect={() =>
+                                                    setIsCancelDialogOpen(true)
+                                                }
+                                            >
+                                                <Undo2 className="size-4" />
+                                                Annuler la vente (
+                                                {Math.floor(
+                                                    remainingSeconds / 60
+                                                )}
+                                                :
+                                                {String(
+                                                    remainingSeconds % 60
+                                                ).padStart(2, "0")}
+                                                )
+                                            </DropdownMenuItem>
+                                        )}
+                                        {(!listing.isSold || canCancel) && (
+                                            <DropdownMenuSeparator />
+                                        )}
                                         <DropdownMenuItem
                                             variant="destructive"
                                             onSelect={() =>
@@ -286,6 +326,40 @@ export function ListingCard({
                                     loading={markAsSold.isPending}
                                 >
                                     Confirmer
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog
+                        open={isCancelDialogOpen}
+                        onOpenChange={setIsCancelDialogOpen}
+                    >
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Annuler la vente ?</DialogTitle>
+                                <DialogDescription>
+                                    L&apos;annonce &quot;{listing.title}&quot;
+                                    sera remise en vente. Temps restant :{" "}
+                                    {Math.floor(remainingSeconds / 60)}:
+                                    {String(remainingSeconds % 60).padStart(
+                                        2,
+                                        "0"
+                                    )}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button variant="outline">Fermer</Button>
+                                </DialogClose>
+                                <Button
+                                    variant="destructive"
+                                    onClick={() =>
+                                        cancelSale.mutate({ id: listing.id })
+                                    }
+                                    loading={cancelSale.isPending}
+                                >
+                                    Annuler la vente
                                 </Button>
                             </DialogFooter>
                         </DialogContent>

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TRPCClientError } from "@trpc/client";
-import { Star, Loader2, ShoppingBag, AlertCircle } from "lucide-react";
+import { Star, Loader2, ShoppingBag, AlertCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -90,6 +90,64 @@ function AlreadyReviewedGate() {
     );
 }
 
+function CancelWindowGate({
+    canReviewAt,
+    onExpired,
+}: {
+    canReviewAt: string;
+    onExpired: () => void;
+}) {
+    const [remaining, setRemaining] = useState(() =>
+        Math.max(
+            0,
+            Math.ceil((new Date(canReviewAt).getTime() - Date.now()) / 1000)
+        )
+    );
+
+    useEffect(() => {
+        const update = () => {
+            const secs = Math.max(
+                0,
+                Math.ceil((new Date(canReviewAt).getTime() - Date.now()) / 1000)
+            );
+            setRemaining(secs);
+            return secs;
+        };
+        if (update() <= 0) return;
+        const interval = setInterval(() => {
+            if (update() <= 0) clearInterval(interval);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [canReviewAt]);
+
+    useEffect(() => {
+        if (remaining <= 0) onExpired();
+    }, [remaining, onExpired]);
+
+    if (remaining <= 0) return null;
+
+    return (
+        <div className="flex flex-col items-center gap-5 rounded-xl border border-dashed bg-muted/30 px-6 py-12 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-secondary">
+                <Clock className="size-7 text-muted-foreground" />
+            </div>
+            <div className="space-y-1.5">
+                <h3 className="font-semibold text-base">
+                    Avis bientôt disponible
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                    Le vendeur peut encore annuler la vente. Vous pourrez
+                    laisser un avis dans{" "}
+                    <span className="font-medium tabular-nums">
+                        {Math.floor(remaining / 60)}:
+                        {String(remaining % 60).padStart(2, "0")}
+                    </span>
+                </p>
+            </div>
+        </div>
+    );
+}
+
 // ─── Main form ────────────────────────────────────────────────────────────────
 
 export function ReviewForm({
@@ -100,6 +158,7 @@ export function ReviewForm({
     backHref?: string;
 }) {
     const router = useRouter();
+    const utils = trpc.useUtils();
     const [hovered, setHovered] = useState(0);
 
     // Verify the current user has a completed purchase for this post
@@ -156,6 +215,18 @@ export function ReviewForm({
     // ── Already reviewed ───────────────────────────────────────────────────────
     if (eligibility?.hasAlreadyReviewed) {
         return <AlreadyReviewedGate />;
+    }
+
+    // ── Cancel window active ────────────────────────────────────────────────────
+    if (eligibility?.cancelWindowActive && eligibility.canReviewAt) {
+        return (
+            <CancelWindowGate
+                canReviewAt={eligibility.canReviewAt}
+                onExpired={() =>
+                    utils.user.getReviewEligibility.invalidate({ postId })
+                }
+            />
+        );
     }
 
     // ── Form ───────────────────────────────────────────────────────────────────

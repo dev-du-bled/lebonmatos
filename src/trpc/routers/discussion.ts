@@ -229,6 +229,8 @@ export const discussionRouter = createTRPCRouter({
                             price: true,
                             images: true,
                             isSold: true,
+                            soldAt: true,
+                            boughtById: true,
                         },
                     },
                     buyer: {
@@ -327,6 +329,9 @@ export const discussionRouter = createTRPCRouter({
                     isBuyer,
                     acceptedPrice: discussion.acceptedPrice,
                     isSold: discussion.post?.isSold ?? false,
+                    soldAt: discussion.post?.soldAt?.toISOString() ?? null,
+                    soldToMe:
+                        discussion.post?.boughtById === discussion.buyerId,
                     sellerId: discussion.sellerId,
                     buyerId: discussion.buyerId,
                     hasReview,
