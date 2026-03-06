@@ -12,13 +12,13 @@ const BASE_URL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
 export default async function globalSetup() {
     console.log("[Setup] Pushing database schema...");
-    execSync("bun prisma db push", { stdio: "pipe" });
+    execSync("bun prisma db push", { stdio: "inherit" });
 
     console.log("[Setup] Generating prisma client...");
-    execSync("bun prisma generate", { stdio: "pipe" });
+    execSync("bun prisma generate", { stdio: "inherit" });
 
     console.log("[Setup] Seeding components data...");
-    execSync("bun ./prisma/seed/data.ts", { stdio: "pipe" });
+    execSync("bun ./prisma/seed/data.ts", { stdio: "inherit" });
 
     console.log("[Setup] Creating test user...");
     await auth.api.signUpEmail({

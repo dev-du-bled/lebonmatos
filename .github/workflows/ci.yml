@@ -44,22 +44,17 @@ jobs:
                     POSTGRES_DB: lbmtestdb
                 ports:
                     - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
             meilisearch:
                 image: getmeili/meilisearch:v1.26.0
                 env:
                     MEILI_MASTER_KEY: placeholdersecret
                 ports:
                     - 7700:7700
-
-        env:
-            DATABASE_URL: postgresql://lbmuser:lbmsupersecurepassword@localhost:5432/lbmtestdb
-            BETTER_AUTH_SECRET: placeholdersecret
-            NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: placeholdersecret
-            GOOGLE_RECAPTCHA_SECRET_KEY: placeholdersecret
-            UPLOADTHING_TOKEN: placeholdersecret
-            MEILI_HOST: http://localhost:7700
-            MEILI_MASTER_KEY: placeholdersecret
-            RESEND_API_KEY: placeholdersecret
 
         steps:
             - name: Checkout repository
@@ -78,3 +73,12 @@ jobs:
 
             - name: Run tests
               run: bun run tests:run
+              env:
+                  DATABASE_URL: postgresql://lbmuser:lbmsupersecurepassword@localhost:5432/lbmtestdb
+                  BETTER_AUTH_SECRET: placeholdersecret
+                  NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: placeholdersecret
+                  GOOGLE_RECAPTCHA_SECRET_KEY: placeholdersecret
+                  UPLOADTHING_TOKEN: placeholdersecret
+                  MEILI_HOST: http://localhost:7700
+                  MEILI_MASTER_KEY: placeholdersecret
+                  RESEND_API_KEY: placeholdersecret
