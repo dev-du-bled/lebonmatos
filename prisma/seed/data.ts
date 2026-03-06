@@ -29,13 +29,12 @@ async function getExistingNames(type: ComponentType): Promise<Set<string>> {
     return new Set(existing.map((c) => c.name));
 }
 
-async function runWithConcurrency(
-    tasks: (() => Promise<void>)[],
-    limit = 5
-) {
+async function runWithConcurrency(tasks: (() => Promise<void>)[], limit = 5) {
     const executing = new Set<Promise<void>>();
     for (const task of tasks) {
-        const p = task().then(() => { executing.delete(p); });
+        const p = task().then(() => {
+            executing.delete(p);
+        });
         executing.add(p);
         if (executing.size >= limit) {
             await Promise.race(executing);
@@ -354,7 +353,9 @@ async function addCpuCooler(existing: Set<string>) {
                 componentId: i.id,
                 rpmIdle: isRpmArray ? i.raw.rpm[0] : null,
                 rpmMax: isRpmArray ? i.raw.rpm[1] : i.raw.rpm,
-                noiseIdle: isNoiseArray ? i.raw.noise_level[0].toFixed(1) : null,
+                noiseIdle: isNoiseArray
+                    ? i.raw.noise_level[0].toFixed(1)
+                    : null,
                 noiseMax: isNoiseArray
                     ? i.raw.noise_level[1].toFixed(1)
                     : typeof i.raw.noise_level === "number"

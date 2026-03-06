@@ -284,10 +284,7 @@ async function main() {
                 title: generateTitle(component.name, component.type),
                 description: faker.lorem.paragraph(),
                 price: faker.number.int({
-                    min: Math.max(
-                        0,
-                        (component.estimatedPrice || 100) - 100
-                    ),
+                    min: Math.max(0, (component.estimatedPrice || 100) - 100),
                     max: (component.estimatedPrice || 100) + 100,
                 }),
                 userId: user.id,
