@@ -63,7 +63,9 @@ const SearchInputBox = memo(
                             className="flex max-sm:hidden cursor-text h-9 gap-2.5 max-w-50 items-center justify-between rounded-md bg-secondary px-2.5 text-sm text-muted-foreground clickable"
                             aria-hidden="true"
                         >
-                            <Kbd className="border"><CornerDownLeft className="!size-3.5" /></Kbd>
+                            <Kbd className="border">
+                                <CornerDownLeft className="!size-3.5" />
+                            </Kbd>
                             Rechercher
                         </div>
                     }
@@ -211,9 +213,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
                     className="bg-transparent backdrop-blur-sm transition-all duration-300"
                     onClick={() => onOpenChange(false)}
                 />
-                <DialogPrimitive.Content
-                    className="fixed top-[20%] left-[50%] -translate-x-1/2 z-50 w-full max-w-2xl outline-none sm:px-0 max-sm:top-0 max-sm:px-3 max-sm:pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 duration-200"
-                >
+                <DialogPrimitive.Content className="fixed top-[20%] left-[50%] -translate-x-1/2 z-50 w-full max-w-2xl outline-none sm:px-0 max-sm:top-0 max-sm:px-3 max-sm:pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 duration-200">
                     <DialogTitle className="sr-only">Recherche</DialogTitle>
                     <SearchInputBox
                         value={searchValue}
