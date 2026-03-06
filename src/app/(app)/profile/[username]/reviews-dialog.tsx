@@ -253,7 +253,7 @@ export function ReviewsDialog({
                 </DialogTrigger>
                 <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
                     <DialogHeader className="px-6 pt-6 pb-4 border-b">
-                        <DialogTitle>Avis reçus par {username}</DialogTitle>
+                        <DialogTitle>Avis reçus de {username}</DialogTitle>
                         <ReviewsSummary average={average} count={count} />
                     </DialogHeader>
                     <ScrollArea className="max-h-[60vh]">
@@ -276,7 +276,7 @@ export function ReviewsDialog({
                 <DrawerContent>
                     <DrawerHeader className="px-6 pb-4 border-b text-left">
                         <div className="flex items-center justify-between">
-                            <DrawerTitle>Avis reçus par {username}</DrawerTitle>
+                            <DrawerTitle>Avis reçus de {username}</DrawerTitle>
                             <DrawerClose className="rounded-sm opacity-70 hover:opacity-100 transition-opacity">
                                 <X className="size-5" />
                                 <span className="sr-only">Fermer</span>

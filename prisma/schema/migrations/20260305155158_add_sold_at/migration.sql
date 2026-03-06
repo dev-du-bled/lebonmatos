@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "post" ADD COLUMN     "soldAt" TIMESTAMP(3);
+ALTER TABLE "Post" ADD COLUMN     "soldAt" TIMESTAMP(3);
