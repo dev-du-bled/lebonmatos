@@ -55,7 +55,7 @@ async function main() {
         const user = faker.helpers.arrayElement(users);
         const post = await prisma.post.create({
             data: {
-                title: `${component.name}`,
+                title: component.name.slice(0, 50),
                 description: faker.lorem.paragraph(),
                 price: faker.number.int({
                     min: (component.estimatedPrice || 100) - 100,
