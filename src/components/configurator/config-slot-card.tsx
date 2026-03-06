@@ -12,6 +12,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+    COMPONENT_TYPE_ARTICLES,
     COMPONENT_TYPE_LABELS,
     MULTI_QUANTITY_TYPES,
     type CompatibilityIssue,
@@ -191,7 +192,7 @@ export function ConfigSlotCard({
                             <Plus className="size-4" />
                         </div>
                         <span className="font-medium">
-                            Ajouter un{" "}
+                            Ajouter {COMPONENT_TYPE_ARTICLES[componentType]}{" "}
                             {COMPONENT_TYPE_LABELS[componentType].toLowerCase()}
                         </span>
                     </button>
