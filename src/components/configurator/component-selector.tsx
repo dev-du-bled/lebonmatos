@@ -217,15 +217,7 @@ export function ComponentSelector({
                                     filteredFavorites?.map((post) => (
                                         <PostCard
                                             key={post.id}
-                                            post={
-                                                {
-                                                    ...post,
-                                                    componentName:
-                                                        post.component.name,
-                                                    componentType:
-                                                        post.component.type,
-                                                } as unknown as SelectedPost
-                                            }
+                                            post={post as SelectedPost}
                                             onSelect={handleSelect}
                                         />
                                     ))

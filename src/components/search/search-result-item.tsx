@@ -9,9 +9,13 @@ export type SearchHit = {
     id: string;
     title: string;
     price: number;
-    componentType: ComponentType;
-    componentName: string;
-    locationCity: string | null;
+    component: {
+        type: ComponentType;
+        name: string;
+    };
+    location: {
+        city: string;
+    } | null;
     images: string[];
     userId: string;
 };
@@ -51,11 +55,11 @@ export const SearchResultItem = memo(function SearchResultItem({
                     {post.price} €
                 </p>
                 <p className="font-sans text-sm text-muted-foreground mt-1">
-                    {getEnumDisplay(post.componentType)}
+                    {getEnumDisplay(post.component.type)}
                 </p>
-                {post.locationCity && (
+                {post.location?.city && (
                     <p className="font-sans text-sm text-muted-foreground">
-                        {post.locationCity}
+                        {post.location.city}
                     </p>
                 )}
             </div>

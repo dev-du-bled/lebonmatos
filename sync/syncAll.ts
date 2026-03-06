@@ -1,18 +1,13 @@
-import { Client } from "pg";
 import { MeiliSearch } from "meilisearch";
+import { ComponentType } from "@prisma/client";
+import { prisma } from "./prisma";
 import {
     wrappMeiliTask,
-    POST_QUERY_BASE,
-    COMPONENT_QUERIES_BASE,
-    TYPE_TO_TABLE,
+    POST_INCLUDE,
+    COMPONENT_INCLUDE,
+    toMeiliPost,
+    decimalToNumber,
 } from "./utils";
-import { buildComponentDetails } from "@/utils/components";
-
-const pg_url = process.env["DATABASE_URL"];
-if (!pg_url)
-    throw Error(
-        "FATAL: No database url was provided, unable to start sync process"
-    );
 
 const meilisearch_host = process.env["MEILI_HOST"];
 const meilisearch_api_key = process.env["MEILI_MASTER_KEY"];
@@ -21,110 +16,78 @@ if (!meilisearch_host)
         "FATAL: No Meilisearch host was provided, unable to start sync process"
     );
 
-const client = new Client(pg_url);
 const meilisearch = new MeiliSearch({
     host: meilisearch_host,
     apiKey: meilisearch_api_key,
 });
 
+const ALL_TYPES: ComponentType[] = [
+    "CPU",
+    "GPU",
+    "MOTHERBOARD",
+    "RAM",
+    "SSD",
+    "HDD",
+    "POWER_SUPPLY",
+    "CPU_COOLER",
+    "CASE",
+    "CASE_FAN",
+    "SOUND_CARD",
+    "WIRELESS_NETWORK_CARD",
+];
+
 async function syncAll() {
     console.log("Syncing meili and postgres");
-    await client.connect();
 
     try {
-        console.log("Fetching all components...");
-        const { rows: components } = await client.query(
-            `SELECT id, name, type FROM component`
-        );
-        if (components.length > 0) {
-            console.log(
-                `Syncing ${components.length} components to Meilisearch...`
-            );
+        console.log("Fetching all components for 'components' index...");
+        const allComponents = await prisma.component.findMany({
+            select: { id: true, name: true, type: true },
+        });
+        if (allComponents.length > 0) {
             const compTask = await wrappMeiliTask(
-                meilisearch.index("components").addDocuments(components)
+                meilisearch.index("components").addDocuments(allComponents)
             );
-            console.log(`Synced components at ${compTask.finishedAt}`);
+            console.log(
+                `Synced ${allComponents.length} components at ${compTask.finishedAt}`
+            );
         }
 
         console.log("Fetching all posts...");
-        const { rows: posts } = await client.query(POST_QUERY_BASE);
+        const posts = await prisma.post.findMany({
+            include: POST_INCLUDE,
+        });
 
         if (posts.length > 0) {
-            console.log(
-                `Enriching ${posts.length} posts with component data...`
+            const docs = posts.map((post) =>
+                decimalToNumber(toMeiliPost(post))
             );
-
-            // Enrich posts with component data
-            const enrichedPosts = (
-                await Promise.all(
-                    posts.map(async (post) => {
-                        const firstImage =
-                            post.images && post.images.length > 0
-                                ? post.images[0]
-                                : null;
-
-                        const tableName = TYPE_TO_TABLE[post.componentType];
-                        if (!tableName || !COMPONENT_QUERIES_BASE[tableName]) {
-                            console.warn(
-                                `Post ${post.id}: no query for component type '${post.componentType}', skipping enrichment`
-                            );
-                            return {
-                                ...post,
-                                firstImage,
-                            };
-                        }
-
-                        // Fetch the specific component data
-                        const componentQuery = `${COMPONENT_QUERIES_BASE[tableName]} WHERE c.id = $1`;
-                        const { rows: componentData } = await client.query(
-                            componentQuery,
-                            [post.componentId]
-                        );
-
-                        if (componentData.length > 0) {
-                            return {
-                                ...post,
-                                firstImage,
-                                component: {
-                                    // build the details as expected by the ui
-                                    ...buildComponentDetails(componentData[0]),
-                                },
-                            };
-                        }
-
-                        return {
-                            ...post,
-                            firstImage,
-                        };
-                    })
-                )
-            ).filter(Boolean);
-
-            console.log(
-                `Pushing ${enrichedPosts.length} enriched posts to Meilisearch...`
-            );
+            console.log(`Pushing ${docs.length} posts to Meilisearch...`);
             const task = await wrappMeiliTask(
-                meilisearch.index("posts").addDocuments(enrichedPosts)
+                meilisearch.index("posts").addDocuments(docs)
             );
             console.log(`Synced posts at ${task.finishedAt}`);
         } else {
             console.log("No posts to sync.");
         }
 
-        for (const [table, query] of Object.entries(COMPONENT_QUERIES_BASE)) {
-            console.log(`Fetching all ${table} components...`);
-            const { rows: components } = await client.query(query);
+        for (const type of ALL_TYPES) {
+            console.log(`Fetching all ${type} components...`);
+            const components = await prisma.component.findMany({
+                where: { type },
+                include: COMPONENT_INCLUDE,
+            });
 
             if (components.length > 0) {
-                console.log(
-                    `Syncing ${components.length} ${table} to Meilisearch...`
-                );
+                const docs = components.map((c) => decimalToNumber(c));
                 const task = await wrappMeiliTask(
-                    meilisearch.index(table).addDocuments(components)
+                    meilisearch.index(type).addDocuments(docs)
                 );
-                console.log(`Synced ${table} at ${task.finishedAt}`);
+                console.log(
+                    `Synced ${components.length} ${type} at ${task.finishedAt}`
+                );
             } else {
-                console.log(`No ${table} components to sync.`);
+                console.log(`No ${type} components to sync.`);
             }
         }
 
@@ -132,7 +95,7 @@ async function syncAll() {
     } catch (error) {
         console.error("Error during bulk sync:", error);
     } finally {
-        await client.end();
+        await prisma.$disconnect();
     }
 }
 
