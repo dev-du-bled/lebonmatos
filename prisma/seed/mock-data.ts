@@ -5,7 +5,7 @@ import { Faker, fr } from "@faker-js/faker";
 import mockImages from "../../data/mock-images.json";
 
 const connectionString = process.env.DATABASE_URL;
-const pool = new Pool({ connectionString });
+const pool = new Pool({ connectionString, max: 30 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
@@ -210,37 +210,65 @@ const ALL_COMPONENT_TYPES = [
 ] as const;
 
 async function addUsers(count: number) {
-    const users = [];
-    for (let i = 0; i < count; i++) {
-        const user = await prisma.user.create({
-            data: {
-                id: faker.string.uuid(),
-                name: faker.person.fullName(),
-                email: faker.internet.email(),
-                username: faker.internet.username(),
-                displayUsername: faker.internet.displayName(),
-                emailVerified: faker.datatype.boolean(),
-                image: faker.image.avatar(),
-                phoneNumber: faker.phone.number(),
-            },
-        });
-        users.push(user);
-    }
-    return users;
+    const userDatas = Array.from({ length: count }, () => ({
+        id: faker.string.uuid(),
+        name: faker.person.fullName(),
+        email: faker.internet.email(),
+        username: faker.internet.username(),
+        displayUsername: faker.internet.displayName(),
+        emailVerified: faker.datatype.boolean(),
+        image: faker.image.avatar(),
+        phoneNumber: faker.phone.number(),
+    }));
+    await prisma.user.createMany({ data: userDatas });
+    return userDatas;
 }
 
 async function main() {
+    const startTime = Date.now();
     console.log("Start seeding...");
 
     const users = await addUsers(5);
     console.log(`Added ${users.length} users`);
 
-    // Fetch up to 20 components of each type and create posts
-    for (const type of ALL_COMPONENT_TYPES) {
-        const components = await prisma.component.findMany({
-            where: { type },
-            take: 20,
-        });
+    // Fetch all component types in parallel
+    const componentsByType = await Promise.all(
+        ALL_COMPONENT_TYPES.map((type) =>
+            prisma.component.findMany({
+                where: { type },
+                take: 20,
+            })
+        )
+    );
+
+    // Prepare all post + location data in memory with pre-generated IDs
+    const postRows: {
+        id: string;
+        title: string;
+        description: string;
+        price: number;
+        userId: string;
+        componentId: string;
+        images: string[];
+    }[] = [];
+
+    const locationRows: {
+        postId: string;
+        lat: number;
+        lon: number;
+        name: string;
+        displayName: string;
+        city: string;
+        state: string;
+        region: string;
+        country: string;
+        countryCode: string;
+        coordinates: number[];
+    }[] = [];
+
+    for (let i = 0; i < ALL_COMPONENT_TYPES.length; i++) {
+        const type = ALL_COMPONENT_TYPES[i];
+        const components = componentsByType[i];
 
         if (components.length === 0) {
             console.log(`No components found for type ${type}, skipping.`);
@@ -249,57 +277,57 @@ async function main() {
 
         for (const component of components) {
             const user = faker.helpers.arrayElement(users);
-            const post = await prisma.post.create({
-                data: {
-                    title: generateTitle(component.name, component.type),
-                    description: faker.lorem.paragraph(),
-                    price: faker.number.int({
-                        min: Math.max(
-                            0,
-                            (component.estimatedPrice || 100) - 100
-                        ),
-                        max: (component.estimatedPrice || 100) + 100,
-                    }),
-                    user: {
-                        connect: { id: user.id },
-                    },
-                    component: {
-                        connect: { id: component.id },
-                    },
-                    location: {
-                        create: {
-                            lat: faker.location.latitude(),
-                            lon: faker.location.longitude(),
-                            name: faker.location.city(),
-                            displayName: faker.location.city(),
-                            city: faker.location.city(),
-                            state: faker.location.state(),
-                            region: faker.location.state(),
-                            country: faker.location.country(),
-                            countryCode: faker.helpers.arrayElement([
-                                "FR",
-                                "US",
-                                "GB",
-                                "DE",
-                                "ES",
-                                "IT",
-                                "CA",
-                            ]),
-                            coordinates: [
-                                faker.location.longitude(),
-                                faker.location.latitude(),
-                            ],
-                        },
-                    },
-                    images: pickImages(component.type),
-                },
+            const postId = crypto.randomUUID();
+
+            postRows.push({
+                id: postId,
+                title: generateTitle(component.name, component.type),
+                description: faker.lorem.paragraph(),
+                price: faker.number.int({
+                    min: Math.max(0, (component.estimatedPrice || 100) - 100),
+                    max: (component.estimatedPrice || 100) + 100,
+                }),
+                userId: user.id,
+                componentId: component.id,
+                images: pickImages(component.type),
             });
-            console.log(`Created post [${component.type}] with id: ${post.id}`);
+
+            locationRows.push({
+                postId,
+                lat: faker.location.latitude(),
+                lon: faker.location.longitude(),
+                name: faker.location.city(),
+                displayName: faker.location.city(),
+                city: faker.location.city(),
+                state: faker.location.state(),
+                region: faker.location.state(),
+                country: faker.location.country(),
+                countryCode: faker.helpers.arrayElement([
+                    "FR",
+                    "US",
+                    "GB",
+                    "DE",
+                    "ES",
+                    "IT",
+                    "CA",
+                ]),
+                coordinates: [
+                    faker.location.longitude(),
+                    faker.location.latitude(),
+                ],
+            });
         }
 
-        console.log(`Created ${components.length} posts for type ${type}`);
+        console.log(`Prepared ${components.length} posts for type ${type}`);
     }
 
+    // Bulk insert posts then locations
+    console.log(`Creating ${postRows.length} posts...`);
+    await prisma.post.createMany({ data: postRows });
+    await prisma.location.createMany({ data: locationRows });
+    console.log(`Created ${postRows.length} posts with locations.`);
+
+    // Ratings
     console.log("Adding ratings...");
     for (const user of users) {
         const ratingsCount = faker.number.int({ min: 0, max: 5 });
@@ -309,7 +337,6 @@ async function main() {
             Math.min(ratingsCount, potentialRaters.length)
         );
 
-        // Fetch posts owned by this user that are not yet sold
         const availablePosts = await prisma.post.findMany({
             where: { userId: user.id, isSold: false },
             select: { id: true },
@@ -318,33 +345,33 @@ async function main() {
         for (const rater of raters) {
             if (availablePosts.length === 0) break;
 
-            // Pick and remove a post from the available list so each post is used at most once
             const postIndex = faker.number.int({
                 min: 0,
                 max: availablePosts.length - 1,
             });
             const [post] = availablePosts.splice(postIndex, 1);
 
-            // Mark the post as sold to the rater
-            await prisma.post.update({
-                where: { id: post.id },
-                data: { isSold: true, boughtById: rater.id },
-            });
-
-            await prisma.rating.create({
-                data: {
-                    userId: user.id,
-                    raterId: rater.id,
-                    postId: post.id,
-                    rating: faker.number.int({ min: 1, max: 5 }),
-                    comment: faker.lorem.sentences(2),
-                },
-            });
+            await prisma.$transaction([
+                prisma.post.update({
+                    where: { id: post.id },
+                    data: { isSold: true, boughtById: rater.id },
+                }),
+                prisma.rating.create({
+                    data: {
+                        userId: user.id,
+                        raterId: rater.id,
+                        postId: post.id,
+                        rating: faker.number.int({ min: 1, max: 5 }),
+                        comment: faker.lorem.sentences(2),
+                    },
+                }),
+            ]);
         }
     }
     console.log("Ratings added.");
 
-    console.log("Seeding finished.");
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`Seeding finished in ${elapsed}s`);
 }
 
 main()
