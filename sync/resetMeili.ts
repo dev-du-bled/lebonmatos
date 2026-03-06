@@ -16,23 +16,22 @@ const meilisearch = new MeiliSearch({
 const indexes = [
     "posts",
     "components",
-    "cpu",
-    "gpu",
-    "motherboard",
-    "ram",
-    "ssd",
-    "hdd",
-    "powerSupply",
-    "cpuCooler",
-    "case",
-    "caseFan",
-    "soundCard",
-    "wirelessNetworkCard",
+    "CPU",
+    "GPU",
+    "MOTHERBOARD",
+    "RAM",
+    "SSD",
+    "HDD",
+    "POWER_SUPPLY",
+    "CPU_COOLER",
+    "CASE",
+    "CASE_FAN",
+    "SOUND_CARD",
+    "WIRELESS_NETWORK_CARD",
 ];
 
 try {
     for (const index of indexes) {
-        // don't care if the indexes don't exists and can't be deleted, no need to yell at me
         await wrappMeiliTask(meilisearch.deleteIndex(index)).catch(() => {});
 
         await wrappMeiliTask(
@@ -46,12 +45,12 @@ try {
                 meilisearch
                     .index(index)
                     .updateFilterableAttributes([
-                        "componentType",
+                        "component.type",
+                        "component.color",
                         "componentId",
-                        "locationCity",
+                        "location.city",
                         "_geo",
                         "price",
-                        "componentColor",
                     ])
             );
         }

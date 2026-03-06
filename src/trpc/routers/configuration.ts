@@ -312,7 +312,7 @@ export const configurationRouter = createTRPCRouter({
             const searchParams = {
                 limit: input.limit,
                 filter: input.componentType
-                    ? `componentType = "${input.componentType}"`
+                    ? `component.type = "${input.componentType}"`
                     : undefined,
             };
 

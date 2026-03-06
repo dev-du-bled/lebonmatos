@@ -4,21 +4,6 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
 import { ComponentType } from "@prisma/client";
 import { ReturnedComponent } from "@/utils/components";
 
-const TYPE_TO_INDEX: Record<ComponentType, string> = {
-    CPU: "cpu",
-    GPU: "gpu",
-    MOTHERBOARD: "motherboard",
-    RAM: "ram",
-    SSD: "ssd",
-    HDD: "hdd",
-    POWER_SUPPLY: "powerSupply",
-    CPU_COOLER: "cpuCooler",
-    CASE: "case",
-    CASE_FAN: "caseFan",
-    SOUND_CARD: "soundCard",
-    WIRELESS_NETWORK_CARD: "wirelessNetworkCard",
-};
-
 export const componentRouter = createTRPCRouter({
     getComponents: privateProcedure
         .input(
@@ -28,11 +13,17 @@ export const componentRouter = createTRPCRouter({
             })
         )
         .query(async ({ input }): Promise<ReturnedComponent[]> => {
-            const index = meilisearch.index(TYPE_TO_INDEX[input.type]);
+            const index = meilisearch.index(input.type);
             const results = await index.search(input.query, { limit: 20 });
 
             return results.hits.map((hit) => {
-                const { id, name, estimatedPrice, color, type, ...data } = hit;
+                const { id, name, estimatedPrice, color, type,
+                    Cpu, Gpu, Motherboard, Ram, Ssd, Hdd, Psu,
+                    CpuCooler, Case, CaseFan, SoundCard, WirelessNetworkCard,
+                } = hit;
+                const data = Cpu ?? Gpu ?? Motherboard ?? Ram ?? Ssd ?? Hdd
+                    ?? Psu ?? CpuCooler ?? Case ?? CaseFan ?? SoundCard
+                    ?? WirelessNetworkCard ?? {};
                 return {
                     id,
                     name,

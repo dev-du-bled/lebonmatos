@@ -40,7 +40,6 @@ model User {
 
   @@unique([email])
   @@unique([username])
-  @@map("user")
 }
 
 model Session {
@@ -58,7 +57,6 @@ model Session {
 
   @@unique([token])
   @@index([userId])
-  @@map("session")
 }
 
 model Account {
@@ -78,7 +76,6 @@ model Account {
   updatedAt             DateTime  @updatedAt
 
   @@index([userId])
-  @@map("account")
 }
 
 model Verification {
@@ -90,7 +87,6 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@index([identifier])
-  @@map("verification")
 }
 
 model Post {
@@ -111,8 +107,6 @@ model Post {
   isSold             Boolean             @default(false)
   boughtById         String?
   boughtBy           User?               @relation("boughtBy", fields: [boughtById], references: [id], onDelete: SetNull)
-
-  @@map("post")
 }
 
 model Location {
@@ -130,8 +124,6 @@ model Location {
 
   postId String @unique
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@map("location")
 }
 
 model Favorite {
@@ -142,7 +134,6 @@ model Favorite {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
-  @@map("favorite")
 }
 
 enum REPORT_TYPE {
@@ -182,8 +173,6 @@ model Report {
   reportedUser    User?          @relation("reportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
   messageId       String?
   reportedAt      DateTime       @default(now())
-
-  @@map("report")
 }
 
 model Discussion {
@@ -199,7 +188,6 @@ model Discussion {
   acceptedPrice Int?      @db.SmallInt
 
   @@unique([postId, buyerId])
-  @@map("discussion")
 }
 
 enum MessageType {
@@ -223,8 +211,6 @@ model Message {
   buttonLabel  String?
   buttonUrl    String?
   buttonAction String?
-
-  @@map("message")
 }
 
 model Rating {
@@ -240,7 +226,6 @@ model Rating {
   reports   Report[]
 
   @@unique([userId, raterId])
-  @@map("rating")
 }
 
 model Configuration {
@@ -252,8 +237,6 @@ model Configuration {
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
   items     ConfigurationItem[]
-
-  @@map("configuration")
 }
 
 model ConfigurationItem {
@@ -264,6 +247,4 @@ model ConfigurationItem {
   postId          String?
   post            Post?         @relation(fields: [postId], references: [id], onDelete: SetNull)
   quantity        Int           @default(1) @db.SmallInt
-
-  @@map("configuration_item")
 }

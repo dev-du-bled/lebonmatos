@@ -218,13 +218,7 @@ export function ComponentSelector({
                                         <PostCard
                                             key={post.id}
                                             post={
-                                                {
-                                                    ...post,
-                                                    componentName:
-                                                        post.component.name,
-                                                    componentType:
-                                                        post.component.type,
-                                                } as unknown as SelectedPost
+                                                post as SelectedPost
                                             }
                                             onSelect={handleSelect}
                                         />
