@@ -18,6 +18,7 @@ type Listing = {
     description: string | null;
     price: number;
     isSold: boolean;
+    soldAt: string | null;
     createdAt: string;
     component: {
         id: string;

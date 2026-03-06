@@ -251,6 +251,7 @@ export const userRouter = createTRPCRouter({
                     isSold: true,
                     boughtById: true,
                     userId: true,
+                    soldAt: true,
                 },
             });
 
@@ -268,7 +269,12 @@ export const userRouter = createTRPCRouter({
                 post.userId !== raterId;
 
             if (!hasPurchased) {
-                return { hasPurchased: false, hasAlreadyReviewed: false };
+                return {
+                    hasPurchased: false,
+                    hasAlreadyReviewed: false,
+                    cancelWindowActive: false,
+                    canReviewAt: null,
+                };
             }
 
             // Vérifie s'il a déjà laissé un avis pour cette annonce
@@ -280,9 +286,19 @@ export const userRouter = createTRPCRouter({
                 select: { id: true },
             });
 
+            const cancelWindowActive =
+                !!post.soldAt && Date.now() - post.soldAt.getTime() < 120_000;
+
             return {
                 hasPurchased: true,
                 hasAlreadyReviewed: !!existingReview,
+                cancelWindowActive,
+                canReviewAt:
+                    cancelWindowActive && post.soldAt
+                        ? new Date(
+                              post.soldAt.getTime() + 120_000
+                          ).toISOString()
+                        : null,
             };
         }),
 
@@ -304,6 +320,7 @@ export const userRouter = createTRPCRouter({
                     userId: true,
                     isSold: true,
                     boughtById: true,
+                    soldAt: true,
                 },
             });
 
@@ -326,6 +343,14 @@ export const userRouter = createTRPCRouter({
                     code: "FORBIDDEN",
                     message:
                         "Vous devez avoir acheté cet article pour laisser un avis.",
+                });
+            }
+
+            if (post.soldAt && Date.now() - post.soldAt.getTime() < 120_000) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message:
+                        "Vous pourrez laisser un avis 2 minutes après l'achat.",
                 });
             }
 
@@ -352,6 +377,35 @@ export const userRouter = createTRPCRouter({
                 }
                 throw error;
             }
+
+            return { success: true };
+        }),
+
+    deleteReview: privateProcedure
+        .input(z.object({ reviewId: z.uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const review = await prisma.rating.findUnique({
+                where: { id: input.reviewId },
+                select: { raterId: true },
+            });
+
+            if (!review) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Avis introuvable.",
+                });
+            }
+
+            if (review.raterId !== ctx.session!.user.id) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Vous ne pouvez supprimer que vos propres avis.",
+                });
+            }
+
+            await prisma.rating.delete({
+                where: { id: input.reviewId },
+            });
 
             return { success: true };
         }),

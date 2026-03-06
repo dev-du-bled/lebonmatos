@@ -182,7 +182,7 @@ model Discussion {
   buyerId       String
   buyer         User      @relation("discussionBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
   postId        String
-  post          Post?     @relation(fields: [postId], references: [id])
+  post          Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
   messages      Message[]
   sellerId      String?
   seller        User?     @relation("discussionSeller", fields: [sellerId], references: [id])
@@ -221,8 +221,8 @@ model Rating {
   user    User   @relation("ratee", fields: [userId], references: [id], onDelete: Cascade)
   raterId String
   rater   User   @relation("rater", fields: [raterId], references: [id], onDelete: Cascade)
-  postId  String
-  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId  String?
+  post    Post?  @relation(fields: [postId], references: [id], onDelete: SetNull)
 
   rating    Int      @db.SmallInt
   comment   String?
