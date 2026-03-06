@@ -109,8 +109,6 @@ model Post {
   boughtById         String?
   boughtBy           User?               @relation("boughtBy", fields: [boughtById], references: [id], onDelete: SetNull)
   ratings            Rating[]
-
-  @@map("post")
 }
 
 model Location {
