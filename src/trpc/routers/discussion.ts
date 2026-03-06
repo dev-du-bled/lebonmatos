@@ -33,7 +33,7 @@ async function createSystemMessage(
             buttonAction: options.buttonAction ?? null,
         },
         include: {
-            author: { select: { id: true, name: true, image: true } },
+            author: { select: { id: true, username: true, image: true } },
         },
     });
 
@@ -275,7 +275,7 @@ export const discussionRouter = createTRPCRouter({
                     : {}),
                 include: {
                     author: {
-                        select: { id: true, name: true, image: true },
+                        select: { id: true, username: true, image: true },
                     },
                 },
             });
@@ -341,7 +341,7 @@ export const discussionRouter = createTRPCRouter({
                     author: m.author
                         ? {
                               id: m.author.id,
-                              name: m.author.name,
+                              username: m.author.username,
                               image: m.author.image,
                           }
                         : null,
@@ -465,7 +465,7 @@ export const discussionRouter = createTRPCRouter({
                 },
                 include: {
                     author: {
-                        select: { id: true, name: true, image: true },
+                        select: { id: true, username: true, image: true },
                     },
                 },
             });
@@ -480,7 +480,7 @@ export const discussionRouter = createTRPCRouter({
                 author: message.author
                     ? {
                           id: message.author.id,
-                          name: message.author.name,
+                          username: message.author.username,
                           image: message.author.image,
                       }
                     : null,
@@ -668,7 +668,7 @@ export const discussionRouter = createTRPCRouter({
         .input(z.object({ discussionId: z.uuid() }))
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.session.user.id;
-            const name = ctx.session.user.name ?? "Quelqu'un";
+            const name = ctx.session.user.username ?? "Quelqu'un";
 
             const discussion = await prisma.discussion.findUnique({
                 where: { id: input.discussionId },
