@@ -411,7 +411,7 @@ function MessageBubble({
                                 />
                                 <AvatarFallback>
                                     {"author" in msg
-                                        ? (msg.author?.name?.charAt(0) ?? "?")
+                                        ? (msg.author?.username?.charAt(0) ?? "?")
                                         : "?"}
                                 </AvatarFallback>
                             </Avatar>
@@ -498,7 +498,7 @@ function MessageBubble({
                             />
                             <AvatarFallback>
                                 {"author" in msg
-                                    ? (msg.author?.name?.charAt(0) ?? "?")
+                                    ? (msg.author?.username?.charAt(0) ?? "?")
                                     : "?"}
                             </AvatarFallback>
                         </Avatar>
