@@ -741,6 +741,7 @@ export const postRouter = createTRPCRouter({
                 location: true,
             },
             where: {
+                isSold: false,
                 images: {
                     isEmpty: false,
                 },
@@ -759,6 +760,7 @@ export const postRouter = createTRPCRouter({
                 },
             },
             where: {
+                isSold: false,
                 component: {
                     type: "CASE",
                 },
@@ -777,6 +779,7 @@ export const postRouter = createTRPCRouter({
                 },
             },
             where: {
+                isSold: false,
                 component: {
                     type: "CPU",
                 },
@@ -795,6 +798,7 @@ export const postRouter = createTRPCRouter({
                 },
             },
             where: {
+                isSold: false,
                 component: {
                     type: "GPU",
                 },
@@ -855,6 +859,7 @@ export const postRouter = createTRPCRouter({
                 limit: input.limit,
                 offset: input.offset,
                 filter: filters.length > 0 ? filters.join(" AND ") : undefined,
+                sort: ["isSold:asc"],
             });
 
             return {
@@ -862,6 +867,7 @@ export const postRouter = createTRPCRouter({
                     id: string;
                     title: string;
                     price: number;
+                    isSold: boolean;
                     componentId: string;
                     component: {
                         type: ComponentType;

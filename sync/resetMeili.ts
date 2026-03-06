@@ -51,7 +51,13 @@ try {
                         "location.city",
                         "_geo",
                         "price",
+                        "isSold",
                     ])
+            );
+            await wrappMeiliTask(
+                meilisearch
+                    .index(index)
+                    .updateSortableAttributes(["isSold"])
             );
         }
 
