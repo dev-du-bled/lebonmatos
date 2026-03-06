@@ -94,7 +94,9 @@ const SearchResults = memo(
 
         useEffect(() => {
             if (selectedIndex >= 0) {
-                itemRefs.current[selectedIndex]?.scrollIntoView({ block: "nearest" });
+                itemRefs.current[selectedIndex]?.scrollIntoView({
+                    block: "nearest",
+                });
             }
         }, [selectedIndex]);
 
@@ -122,7 +124,9 @@ const SearchResults = memo(
                                     return (
                                         <div
                                             key={component.id}
-                                            ref={(el) => { itemRefs.current[index] = el; }}
+                                            ref={(el) => {
+                                                itemRefs.current[index] = el;
+                                            }}
                                             onClick={() => onSelect(component)}
                                             className={cn(
                                                 "flex items-center gap-2 cursor-pointer select-none rounded-sm px-2 py-1.5 text-sm hover:bg-accent",
