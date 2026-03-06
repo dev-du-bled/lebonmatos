@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Metadata } from "next";
 import NavBack from "@/components/nav/nav-back";
 import { ReviewsSkeleton } from "./skeleton";
+import { DeleteReviewButton } from "./delete-review-button";
 
 export const metadata: Metadata = {
     title: "Mes avis",
@@ -126,9 +127,14 @@ async function ReviewsContent() {
                                         >
                                             {displayName}
                                         </Link>
-                                        <span className="text-xs text-muted-foreground">
-                                            {date}
-                                        </span>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-xs text-muted-foreground">
+                                                {date}
+                                            </span>
+                                            <DeleteReviewButton
+                                                reviewId={review.id}
+                                            />
+                                        </div>
                                     </div>
                                     <StarRating value={review.rating} />
                                     {review.comment && (

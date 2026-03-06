@@ -8,6 +8,7 @@ import { CityData } from "@/utils/location";
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@/lib/prisma";
 import { meilisearch } from "@/lib/meilisearch";
+import { publish, type MessageEvent } from "@/lib/message-emitter";
 
 // return wich component to fetch based on the component type
 const getComponentIncludes = (componentType: ComponentType) => ({
@@ -64,6 +65,7 @@ export const postRouter = createTRPCRouter({
                 description: post.description,
                 price: post.price,
                 isSold: post.isSold,
+                soldAt: post.soldAt?.toISOString() ?? null,
                 createdAt: post.id,
                 component: {
                     id: post.component.id,
@@ -180,6 +182,123 @@ export const postRouter = createTRPCRouter({
                 where: { id: input.id },
                 data: { isSold: true, soldAt: new Date() },
             });
+
+            return { success: true };
+        }),
+
+    cancelSale: privateProcedure
+        .input(z.object({ id: z.uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const post = await prisma.post.findUnique({
+                where: { id: input.id },
+                select: {
+                    userId: true,
+                    isSold: true,
+                    soldAt: true,
+                    boughtById: true,
+                    _count: { select: { ratings: true } },
+                },
+            });
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Annonce introuvable",
+                });
+            }
+
+            if (post.userId !== ctx.session.user.id) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message:
+                        "Vous n'êtes pas autorisé à modifier cette annonce",
+                });
+            }
+
+            if (!post.isSold) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Cette annonce n'est pas marquée comme vendue",
+                });
+            }
+
+            if (post._count.ratings > 0) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message:
+                        "Impossible d'annuler la vente : un avis a déjà été laissé",
+                });
+            }
+
+            if (!post.soldAt || Date.now() - post.soldAt.getTime() >= 120_000) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Le délai d'annulation de 2 minutes est dépassé",
+                });
+            }
+
+            const boughtById = post.boughtById;
+
+            await prisma.post.update({
+                where: { id: input.id },
+                data: { isSold: false, soldAt: null, boughtById: null },
+            });
+
+            // Envoyer un message système dans la discussion avec l'acheteur
+            if (boughtById) {
+                const discussion = await prisma.discussion.findUnique({
+                    where: {
+                        postId_buyerId: {
+                            postId: input.id,
+                            buyerId: boughtById,
+                        },
+                    },
+                    select: { id: true },
+                });
+
+                if (discussion) {
+                    const message = await prisma.message.create({
+                        data: {
+                            discussionId: discussion.id,
+                            type: "SYSTEM",
+                            content:
+                                "Le vendeur a annulé la vente. L'annonce est de nouveau disponible.",
+                            authorID: null,
+                            viewed: true,
+                            imageUrls: [],
+                            buttonAction: "visible_buyer_only",
+                        },
+                        include: {
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    image: true,
+                                },
+                            },
+                        },
+                    });
+
+                    const payload: MessageEvent = {
+                        id: message.id,
+                        discussionId: message.discussionId,
+                        type: message.type,
+                        content: message.content,
+                        price: message.price,
+                        authorID: message.authorID,
+                        author: null,
+                        sendedAt: message.sendedAt.toISOString(),
+                        viewed: message.viewed,
+                        imageUrls: message.imageUrls,
+                        buttonLabel: message.buttonLabel,
+                        buttonUrl: message.buttonUrl,
+                        buttonAction: message.buttonAction,
+                    };
+
+                    await publish(`message:${discussion.id}`, payload);
+                    await publish(`inbox:${boughtById}`);
+                }
+            }
 
             return { success: true };
         }),
