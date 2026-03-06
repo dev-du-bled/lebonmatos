@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { MessageSquare, Star } from "lucide-react";
+import { MessageSquare, ShoppingBag, Star } from "lucide-react";
 import { trpc } from "@/trpc/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -81,9 +81,26 @@ async function ReviewsContent() {
 
                 return (
                     <Card key={review.id} className="p-5">
-                        <CardContent className="p-0">
+                        <CardContent className="p-0 space-y-3">
+                            {review.post && (
+                                <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
+                                    <ShoppingBag className="size-3.5 shrink-0 text-muted-foreground" />
+                                    <Link
+                                        href={`/post/${review.post.id}`}
+                                        className="text-xs text-muted-foreground hover:text-foreground hover:underline truncate transition-colors"
+                                    >
+                                        {review.post.title}
+                                    </Link>
+                                </div>
+                            )}
                             <div className="flex items-start gap-4">
-                                <Link href={`/profile/${review.recipient.id}`}>
+                                <Link
+                                    href={
+                                        review.recipient.username
+                                            ? `/user/${review.recipient.username}`
+                                            : "#"
+                                    }
+                                >
                                     <Avatar className="size-10 shrink-0">
                                         {review.recipient.image ? (
                                             <AvatarImage
@@ -100,7 +117,11 @@ async function ReviewsContent() {
                                 <div className="flex-1 space-y-1.5">
                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                         <Link
-                                            href={`/profile/${review.recipient.id}`}
+                                            href={
+                                                review.recipient.username
+                                                    ? `/user/${review.recipient.username}`
+                                                    : "#"
+                                            }
                                             className="font-semibold hover:underline"
                                         >
                                             {displayName}

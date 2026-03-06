@@ -309,11 +309,33 @@ async function main() {
             Math.min(ratingsCount, potentialRaters.length)
         );
 
+        // Fetch posts owned by this user that are not yet sold
+        const availablePosts = await prisma.post.findMany({
+            where: { userId: user.id, isSold: false },
+            select: { id: true },
+        });
+
         for (const rater of raters) {
+            if (availablePosts.length === 0) break;
+
+            // Pick and remove a post from the available list so each post is used at most once
+            const postIndex = faker.number.int({
+                min: 0,
+                max: availablePosts.length - 1,
+            });
+            const [post] = availablePosts.splice(postIndex, 1);
+
+            // Mark the post as sold to the rater
+            await prisma.post.update({
+                where: { id: post.id },
+                data: { isSold: true, boughtById: rater.id },
+            });
+
             await prisma.rating.create({
                 data: {
                     userId: user.id,
                     raterId: rater.id,
+                    postId: post.id,
                     rating: faker.number.int({ min: 1, max: 5 }),
                     comment: faker.lorem.sentences(2),
                 },

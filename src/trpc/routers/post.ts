@@ -419,11 +419,14 @@ export const postRouter = createTRPCRouter({
 
             let hasReviewedSeller = false;
             if (session?.user) {
-                const existing = await prisma.rating.findFirst({
+                const existing = await prisma.rating.findUnique({
                     where: {
-                        userId: post.userId,
-                        raterId: session.user.id,
+                        postId_raterId: {
+                            postId: post.id,
+                            raterId: session.user.id,
+                        },
                     },
+                    select: { id: true },
                 });
                 hasReviewedSeller = !!existing;
             }

@@ -86,10 +86,10 @@ export default function ConversationList({
                         {/* Content */}
                         <div className="flex-1 min-w-0 pr-6">
                             <p className="font-semibold text-sm line-clamp-1">
-                                {d.post.title}
+                                {d.otherParty.username ?? "Utilisateur inconnu"}
                             </p>
                             <p className="text-xs text-muted-foreground line-clamp-1">
-                                {d.otherParty.username ?? "Utilisateur inconnu"}
+                                {d.post.title}
                             </p>
                             {d.lastMessage && (
                                 <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">

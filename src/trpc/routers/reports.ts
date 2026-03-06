@@ -87,9 +87,21 @@ export const reportsRouter = createTRPCRouter({
                                 user: { select: { id: true, name: true } },
                             },
                         },
-                        user: { select: { id: true, name: true, email: true } },
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                username: true,
+                            },
+                        },
                         reportedUser: {
-                            select: { id: true, name: true, email: true },
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                username: true,
+                            },
                         },
                     },
                 }),
