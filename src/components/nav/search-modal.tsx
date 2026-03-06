@@ -4,6 +4,7 @@ import { useState, memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useHotkey } from "@tanstack/react-hotkeys";
+import { CornerDownLeft } from "lucide-react";
 import { Kbd } from "@/components/ui/kbd";
 import { Command, CommandInput } from "@/components/ui/command";
 import {
@@ -48,21 +49,21 @@ const SearchInputBox = memo(
     }) => {
         return (
             <Command
-                className={`rounded-lg border bg-background shadow-lg mb-4 max-sm:mb-0 py-3 px-1 ${hasResults ? "max-sm:rounded-b-none" : ""}`}
+                className={`rounded-lg border bg-background shadow-lg mb-4 max-sm:mb-0 p-1.5 ${hasResults ? "max-sm:rounded-b-none" : ""}`}
                 shouldFilter={false}
             >
                 <CommandInput
                     placeholder="Rechercher du matos..."
-                    wrapperClassName="border-0 text-sm text-muted-foreground"
+                    wrapperClassName="border-0 pl-1.5 pr-0 text-sm text-foreground"
                     autoFocus
                     value={value}
                     onValueChange={onValueChange}
                     rightElement={
                         <div
-                            className="flex max-sm:hidden cursor-text h-9 gap-2.5 max-w-50 items-center justify-between rounded-md bg-secondary px-3 text-sm text-muted-foreground clickable"
+                            className="flex max-sm:hidden cursor-text h-9 gap-2.5 max-w-50 items-center justify-between rounded-md bg-secondary px-2.5 text-sm text-muted-foreground clickable"
                             aria-hidden="true"
                         >
-                            <Kbd className="border text-xl">↵</Kbd>
+                            <Kbd className="border"><CornerDownLeft className="!size-3.5" /></Kbd>
                             Rechercher
                         </div>
                     }
@@ -90,8 +91,8 @@ const SearchResults = memo(
         if (!searchValue) return null;
 
         return (
-            <div className="rounded-lg border bg-background shadow-lg max-sm:rounded-t-none max-sm:border-t-0">
-                <div className="bg-popover text-popover-foreground flex flex-col overflow-hidden rounded-md border-none">
+            <div className="rounded-lg border bg-background shadow-lg overflow-hidden max-sm:rounded-t-none max-sm:border-t-0">
+                <div className="bg-popover text-popover-foreground flex flex-col overflow-hidden">
                     <div className="max-h-75 max-sm:max-h-[calc(100svh-4rem)] scroll-py-1 overflow-x-hidden overflow-y-auto">
                         {(!components || components.length === 0) && (
                             <div className="py-6 text-center text-sm">
@@ -211,11 +212,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
                     onClick={() => onOpenChange(false)}
                 />
                 <DialogPrimitive.Content
-                    style={{
-                        opacity: open ? 1 : 0,
-                        transition: "opacity 300ms ease-out",
-                    }}
-                    className="fixed top-[20%] left-[50%] -translate-x-1/2 z-50 w-full max-w-2xl outline-none sm:px-0 max-sm:top-0 max-sm:px-3 max-sm:pt-3"
+                    className="fixed top-[20%] left-[50%] -translate-x-1/2 z-50 w-full max-w-2xl outline-none sm:px-0 max-sm:top-0 max-sm:px-3 max-sm:pt-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 duration-200"
                 >
                     <DialogTitle className="sr-only">Recherche</DialogTitle>
                     <SearchInputBox
