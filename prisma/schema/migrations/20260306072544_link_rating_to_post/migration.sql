@@ -9,10 +9,10 @@
 DROP INDEX "rating_userId_raterId_key";
 
 -- AlterTable
-ALTER TABLE "rating" ADD COLUMN     "postId" TEXT NOT NULL;
+ALTER TABLE "Rating" ADD COLUMN     "postId" TEXT NOT NULL;
 
 -- CreateIndex
-CREATE UNIQUE INDEX "rating_postId_raterId_key" ON "rating"("postId", "raterId");
+CREATE UNIQUE INDEX "rating_postId_raterId_key" ON "Rating"("postId", "raterId");
 
 -- AddForeignKey
-ALTER TABLE "rating" ADD CONSTRAINT "rating_postId_fkey" FOREIGN KEY ("postId") REFERENCES "post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Rating" ADD CONSTRAINT "rating_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
