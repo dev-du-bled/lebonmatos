@@ -21,7 +21,9 @@ export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
                     specs["microarch"] = d.microarch;
                     specs["coreCount"] = d.coreCount;
                     specs["coreClock"] = Number(d.coreClock);
-                    specs["boostClock"] = d.boostClock ? Number(d.boostClock) : undefined;
+                    specs["boostClock"] = d.boostClock
+                        ? Number(d.boostClock)
+                        : undefined;
                 }
                 break;
             }
@@ -92,8 +94,12 @@ export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
                 if (d) {
                     specs["rpmIdle"] = d.rpmIdle ?? undefined;
                     specs["rpmMax"] = d.rpmMax ?? undefined;
-                    specs["noiseIdle"] = d.noiseIdle ? Number(d.noiseIdle) : undefined;
-                    specs["noiseMax"] = d.noiseMax ? Number(d.noiseMax) : undefined;
+                    specs["noiseIdle"] = d.noiseIdle
+                        ? Number(d.noiseIdle)
+                        : undefined;
+                    specs["noiseMax"] = d.noiseMax
+                        ? Number(d.noiseMax)
+                        : undefined;
                     specs["size"] = d.size ?? undefined;
                 }
                 break;
@@ -114,10 +120,18 @@ export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
                     specs["size"] = d.size;
                     specs["rpmIdle"] = d.rpmIdle ?? undefined;
                     specs["rpmMax"] = d.rpmMax ?? undefined;
-                    specs["noiseIdle"] = d.noiseIdle ? Number(d.noiseIdle) : undefined;
-                    specs["noiseMax"] = d.noiseMax ? Number(d.noiseMax) : undefined;
-                    specs["airflowIdle"] = d.airflowIdle ? Number(d.airflowIdle) : undefined;
-                    specs["airflowMax"] = d.airflowMax ? Number(d.airflowMax) : undefined;
+                    specs["noiseIdle"] = d.noiseIdle
+                        ? Number(d.noiseIdle)
+                        : undefined;
+                    specs["noiseMax"] = d.noiseMax
+                        ? Number(d.noiseMax)
+                        : undefined;
+                    specs["airflowIdle"] = d.airflowIdle
+                        ? Number(d.airflowIdle)
+                        : undefined;
+                    specs["airflowMax"] = d.airflowMax
+                        ? Number(d.airflowMax)
+                        : undefined;
                 }
                 break;
             }

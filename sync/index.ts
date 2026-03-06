@@ -59,7 +59,9 @@ async function syncComponent(componentId: string) {
         const task = await wrappMeiliTask(
             meilisearch.index(indexName).addDocuments([doc])
         );
-        console.log(`Synced component '${componentId}' to index '${indexName}' at ${task.finishedAt}`);
+        console.log(
+            `Synced component '${componentId}' to index '${indexName}' at ${task.finishedAt}`
+        );
     }
 }
 
@@ -88,14 +90,18 @@ export async function startSync() {
 
     const pg_url = process.env["DATABASE_URL"];
     if (!pg_url) {
-        console.error("FATAL: No database url was provided, unable to start sync process");
+        console.error(
+            "FATAL: No database url was provided, unable to start sync process"
+        );
         return;
     }
 
     const meilisearch_host = process.env["MEILI_HOST"];
     const meilisearch_api_key = process.env["MEILI_MASTER_KEY"];
     if (!meilisearch_host) {
-        console.error("FATAL: No Meilisearch host was provided, unable to start sync process");
+        console.error(
+            "FATAL: No Meilisearch host was provided, unable to start sync process"
+        );
         return;
     }
 
@@ -112,7 +118,9 @@ export async function startSync() {
             const payload = JSON.parse(msg.payload);
             const { id, table, operation, data } = payload;
 
-            console.log(`Received '${operation}' on '${table}' with id '${id}'`);
+            console.log(
+                `Received '${operation}' on '${table}' with id '${id}'`
+            );
 
             if (table === "Post") {
                 if (operation === "DELETE") {

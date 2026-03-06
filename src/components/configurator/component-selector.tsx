@@ -217,9 +217,7 @@ export function ComponentSelector({
                                     filteredFavorites?.map((post) => (
                                         <PostCard
                                             key={post.id}
-                                            post={
-                                                post as SelectedPost
-                                            }
+                                            post={post as SelectedPost}
                                             onSelect={handleSelect}
                                         />
                                     ))

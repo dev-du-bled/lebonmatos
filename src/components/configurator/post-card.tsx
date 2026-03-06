@@ -59,7 +59,8 @@ export function PostCard({
                     {componentType === "RAM" && post.component.Ram?.type && (
                         <p className="text-xs text-muted-foreground truncate">
                             {post.component.Ram.type} |{" "}
-                            {post.component.Ram.modules}x{post.component.Ram.size}
+                            {post.component.Ram.modules}x
+                            {post.component.Ram.size}
                             Go
                         </p>
                     )}

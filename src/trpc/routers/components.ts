@@ -17,13 +17,39 @@ export const componentRouter = createTRPCRouter({
             const results = await index.search(input.query, { limit: 20 });
 
             return results.hits.map((hit) => {
-                const { id, name, estimatedPrice, color, type,
-                    Cpu, Gpu, Motherboard, Ram, Ssd, Hdd, Psu,
-                    CpuCooler, Case, CaseFan, SoundCard, WirelessNetworkCard,
+                const {
+                    id,
+                    name,
+                    estimatedPrice,
+                    color,
+                    type,
+                    Cpu,
+                    Gpu,
+                    Motherboard,
+                    Ram,
+                    Ssd,
+                    Hdd,
+                    Psu,
+                    CpuCooler,
+                    Case,
+                    CaseFan,
+                    SoundCard,
+                    WirelessNetworkCard,
                 } = hit;
-                const data = Cpu ?? Gpu ?? Motherboard ?? Ram ?? Ssd ?? Hdd
-                    ?? Psu ?? CpuCooler ?? Case ?? CaseFan ?? SoundCard
-                    ?? WirelessNetworkCard ?? {};
+                const data =
+                    Cpu ??
+                    Gpu ??
+                    Motherboard ??
+                    Ram ??
+                    Ssd ??
+                    Hdd ??
+                    Psu ??
+                    CpuCooler ??
+                    Case ??
+                    CaseFan ??
+                    SoundCard ??
+                    WirelessNetworkCard ??
+                    {};
                 return {
                     id,
                     name,

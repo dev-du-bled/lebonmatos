@@ -54,7 +54,9 @@ export function decimalToNumber<T>(obj: T): T {
     if (Array.isArray(obj)) return obj.map(decimalToNumber) as T;
     if (typeof obj === "object") {
         const result: Record<string, unknown> = {};
-        for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+        for (const [key, value] of Object.entries(
+            obj as Record<string, unknown>
+        )) {
             result[key] = decimalToNumber(value);
         }
         return result as T;

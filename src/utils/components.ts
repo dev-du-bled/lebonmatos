@@ -1,4 +1,3 @@
-import { ComponentWithDetails } from "@/lib/compatibility";
 import {
     Cpu,
     Gpu,

@@ -48,7 +48,9 @@ async function syncAll() {
             const compTask = await wrappMeiliTask(
                 meilisearch.index("components").addDocuments(allComponents)
             );
-            console.log(`Synced ${allComponents.length} components at ${compTask.finishedAt}`);
+            console.log(
+                `Synced ${allComponents.length} components at ${compTask.finishedAt}`
+            );
         }
 
         console.log("Fetching all posts...");
@@ -57,7 +59,9 @@ async function syncAll() {
         });
 
         if (posts.length > 0) {
-            const docs = posts.map((post) => decimalToNumber(toMeiliPost(post)));
+            const docs = posts.map((post) =>
+                decimalToNumber(toMeiliPost(post))
+            );
             console.log(`Pushing ${docs.length} posts to Meilisearch...`);
             const task = await wrappMeiliTask(
                 meilisearch.index("posts").addDocuments(docs)
@@ -79,7 +83,9 @@ async function syncAll() {
                 const task = await wrappMeiliTask(
                     meilisearch.index(type).addDocuments(docs)
                 );
-                console.log(`Synced ${components.length} ${type} at ${task.finishedAt}`);
+                console.log(
+                    `Synced ${components.length} ${type} at ${task.finishedAt}`
+                );
             } else {
                 console.log(`No ${type} components to sync.`);
             }
