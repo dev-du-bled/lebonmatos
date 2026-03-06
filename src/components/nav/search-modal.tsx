@@ -59,7 +59,7 @@ const SearchInputBox = memo(
                     onValueChange={onValueChange}
                     rightElement={
                         <div
-                            className="flex max-sm:hidden cursor-text h-9 gap-2.5 max-w-50 items-center justify-between rounded-md bg-secondary px-3 text-sm text-muted-foreground"
+                            className="flex max-sm:hidden cursor-text h-9 gap-2.5 max-w-50 items-center justify-between rounded-md bg-secondary px-3 text-sm text-muted-foreground clickable"
                             aria-hidden="true"
                         >
                             <Kbd className="border text-xl">↵</Kbd>
