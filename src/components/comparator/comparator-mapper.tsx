@@ -12,114 +12,150 @@ export type Annonce = {
 export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
     return selected.map((c) => {
         const specs: Record<string, string | number | undefined> = {};
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const comp = ((c as any).component ?? {}) as Record<string, any>;
+        const comp = c.component;
 
-        switch (c.componentType) {
+        switch (comp.type) {
             case "CPU": {
-                const d = comp.Cpu ?? {};
-                specs["microarch"] = d.microarch;
-                specs["coreCount"] = d.coreCount;
-                specs["coreClock"] = d.coreClock;
-                specs["boostClock"] = d.boostClock;
+                const d = comp.Cpu;
+                if (d) {
+                    specs["microarch"] = d.microarch;
+                    specs["coreCount"] = d.coreCount;
+                    specs["coreClock"] = Number(d.coreClock);
+                    specs["boostClock"] = d.boostClock
+                        ? Number(d.boostClock)
+                        : undefined;
+                }
                 break;
             }
             case "GPU": {
-                const d = comp.Gpu ?? {};
-                specs["chipset"] = d.chipset;
-                specs["memory"] = d.memory;
-                specs["coreClock"] = d.coreClock;
-                specs["boostClock"] = d.boostClock;
-                specs["length"] = d.length;
+                const d = comp.Gpu;
+                if (d) {
+                    specs["chipset"] = d.chipset;
+                    specs["memory"] = d.memory;
+                    specs["coreClock"] = d.coreClock ?? undefined;
+                    specs["boostClock"] = d.boostClock ?? undefined;
+                    specs["length"] = d.length ?? undefined;
+                }
                 break;
             }
             case "MOTHERBOARD": {
-                const d = comp.Motherboard ?? {};
-                specs["socket"] = d.socket;
-                specs["formFactor"] = d.formFactor;
-                specs["maxMemory"] = d.maxMemory;
-                specs["memorySlots"] = d.memorySlots;
+                const d = comp.Motherboard;
+                if (d) {
+                    specs["socket"] = d.socket;
+                    specs["formFactor"] = d.formFactor;
+                    specs["maxMemory"] = d.maxMemory;
+                    specs["memorySlots"] = d.memorySlots;
+                }
                 break;
             }
             case "RAM": {
-                const d = comp.Ram ?? {};
-                specs["type"] = d.type ?? d.ramType;
-                specs["speed"] = d.speed;
-                specs["modules"] = d.modules;
-                specs["size"] = d.size;
-                specs["casLatency"] = d.casLatency;
+                const d = comp.Ram;
+                if (d) {
+                    specs["type"] = d.type ?? undefined;
+                    specs["speed"] = d.speed ?? undefined;
+                    specs["modules"] = d.modules;
+                    specs["size"] = d.size;
+                    specs["casLatency"] = d.casLatency;
+                }
                 break;
             }
             case "SSD": {
-                const d = comp.Ssd ?? {};
-                specs["capacity"] = d.capacity;
-                specs["cache"] = d.cache;
-                specs["interface"] = d.interface;
-                specs["formFactor"] = d.formFactor;
+                const d = comp.Ssd;
+                if (d) {
+                    specs["capacity"] = d.capacity;
+                    specs["cache"] = d.cache ?? undefined;
+                    specs["interface"] = d.interface;
+                    specs["formFactor"] = d.formFactor;
+                }
                 break;
             }
             case "HDD": {
-                const d = comp.Hdd ?? {};
-                specs["capacity"] = d.capacity;
-                specs["cache"] = d.cache;
-                specs["interface"] = d.interface;
-                specs["formFactor"] = d.formFactor;
+                const d = comp.Hdd;
+                if (d) {
+                    specs["capacity"] = d.capacity;
+                    specs["cache"] = d.cache ?? undefined;
+                    specs["interface"] = d.interface;
+                    specs["formFactor"] = d.formFactor;
+                }
                 break;
             }
             case "POWER_SUPPLY": {
-                const d = comp.Psu ?? {};
-                specs["type"] = d.type ?? d.psuType;
-                specs["wattage"] = d.wattage;
-                specs["efficiency"] = d.efficiency;
-                specs["modular"] = d.modular;
+                const d = comp.Psu;
+                if (d) {
+                    specs["type"] = d.type;
+                    specs["wattage"] = d.wattage;
+                    specs["efficiency"] = d.efficiency ?? undefined;
+                    specs["modular"] = d.modular ?? undefined;
+                }
                 break;
             }
             case "CPU_COOLER": {
-                const d = comp.CpuCooler ?? {};
-                specs["rpmIdle"] = d.rpmIdle;
-                specs["rpmMax"] = d.rpmMax;
-                specs["noiseIdle"] = d.noiseIdle;
-                specs["noiseMax"] = d.noiseMax;
-                specs["size"] = d.size;
+                const d = comp.CpuCooler;
+                if (d) {
+                    specs["rpmIdle"] = d.rpmIdle ?? undefined;
+                    specs["rpmMax"] = d.rpmMax ?? undefined;
+                    specs["noiseIdle"] = d.noiseIdle
+                        ? Number(d.noiseIdle)
+                        : undefined;
+                    specs["noiseMax"] = d.noiseMax
+                        ? Number(d.noiseMax)
+                        : undefined;
+                    specs["size"] = d.size ?? undefined;
+                }
                 break;
             }
             case "CASE": {
-                const d = comp.Case ?? {};
-                specs["type"] = d.type ?? d.caseType;
-                specs["sidePanel"] = d.sidePanel;
-                specs["volume"] = d.volume;
-                specs["bays3_5"] = d.bays3_5;
+                const d = comp.Case;
+                if (d) {
+                    specs["type"] = d.type;
+                    specs["sidePanel"] = d.sidePanel ?? undefined;
+                    specs["volume"] = d.volume ? Number(d.volume) : undefined;
+                    specs["bays3_5"] = d.bays3_5;
+                }
                 break;
             }
             case "CASE_FAN": {
-                const d = comp.CaseFan ?? {};
-                specs["size"] = d.size;
-                specs["rpmIdle"] = d.rpmIdle;
-                specs["rpmMax"] = d.rpmMax;
-                specs["noiseIdle"] = d.noiseIdle;
-                specs["noiseMax"] = d.noiseMax;
-                specs["airflowIdle"] = d.airflowIdle;
-                specs["airflowMax"] = d.airflowMax;
+                const d = comp.CaseFan;
+                if (d) {
+                    specs["size"] = d.size;
+                    specs["rpmIdle"] = d.rpmIdle ?? undefined;
+                    specs["rpmMax"] = d.rpmMax ?? undefined;
+                    specs["noiseIdle"] = d.noiseIdle
+                        ? Number(d.noiseIdle)
+                        : undefined;
+                    specs["noiseMax"] = d.noiseMax
+                        ? Number(d.noiseMax)
+                        : undefined;
+                    specs["airflowIdle"] = d.airflowIdle
+                        ? Number(d.airflowIdle)
+                        : undefined;
+                    specs["airflowMax"] = d.airflowMax
+                        ? Number(d.airflowMax)
+                        : undefined;
+                }
                 break;
             }
             case "SOUND_CARD": {
-                const d = comp.SoundCard ?? {};
-                specs["channels"] = d.channels;
-                specs["snr"] = d.snr;
-                specs["sampleRate"] = d.sampleRate;
-                specs["interface"] = d.interface;
-                specs["chipset"] = d.chipset;
+                const d = comp.SoundCard;
+                if (d) {
+                    specs["channels"] = d.channels;
+                    specs["snr"] = d.snr ?? undefined;
+                    specs["sampleRate"] = d.sampleRate ?? undefined;
+                    specs["interface"] = d.interface;
+                    specs["chipset"] = d.chipset ?? undefined;
+                }
                 break;
             }
             case "WIRELESS_NETWORK_CARD": {
-                const d = comp.WirelessNetworkCard ?? {};
-                specs["interface"] = d.interface;
-                specs["protocol"] = d.protocol;
+                const d = comp.WirelessNetworkCard;
+                if (d) {
+                    specs["interface"] = d.interface;
+                    specs["protocol"] = d.protocol;
+                }
                 break;
             }
         }
 
-        // Supprimer les clés undefined pour ne pas polluer l'affichage
         (Object.keys(specs) as string[]).forEach((k) => {
             if (specs[k] === undefined) delete specs[k];
         });
@@ -131,7 +167,7 @@ export function mapSelectedToAnnonce(selected: SelectedPost[]): Annonce[] {
             title: c.title,
             price: c.price,
             imageSrc: c.images?.[0],
-            componentType: c.componentType?.toLowerCase(),
+            componentType: comp.type.toLowerCase(),
             specs,
         };
     });

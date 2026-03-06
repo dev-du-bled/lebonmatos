@@ -727,7 +727,7 @@ export const postRouter = createTRPCRouter({
             }
             if (input.colors && input.colors.length > 0) {
                 const colorFilters = input.colors
-                    .map((c) => `componentColor = "${c}"`)
+                    .map((c) => `component.color = "${c}"`)
                     .join(" OR ");
                 filters.push(`(${colorFilters})`);
             }
@@ -743,9 +743,15 @@ export const postRouter = createTRPCRouter({
                     id: string;
                     title: string;
                     price: number;
-                    componentType: ComponentType;
-                    componentName: string;
-                    locationCity: string | null;
+                    componentId: string;
+                    component: {
+                        type: ComponentType;
+                        name: string;
+                        color: string | null;
+                    };
+                    location: {
+                        city: string;
+                    } | null;
                     images: string[];
                     userId: string;
                 }>,

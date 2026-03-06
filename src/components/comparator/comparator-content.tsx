@@ -73,7 +73,7 @@ export default function ComparatorContent() {
         } else {
             // Premier ajout : on mémorise le type pour toute la session de comparaison
             if (!selected.length) {
-                const type = post.componentType ?? pickerType;
+                const type = post.component.type ?? pickerType;
                 if (type) setComparisonType(type);
             }
             setSelected((p) => [...p, post]);
