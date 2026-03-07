@@ -22,7 +22,7 @@ import {
     SearchFilters,
     PriceFilterContent,
     ColorFilterContent,
-    type ComponentColor,
+    ExcludeSoldContent,
 } from "@/components/search/search-filters";
 import { SearchResultsList } from "@/components/search/search-results-list";
 import {
@@ -109,7 +109,10 @@ export default function SearchPageClient({
         [number, number]
     >([0, PRICE_MAX_DEFAULT]);
     const [priceActive, setPriceActive] = useState(false);
-    const [selectedColors, setSelectedColors] = useState<ComponentColor[]>([]);
+    const [selectedColors, setSelectedColors] = useState<string[]>([]);
+    const [excludeSold, setExcludeSold] = useState(false);
+
+    const { data: availableColors } = trpc.posts.availableColors.useQuery();
 
     useEffect(() => {
         setQuery(urlQuery);
@@ -149,6 +152,7 @@ export default function SearchPageClient({
         priceMin: priceActive ? debouncedPriceRange[0] : undefined,
         priceMax: priceActive ? debouncedPriceRange[1] : undefined,
         colors: selectedColors.length > 0 ? selectedColors : undefined,
+        excludeSold: excludeSold || undefined,
         limit,
         offset: page * limit,
     });
@@ -166,22 +170,28 @@ export default function SearchPageClient({
     );
 
     const handleSelectedColorsChange = useCallback(
-        (colors: ComponentColor[]) => {
+        (colors: string[]) => {
             setSelectedColors(colors);
             setPage(0);
         },
         []
     );
 
+    const handleExcludeSoldChange = useCallback((value: boolean) => {
+        setExcludeSold(value);
+        setPage(0);
+    }, []);
+
     const handleResetFilters = useCallback(() => {
         setPriceRange([0, PRICE_MAX_DEFAULT]);
         setDebouncedPriceRange([0, PRICE_MAX_DEFAULT]);
         setPriceActive(false);
         setSelectedColors([]);
+        setExcludeSold(false);
         setPage(0);
     }, []);
 
-    const hasActiveFilters = priceActive || selectedColors.length > 0;
+    const hasActiveFilters = priceActive || selectedColors.length > 0 || excludeSold;
 
     return (
         <div className="wide-lock flex flex-col gap-3 mb-12.5!">
@@ -230,9 +240,12 @@ export default function SearchPageClient({
                     priceRange={priceRange}
                     priceActive={priceActive}
                     selectedColors={selectedColors}
+                    availableColors={availableColors ?? []}
+                    excludeSold={excludeSold}
                     onPriceRangeChange={handlePriceRangeChange}
                     onPriceActiveChange={setPriceActive}
                     onSelectedColorsChange={handleSelectedColorsChange}
+                    onExcludeSoldChange={handleExcludeSoldChange}
                     onReset={handleResetFilters}
                 />
             </div>
@@ -322,10 +335,18 @@ export default function SearchPageClient({
                                     Couleur
                                 </span>
                                 <ColorFilterContent
+                                    availableColors={availableColors ?? []}
                                     selectedColors={selectedColors}
                                     onSelectedColorsChange={
                                         handleSelectedColorsChange
                                     }
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <ExcludeSoldContent
+                                    excludeSold={excludeSold}
+                                    onExcludeSoldChange={handleExcludeSoldChange}
                                 />
                             </div>
                         </div>
