@@ -9,9 +9,14 @@ export type SearchHit = {
     id: string;
     title: string;
     price: number;
-    componentType: ComponentType;
-    componentName: string;
-    locationCity: string | null;
+    isSold: boolean;
+    component: {
+        type: ComponentType;
+        name: string;
+    };
+    location: {
+        city: string;
+    } | null;
     images: string[];
     userId: string;
 };
@@ -31,8 +36,13 @@ export const SearchResultItem = memo(function SearchResultItem({
                     src={post.images[0] || "/images/fallback.webp"}
                     alt={post.title}
                     fill
-                    className="object-cover"
+                    className={`object-cover${post.isSold ? " opacity-50" : ""}`}
                 />
+                {post.isSold && (
+                    <span className="absolute top-1.5 left-1.5 bg-destructive text-destructive-foreground text-xs font-semibold px-2 py-0.5 rounded">
+                        Vendu
+                    </span>
+                )}
                 <div
                     className="absolute top-1.5 right-1.5 sm:hidden"
                     onClick={(e) => e.preventDefault()}
@@ -51,11 +61,11 @@ export const SearchResultItem = memo(function SearchResultItem({
                     {post.price} €
                 </p>
                 <p className="font-sans text-sm text-muted-foreground mt-1">
-                    {getEnumDisplay(post.componentType)}
+                    {getEnumDisplay(post.component.type)}
                 </p>
-                {post.locationCity && (
+                {post.location?.city && (
                     <p className="font-sans text-sm text-muted-foreground">
-                        {post.locationCity}
+                        {post.location.city}
                     </p>
                 )}
             </div>

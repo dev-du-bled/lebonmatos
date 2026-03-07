@@ -13,12 +13,23 @@ import {
 } from "@/components/ui/card";
 import { ReviewForm } from "./review-form";
 import NavBack from "@/components/nav/nav-back";
+import { Badge } from "@/components/ui/badge";
+import { ShoppingBag } from "lucide-react";
 
-type Params = { id: string };
+type Params = { username: string };
+type SearchParams = { from?: string; postId?: string };
 
-const getUser = cache(async (id: string) => {
+const getUser = cache(async (username: string) => {
     try {
-        return await trpc.user.getPublicProfile({ userId: id });
+        return await trpc.user.getPublicProfileByUsername({ username });
+    } catch {
+        return null;
+    }
+});
+
+const getPost = cache(async (postId: string) => {
+    try {
+        return await trpc.posts.getPost({ postId });
     } catch {
         return null;
     }
@@ -29,9 +40,9 @@ export async function generateMetadata({
 }: {
     params: Promise<Params>;
 }): Promise<Metadata> {
-    const { id } = await params;
-    const user = await getUser(id);
-    const name = user?.username ?? "cet utilisateur";
+    const { username } = await params;
+    const user = await getUser(username);
+    const name = user?.displayUsername ?? user?.username ?? "cet utilisateur";
     return {
         title: `Laisser un avis pour ${name}`,
         description: `Partagez votre expérience avec ${name}`,
@@ -43,14 +54,19 @@ export default async function ReviewPage({
     searchParams,
 }: {
     params: Promise<Params>;
-    searchParams: Promise<{ from?: string }>;
+    searchParams: Promise<SearchParams>;
 }) {
-    const { id } = await params;
-    const { from } = await searchParams;
-    const backHref = from ?? `/profile/${id}`;
-    const user = await getUser(id);
+    const { username } = await params;
+    const { from, postId } = await searchParams;
+    const user = await getUser(username);
 
     if (!user) return notFound();
+    if (!postId) return notFound();
+
+    const post = await getPost(postId);
+    if (!post) return notFound();
+
+    const backHref = from ?? `/user/${user.username ?? username}`;
 
     const displayName = user.username ?? "Utilisateur supprimé";
     const initials = displayName
@@ -63,15 +79,14 @@ export default async function ReviewPage({
 
     return (
         <section className="mx-auto w-full max-w-lg px-4 pb-16 pt-10 sm:px-6">
-            {/* Header */}
             <NavBack
                 href={backHref}
                 title="Laisser un avis"
                 desc="Partagez votre expérience"
             />
 
-            {/* Target user recap */}
-            <div className="mb-5 flex items-center gap-4 rounded-2xl border bg-muted/40 px-5 py-4">
+            {/* Vendeur */}
+            <div className="mb-4 flex items-center gap-4 rounded-2xl border bg-muted/40 px-5 py-4">
                 <Avatar className="size-11 shrink-0 ring-2 ring-background shadow-sm">
                     {user.image ? (
                         <AvatarImage
@@ -98,17 +113,31 @@ export default async function ReviewPage({
                 </div>
             </div>
 
-            {/* Form card */}
+            {/* Annonce concernée */}
+            <div className="mb-5 flex items-center gap-3 rounded-xl border bg-muted/20 px-4 py-3">
+                <ShoppingBag className="size-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground mb-0.5">
+                        Avis pour l&apos;annonce
+                    </p>
+                    <p className="text-sm font-medium truncate">{post.title}</p>
+                </div>
+                <Badge variant="secondary" className="shrink-0">
+                    {post.price} €
+                </Badge>
+            </div>
+
+            {/* Formulaire */}
             <Card className="shadow-sm">
                 <CardHeader className="pb-4">
                     <CardTitle className="text-base">Votre avis</CardTitle>
                     <CardDescription>
-                        Votre avis sera public et visible sur le profil de cet
-                        utilisateur.
+                        Votre avis sera public et visible sur le profil de ce
+                        vendeur.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ReviewForm userId={user.id} backHref={backHref} />
+                    <ReviewForm postId={postId} backHref={backHref} />
                 </CardContent>
             </Card>
         </section>

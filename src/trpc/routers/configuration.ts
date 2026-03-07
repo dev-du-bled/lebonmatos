@@ -143,7 +143,6 @@ export const configurationRouter = createTRPCRouter({
                     user: {
                         select: {
                             id: true,
-                            name: true,
                             displayUsername: true,
                             image: true,
                         },
@@ -312,7 +311,7 @@ export const configurationRouter = createTRPCRouter({
             const searchParams = {
                 limit: input.limit,
                 filter: input.componentType
-                    ? `componentType = "${input.componentType}"`
+                    ? `component.type = "${input.componentType}"`
                     : undefined,
             };
 
@@ -347,7 +346,6 @@ export const configurationRouter = createTRPCRouter({
                             user: {
                                 select: {
                                     id: true,
-                                    name: true,
                                     displayUsername: true,
                                 },
                             },

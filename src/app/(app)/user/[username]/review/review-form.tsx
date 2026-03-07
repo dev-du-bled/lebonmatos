@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TRPCClientError } from "@trpc/client";
-import { Star, Loader2 } from "lucide-react";
+import { Star, Loader2, ShoppingBag, AlertCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 import { trpc } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
@@ -40,15 +41,129 @@ const LABELS: Record<number, string> = {
     5: "Excellent",
 };
 
+// ─── Purchase gate ────────────────────────────────────────────────────────────
+
+function NoPurchaseGate({ postId }: { postId: string }) {
+    return (
+        <div className="flex flex-col items-center gap-5 rounded-xl border border-dashed bg-muted/30 px-6 py-12 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-secondary">
+                <ShoppingBag className="size-7 text-muted-foreground" />
+            </div>
+            <div className="space-y-1.5">
+                <h3 className="font-semibold text-base">
+                    Achat requis pour laisser un avis
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                    Vous devez avoir acheté cette annonce pour pouvoir noter le
+                    vendeur.
+                </p>
+            </div>
+            <Link
+                href={`/post/${postId}`}
+                className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 h-9 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+                Voir l&apos;annonce
+            </Link>
+        </div>
+    );
+}
+
+function AlreadyReviewedGate() {
+    return (
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed bg-muted/30 px-6 py-12 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-secondary">
+                <AlertCircle className="size-7 text-muted-foreground" />
+            </div>
+            <div className="space-y-1.5">
+                <h3 className="font-semibold text-base">Avis déjà publié</h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                    Vous avez déjà laissé un avis pour cette transaction.
+                </p>
+            </div>
+            <Link
+                href="/profile/reviews"
+                className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 h-9 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+                Voir mes avis
+            </Link>
+        </div>
+    );
+}
+
+function CancelWindowGate({
+    canReviewAt,
+    onExpired,
+}: {
+    canReviewAt: string;
+    onExpired: () => void;
+}) {
+    const [remaining, setRemaining] = useState(() =>
+        Math.max(
+            0,
+            Math.ceil((new Date(canReviewAt).getTime() - Date.now()) / 1000)
+        )
+    );
+
+    useEffect(() => {
+        const update = () => {
+            const secs = Math.max(
+                0,
+                Math.ceil((new Date(canReviewAt).getTime() - Date.now()) / 1000)
+            );
+            setRemaining(secs);
+            return secs;
+        };
+        if (update() <= 0) return;
+        const interval = setInterval(() => {
+            if (update() <= 0) clearInterval(interval);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [canReviewAt]);
+
+    useEffect(() => {
+        if (remaining <= 0) onExpired();
+    }, [remaining, onExpired]);
+
+    if (remaining <= 0) return null;
+
+    return (
+        <div className="flex flex-col items-center gap-5 rounded-xl border border-dashed bg-muted/30 px-6 py-12 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-secondary">
+                <Clock className="size-7 text-muted-foreground" />
+            </div>
+            <div className="space-y-1.5">
+                <h3 className="font-semibold text-base">
+                    Avis bientôt disponible
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                    Le vendeur peut encore annuler la vente. Vous pourrez
+                    laisser un avis dans{" "}
+                    <span className="font-medium tabular-nums">
+                        {Math.floor(remaining / 60)}:
+                        {String(remaining % 60).padStart(2, "0")}
+                    </span>
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// ─── Main form ────────────────────────────────────────────────────────────────
+
 export function ReviewForm({
-    userId,
+    postId,
     backHref,
 }: {
-    userId: string;
+    postId: string;
     backHref?: string;
 }) {
     const router = useRouter();
+    const utils = trpc.useUtils();
     const [hovered, setHovered] = useState(0);
+
+    // Verify the current user has a completed purchase for this post
+    const { data: eligibility, isLoading: isCheckingEligibility } =
+        trpc.user.getReviewEligibility.useQuery({ postId });
 
     const mutation = trpc.user.addReview.useMutation();
 
@@ -65,12 +180,12 @@ export function ReviewForm({
     async function onSubmit(values: ReviewFormValues) {
         try {
             await mutation.mutateAsync({
-                userId,
+                postId,
                 rating: values.rating,
                 comment: values.comment?.trim() || undefined,
             });
             toast.success("Avis publié avec succès !");
-            router.push(backHref ?? `/profile/${userId}`);
+            router.push(backHref ?? "/");
             router.refresh();
         } catch (error) {
             if (error instanceof TRPCClientError) {
@@ -83,6 +198,38 @@ export function ReviewForm({
 
     const displayRating = hovered || selectedRating;
 
+    // ── Loading state ──────────────────────────────────────────────────────────
+    if (isCheckingEligibility) {
+        return (
+            <div className="flex items-center justify-center py-16">
+                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    // ── Not purchased ──────────────────────────────────────────────────────────
+    if (!eligibility?.hasPurchased) {
+        return <NoPurchaseGate postId={postId} />;
+    }
+
+    // ── Already reviewed ───────────────────────────────────────────────────────
+    if (eligibility?.hasAlreadyReviewed) {
+        return <AlreadyReviewedGate />;
+    }
+
+    // ── Cancel window active ────────────────────────────────────────────────────
+    if (eligibility?.cancelWindowActive && eligibility.canReviewAt) {
+        return (
+            <CancelWindowGate
+                canReviewAt={eligibility.canReviewAt}
+                onExpired={() =>
+                    utils.user.getReviewEligibility.invalidate({ postId })
+                }
+            />
+        );
+    }
+
+    // ── Form ───────────────────────────────────────────────────────────────────
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -163,7 +310,7 @@ export function ReviewForm({
                             <FormControl>
                                 <TextareaWithCount
                                     placeholder="Décrivez votre expérience avec cet utilisateur..."
-                                    className="resize-none min-h-[100px]"
+                                    className="resize-none min-h-25"
                                     maxLength={500}
                                     error={fieldState.error?.message}
                                     {...field}

@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogFooter,
@@ -37,6 +38,8 @@ import {
     X,
     Info,
     ShoppingBag,
+    Undo2,
+    BadgeCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type MessageEvent } from "@/lib/message-emitter";
@@ -49,6 +52,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { useUploadThing } from "@/utils/uploadthing";
 import { useLightbox } from "@/components/ui/lightbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCancelTimer } from "@/hooks/use-cancel-timer";
 
 type PendingMessage = {
     tempId: string;
@@ -335,6 +339,8 @@ function MessageBubble({
         const buttonAction = "buttonAction" in msg ? msg.buttonAction : null;
         const content = "content" in msg ? msg.content : "";
 
+        if (buttonAction === "visible_buyer_only" && !isBuyer) return null;
+
         return (
             <div className="flex justify-center my-2">
                 <div className="bg-muted rounded-xl px-4 py-3 max-w-xs text-center space-y-2">
@@ -411,7 +417,8 @@ function MessageBubble({
                                 />
                                 <AvatarFallback>
                                     {"author" in msg
-                                        ? (msg.author?.name?.charAt(0) ?? "?")
+                                        ? (msg.author?.username?.charAt(0) ??
+                                          "?")
                                         : "?"}
                                 </AvatarFallback>
                             </Avatar>
@@ -420,7 +427,7 @@ function MessageBubble({
                         ))}
                     <div
                         className={cn(
-                            "flex flex-col gap-1 max-w-[200px]",
+                            "flex flex-col gap-1 max-w-50",
                             isOwn && "items-end"
                         )}
                     >
@@ -498,7 +505,7 @@ function MessageBubble({
                             />
                             <AvatarFallback>
                                 {"author" in msg
-                                    ? (msg.author?.name?.charAt(0) ?? "?")
+                                    ? (msg.author?.username?.charAt(0) ?? "?")
                                     : "?"}
                             </AvatarFallback>
                         </Avatar>
@@ -604,6 +611,11 @@ export default function ConversationView({
     const [isSold, setIsSold] = useState(discussion.isSold ?? false);
     const hasReview = discussion.hasReview ?? false;
     const [soldDialogOpen, setSoldDialogOpen] = useState(false);
+    const [soldAt, setSoldAt] = useState<string | null>(
+        discussion.soldAt ?? null
+    );
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const { canCancel, remainingSeconds } = useCancelTimer(soldAt);
 
     const isSeller = !discussion.isBuyer;
     const isBuyer = discussion.isBuyer;
@@ -937,6 +949,7 @@ export default function ConversationView({
         trpc.discussions.markAsSoldFromConversation.useMutation({
             onSuccess: () => {
                 setIsSold(true);
+                setSoldAt(new Date().toISOString());
                 toast.success("Article marqué comme vendu");
             },
             onError: (error) => {
@@ -945,6 +958,17 @@ export default function ConversationView({
                 );
             },
         });
+    const cancelSaleMutation = trpc.posts.cancelSale.useMutation({
+        onSuccess: () => {
+            setIsSold(false);
+            setSoldAt(null);
+            setCancelDialogOpen(false);
+            toast.success("Vente annulée, l'annonce est remise en vente");
+        },
+        onError: (error) => {
+            toast.error(error.message || "Erreur lors de l'annulation");
+        },
+    });
 
     const handleAcceptOffer = useCallback(
         (messageId: string) => {
@@ -1229,7 +1253,11 @@ export default function ConversationView({
                 </Link>
 
                 <Link
-                    href={`/profile/${discussion.otherParty.id}`}
+                    href={
+                        discussion.otherParty.username
+                            ? `/user/${discussion.otherParty.username}`
+                            : "#"
+                    }
                     className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity"
                 >
                     <Avatar className="size-8">
@@ -1300,6 +1328,79 @@ export default function ConversationView({
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
+                </div>
+            )}
+
+            {/* Bannière vendeur - annuler la vente */}
+            {isSeller && isSold && canCancel && (
+                <div className="flex items-center justify-between gap-3 px-4 py-1.5 border-b shrink-0 bg-orange-500/10">
+                    <span className="text-xs text-muted-foreground">
+                        Annulation possible pendant encore{" "}
+                        <span className="font-medium tabular-nums">
+                            {Math.floor(remainingSeconds / 60)}:
+                            {String(remainingSeconds % 60).padStart(2, "0")}
+                        </span>
+                    </span>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className="shrink-0 text-xs h-6 text-orange-600 hover:text-orange-700 hover:bg-orange-500/10"
+                        onClick={() => setCancelDialogOpen(true)}
+                        loading={cancelSaleMutation.isPending}
+                    >
+                        <Undo2 className="size-3 mr-1" />
+                        Annuler la vente
+                    </Button>
+                    <Dialog
+                        open={cancelDialogOpen}
+                        onOpenChange={setCancelDialogOpen}
+                    >
+                        <DialogContent showCloseButton={false}>
+                            <DialogHeader>
+                                <DialogTitle>Annuler la vente ?</DialogTitle>
+                                <DialogDescription>
+                                    L&apos;annonce sera remise en vente. Temps
+                                    restant :{" "}
+                                    {Math.floor(remainingSeconds / 60)}:
+                                    {String(remainingSeconds % 60).padStart(
+                                        2,
+                                        "0"
+                                    )}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setCancelDialogOpen(false)}
+                                >
+                                    Fermer
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    onClick={() =>
+                                        cancelSaleMutation.mutate({
+                                            id: discussion.post.id,
+                                        })
+                                    }
+                                    loading={cancelSaleMutation.isPending}
+                                >
+                                    Annuler la vente
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            )}
+
+            {/* Bannière acheteur - article vendu */}
+            {isBuyer && isSold && (
+                <div className="flex items-center justify-center gap-2 px-4 py-2 border-b shrink-0 bg-muted/50">
+                    <BadgeCheck className="size-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-xs text-muted-foreground">
+                        {discussion.soldToMe
+                            ? "Cet article vous a été vendu"
+                            : "Cet article a été vendu à un autre utilisateur"}
+                    </span>
                 </div>
             )}
 
@@ -1427,7 +1528,7 @@ export default function ConversationView({
                     <ImageIcon className="size-5" />
                 </Button>
 
-                {discussion.isBuyer && (
+                {discussion.isBuyer && !isSold && (
                     <>
                         <Button
                             variant="ghost"

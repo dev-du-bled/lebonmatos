@@ -5,3 +5,5 @@ components.json
 eslint.config.mjs
 tsconfig.json
 bun.lock
+Dockerfile
+docker-entrypoint.sh

@@ -8,6 +8,18 @@ import { CityData } from "@/utils/location";
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@/lib/prisma";
 import { meilisearch } from "@/lib/meilisearch";
+import { publish, type MessageEvent } from "@/lib/message-emitter";
+
+async function getAvailableColors(): Promise<string[]> {
+    const index = meilisearch.index("posts");
+    const results = await index.search("", {
+        facets: ["component.color"],
+        limit: 0,
+    });
+    const colorDistribution =
+        results.facetDistribution?.["component.color"] ?? {};
+    return Object.keys(colorDistribution).sort();
+}
 
 // return wich component to fetch based on the component type
 const getComponentIncludes = (componentType: ComponentType) => ({
@@ -64,6 +76,7 @@ export const postRouter = createTRPCRouter({
                 description: post.description,
                 price: post.price,
                 isSold: post.isSold,
+                soldAt: post.soldAt?.toISOString() ?? null,
                 createdAt: post.id,
                 component: {
                     id: post.component.id,
@@ -75,6 +88,48 @@ export const postRouter = createTRPCRouter({
                     : null,
             }));
         }),
+
+    getUserPurchases: privateProcedure.query(async ({ ctx }) => {
+        const posts = await prisma.post.findMany({
+            where: {
+                boughtById: ctx.session.user.id,
+                isSold: true,
+            },
+            orderBy: { soldAt: "desc" },
+            include: {
+                component: true,
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayUsername: true,
+                        image: true,
+                    },
+                },
+            },
+        });
+
+        return posts.map((post: (typeof posts)[number]) => ({
+            id: post.id,
+            title: post.title,
+            description: post.description,
+            price: post.price,
+            soldAt: post.soldAt?.toISOString() ?? null,
+            component: {
+                id: post.component.id,
+                name: post.component.name,
+                type: post.component.type,
+            },
+            seller: {
+                id: post.user.id,
+                username: post.user.displayUsername ?? post.user.username,
+                image: post.user.image,
+            },
+            thumbnail: post.images[0]
+                ? { image: post.images[0], alt: null }
+                : null,
+        }));
+    }),
 
     getUserFavorites: privateProcedure.query(async ({ ctx }) => {
         const favorites = await prisma.favorite.findMany({
@@ -136,8 +191,125 @@ export const postRouter = createTRPCRouter({
 
             await prisma.post.update({
                 where: { id: input.id },
-                data: { isSold: true },
+                data: { isSold: true, soldAt: new Date() },
             });
+
+            return { success: true };
+        }),
+
+    cancelSale: privateProcedure
+        .input(z.object({ id: z.uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            const post = await prisma.post.findUnique({
+                where: { id: input.id },
+                select: {
+                    userId: true,
+                    isSold: true,
+                    soldAt: true,
+                    boughtById: true,
+                    _count: { select: { ratings: true } },
+                },
+            });
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Annonce introuvable",
+                });
+            }
+
+            if (post.userId !== ctx.session.user.id) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message:
+                        "Vous n'êtes pas autorisé à modifier cette annonce",
+                });
+            }
+
+            if (!post.isSold) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Cette annonce n'est pas marquée comme vendue",
+                });
+            }
+
+            if (post._count.ratings > 0) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message:
+                        "Impossible d'annuler la vente : un avis a déjà été laissé",
+                });
+            }
+
+            if (!post.soldAt || Date.now() - post.soldAt.getTime() >= 120_000) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Le délai d'annulation de 2 minutes est dépassé",
+                });
+            }
+
+            const boughtById = post.boughtById;
+
+            await prisma.post.update({
+                where: { id: input.id },
+                data: { isSold: false, soldAt: null, boughtById: null },
+            });
+
+            // Envoyer un message système dans la discussion avec l'acheteur
+            if (boughtById) {
+                const discussion = await prisma.discussion.findUnique({
+                    where: {
+                        postId_buyerId: {
+                            postId: input.id,
+                            buyerId: boughtById,
+                        },
+                    },
+                    select: { id: true },
+                });
+
+                if (discussion) {
+                    const message = await prisma.message.create({
+                        data: {
+                            discussionId: discussion.id,
+                            type: "SYSTEM",
+                            content:
+                                "Le vendeur a annulé la vente. L'annonce est de nouveau disponible.",
+                            authorID: null,
+                            viewed: true,
+                            imageUrls: [],
+                            buttonAction: "visible_buyer_only",
+                        },
+                        include: {
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    image: true,
+                                },
+                            },
+                        },
+                    });
+
+                    const payload: MessageEvent = {
+                        id: message.id,
+                        discussionId: message.discussionId,
+                        type: message.type,
+                        content: message.content,
+                        price: message.price,
+                        authorID: message.authorID,
+                        author: null,
+                        sendedAt: message.sendedAt.toISOString(),
+                        viewed: message.viewed,
+                        imageUrls: message.imageUrls,
+                        buttonLabel: message.buttonLabel,
+                        buttonUrl: message.buttonUrl,
+                        buttonAction: message.buttonAction,
+                    };
+
+                    await publish(`message:${discussion.id}`, payload);
+                    await publish(`inbox:${boughtById}`);
+                }
+            }
 
             return { success: true };
         }),
@@ -351,6 +523,7 @@ export const postRouter = createTRPCRouter({
                 data: {
                     isSold: true,
                     boughtById: buyerId,
+                    soldAt: new Date(),
                 },
             });
 
@@ -419,11 +592,14 @@ export const postRouter = createTRPCRouter({
 
             let hasReviewedSeller = false;
             if (session?.user) {
-                const existing = await prisma.rating.findFirst({
+                const existing = await prisma.rating.findUnique({
                     where: {
-                        userId: post.userId,
-                        raterId: session.user.id,
+                        postId_raterId: {
+                            postId: post.id,
+                            raterId: session.user.id,
+                        },
                     },
+                    select: { id: true },
                 });
                 hasReviewedSeller = !!existing;
             }
@@ -576,6 +752,7 @@ export const postRouter = createTRPCRouter({
                 location: true,
             },
             where: {
+                isSold: false,
                 images: {
                     isEmpty: false,
                 },
@@ -594,6 +771,7 @@ export const postRouter = createTRPCRouter({
                 },
             },
             where: {
+                isSold: false,
                 component: {
                     type: "CASE",
                 },
@@ -612,6 +790,7 @@ export const postRouter = createTRPCRouter({
                 },
             },
             where: {
+                isSold: false,
                 component: {
                     type: "CPU",
                 },
@@ -630,6 +809,7 @@ export const postRouter = createTRPCRouter({
                 },
             },
             where: {
+                isSold: false,
                 component: {
                     type: "GPU",
                 },
@@ -644,6 +824,10 @@ export const postRouter = createTRPCRouter({
         };
     }),
 
+    availableColors: publicProcedure.query(async () => {
+        return getAvailableColors();
+    }),
+
     search: publicProcedure
         .input(
             z.object({
@@ -654,9 +838,8 @@ export const postRouter = createTRPCRouter({
                     .optional(),
                 priceMin: z.number().min(0).optional(),
                 priceMax: z.number().min(0).optional(),
-                colors: z
-                    .array(z.enum(["Black", "White", "Gray", "Silver"]))
-                    .optional(),
+                colors: z.array(z.string()).optional(),
+                excludeSold: z.boolean().optional(),
                 limit: z.number().min(1).max(50).default(20),
                 offset: z.number().min(0).default(0),
             })
@@ -680,10 +863,19 @@ export const postRouter = createTRPCRouter({
                 filters.push(`price <= ${input.priceMax}`);
             }
             if (input.colors && input.colors.length > 0) {
-                const colorFilters = input.colors
-                    .map((c) => `componentColor = "${c}"`)
-                    .join(" OR ");
-                filters.push(`(${colorFilters})`);
+                const validColors = await getAvailableColors();
+                const safeColors = input.colors.filter((c) =>
+                    validColors.includes(c)
+                );
+                if (safeColors.length > 0) {
+                    const colorFilters = safeColors
+                        .map((c) => `component.color = "${c}"`)
+                        .join(" OR ");
+                    filters.push(`(${colorFilters})`);
+                }
+            }
+            if (input.excludeSold) {
+                filters.push(`isSold = false`);
             }
 
             const results = await index.search(input.query ?? "", {
@@ -697,9 +889,16 @@ export const postRouter = createTRPCRouter({
                     id: string;
                     title: string;
                     price: number;
-                    componentType: ComponentType;
-                    componentName: string;
-                    locationCity: string | null;
+                    isSold: boolean;
+                    componentId: string;
+                    component: {
+                        type: ComponentType;
+                        name: string;
+                        color: string | null;
+                    };
+                    location: {
+                        city: string;
+                    } | null;
                     images: string[];
                     userId: string;
                 }>,

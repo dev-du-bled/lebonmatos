@@ -34,12 +34,38 @@ const MICROARCH_TO_SOCKET: Record<string, string> = {
     "Coffee Lake": "LGA1151",
 };
 
-// RAM type to motherboard DDR compatibility
-const RAM_TYPE_COMPATIBILITY: Record<string, string[]> = {
-    DDR5: ["AM5", "LGA1700", "LGA1851"],
-    DDR4: ["AM4", "AM5", "LGA1200", "LGA1700", "LGA1151"],
-    DDR3: ["LGA1151", "AM3+"],
+// Default memory type by socket (for sockets that only support one type)
+const SOCKET_DEFAULT_MEMORY_TYPE: Record<string, string> = {
+    // DDR5 only
+    AM5: "DDR5",
+    LGA1851: "DDR5",
+    // DDR4 only
+    AM4: "DDR4",
+    LGA1200: "DDR4",
+    LGA1151: "DDR4",
+    // DDR3
+    "AM3+": "DDR3",
+    AM3: "DDR3",
+    LGA1155: "DDR3",
+    LGA1156: "DDR3",
 };
+
+// Sockets that can have both DDR4 and DDR5 depending on the board
+const AMBIGUOUS_DDR_SOCKETS = ["LGA1700"];
+
+// Determine motherboard memory type from socket + name
+function getMotherboardMemoryType(socket: string, name: string): string | null {
+    const upperName = name.toUpperCase();
+
+    // For ambiguous sockets, check the board name
+    if (AMBIGUOUS_DDR_SOCKETS.includes(socket)) {
+        if (upperName.includes("DDR4")) return "DDR4";
+        // LGA1700 boards default to DDR5 unless explicitly DDR4
+        return "DDR5";
+    }
+
+    return SOCKET_DEFAULT_MEMORY_TYPE[socket] || null;
+}
 
 type CompDetails<T> = Omit<T, "id" | "componentId">;
 
@@ -119,7 +145,6 @@ export function checkCompatibility(
 
     // RAM <-> Motherboard compatibility
     if (rams.length > 0 && motherboard?.Motherboard) {
-        const mbSocket = motherboard.Motherboard.socket;
         const totalRamSlots = rams.reduce((acc, r) => {
             const modules = r.post?.component?.Ram?.modules || 1;
             return acc + modules * r.quantity;
@@ -134,19 +159,36 @@ export function checkCompatibility(
             });
         }
 
-        // Check RAM type compatibility
-        for (const ram of rams) {
-            const ramType = ram.post?.component?.Ram?.type;
-            if (ramType) {
-                const compatibleSockets = RAM_TYPE_COMPATIBILITY[ramType] || [];
-                if (!compatibleSockets.includes(mbSocket)) {
+        // Determine the motherboard's memory type
+        const mbMemoryType = getMotherboardMemoryType(
+            motherboard.Motherboard.socket,
+            motherboard.name
+        );
+
+        // Check RAM type compatibility with motherboard
+        if (mbMemoryType) {
+            for (const ram of rams) {
+                const ramType = ram.post?.component?.Ram?.type;
+                if (ramType && ramType !== mbMemoryType) {
                     issues.push({
                         type: "error",
-                        message: `La RAM (${ramType}) n'est pas compatible avec la carte mère (socket ${mbSocket})`,
+                        message: `La RAM ${ramType} n'est pas compatible avec la carte mère qui supporte ${mbMemoryType}`,
                         affectedComponents: ["RAM", "MOTHERBOARD"],
                     });
                 }
             }
+        }
+
+        // Check mixed RAM types (e.g. DDR4 + DDR5)
+        const ramTypes = new Set(
+            rams.map((r) => r.post?.component?.Ram?.type).filter(Boolean)
+        );
+        if (ramTypes.size > 1) {
+            issues.push({
+                type: "error",
+                message: `Types de RAM différents dans la configuration (${[...ramTypes].join(", ")})`,
+                affectedComponents: ["RAM"],
+            });
         }
 
         // Check total RAM capacity
@@ -202,9 +244,10 @@ export function checkCompatibility(
         }
 
         if (gpu?.Gpu) {
-            // Estimate GPU power based on memory (rough approximation)
-            const gpuMemory = gpu.Gpu.length ? 150 : 75;
-            estimatedWattage += gpuMemory;
+            // Estimate GPU power based on VRAM (rough approximation)
+            const gpuPower =
+                gpu.Gpu.memory >= 12 ? 250 : gpu.Gpu.memory >= 8 ? 150 : 75;
+            estimatedWattage += gpuPower;
         }
 
         if (psu.Psu.wattage < estimatedWattage) {
@@ -277,6 +320,22 @@ export const COMPONENT_TYPE_LABELS: Record<ComponentType, string> = {
     CASE_FAN: "Ventilateur",
     SOUND_CARD: "Carte son",
     WIRELESS_NETWORK_CARD: "Carte WiFi",
+};
+
+// Indefinite articles for component types (French gender agreement)
+export const COMPONENT_TYPE_ARTICLES: Record<ComponentType, string> = {
+    CPU: "un",
+    GPU: "une",
+    MOTHERBOARD: "une",
+    RAM: "une",
+    SSD: "un",
+    HDD: "un",
+    POWER_SUPPLY: "une",
+    CPU_COOLER: "un",
+    CASE: "un",
+    CASE_FAN: "un",
+    SOUND_CARD: "une",
+    WIRELESS_NETWORK_CARD: "une",
 };
 
 // Check if configuration is complete (has all required components)

@@ -40,7 +40,6 @@ model User {
 
   @@unique([email])
   @@unique([username])
-  @@map("user")
 }
 
 model Session {
@@ -58,7 +57,6 @@ model Session {
 
   @@unique([token])
   @@index([userId])
-  @@map("session")
 }
 
 model Account {
@@ -78,7 +76,6 @@ model Account {
   updatedAt             DateTime  @updatedAt
 
   @@index([userId])
-  @@map("account")
 }
 
 model Verification {
@@ -90,7 +87,6 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@index([identifier])
-  @@map("verification")
 }
 
 model Post {
@@ -109,10 +105,10 @@ model Post {
   images             String[]
   ConfigurationItems ConfigurationItem[]
   isSold             Boolean             @default(false)
+  soldAt             DateTime?
   boughtById         String?
   boughtBy           User?               @relation("boughtBy", fields: [boughtById], references: [id], onDelete: SetNull)
-
-  @@map("post")
+  ratings            Rating[]
 }
 
 model Location {
@@ -130,8 +126,6 @@ model Location {
 
   postId String @unique
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@map("location")
 }
 
 model Favorite {
@@ -142,7 +136,6 @@ model Favorite {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
-  @@map("favorite")
 }
 
 enum REPORT_TYPE {
@@ -182,8 +175,6 @@ model Report {
   reportedUser    User?          @relation("reportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
   messageId       String?
   reportedAt      DateTime       @default(now())
-
-  @@map("report")
 }
 
 model Discussion {
@@ -191,7 +182,7 @@ model Discussion {
   buyerId       String
   buyer         User      @relation("discussionBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
   postId        String
-  post          Post?     @relation(fields: [postId], references: [id])
+  post          Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
   messages      Message[]
   sellerId      String?
   seller        User?     @relation("discussionSeller", fields: [sellerId], references: [id])
@@ -199,7 +190,6 @@ model Discussion {
   acceptedPrice Int?      @db.SmallInt
 
   @@unique([postId, buyerId])
-  @@map("discussion")
 }
 
 enum MessageType {
@@ -223,8 +213,6 @@ model Message {
   buttonLabel  String?
   buttonUrl    String?
   buttonAction String?
-
-  @@map("message")
 }
 
 model Rating {
@@ -233,14 +221,15 @@ model Rating {
   user    User   @relation("ratee", fields: [userId], references: [id], onDelete: Cascade)
   raterId String
   rater   User   @relation("rater", fields: [raterId], references: [id], onDelete: Cascade)
+  postId  String?
+  post    Post?  @relation(fields: [postId], references: [id], onDelete: SetNull)
 
   rating    Int      @db.SmallInt
   comment   String?
   createdAt DateTime @default(now())
   reports   Report[]
 
-  @@unique([userId, raterId])
-  @@map("rating")
+  @@unique([postId, raterId])
 }
 
 model Configuration {
@@ -252,8 +241,6 @@ model Configuration {
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
   items     ConfigurationItem[]
-
-  @@map("configuration")
 }
 
 model ConfigurationItem {
@@ -264,6 +251,4 @@ model ConfigurationItem {
   postId          String?
   post            Post?         @relation(fields: [postId], references: [id], onDelete: SetNull)
   quantity        Int           @default(1) @db.SmallInt
-
-  @@map("configuration_item")
 }
