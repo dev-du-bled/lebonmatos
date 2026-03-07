@@ -19,6 +19,8 @@ const forbiddenUsernames = [
 
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
+    // remove rate limit in tests env cause we login multiple times
+    rateLimit: { enabled: !process.env.NEXT_PUBLIC_TESTS_ENV },
     emailAndPassword: {
         enabled: true,
         sendResetPassword: async ({ user, url }) => {
@@ -54,7 +56,8 @@ export const auth = betterAuth({
             },
         }),
         admin(),
-        ...(process.env.NODE_ENV === "production" // ReCaptcha en prod seulement
+        ...(process.env.NODE_ENV === "production" &&
+        !process.env.NEXT_PUBLIC_TESTS_ENV // ReCaptcha en prod seulement
             ? [
                   captcha({
                       provider: "google-recaptcha",

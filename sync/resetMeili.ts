@@ -51,6 +51,7 @@ try {
                         "location.city",
                         "_geo",
                         "price",
+                        "isSold",
                     ])
             );
         }

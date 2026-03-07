@@ -10,6 +10,17 @@ import { prisma } from "@/lib/prisma";
 import { meilisearch } from "@/lib/meilisearch";
 import { publish, type MessageEvent } from "@/lib/message-emitter";
 
+async function getAvailableColors(): Promise<string[]> {
+    const index = meilisearch.index("posts");
+    const results = await index.search("", {
+        facets: ["component.color"],
+        limit: 0,
+    });
+    const colorDistribution =
+        results.facetDistribution?.["component.color"] ?? {};
+    return Object.keys(colorDistribution).sort();
+}
+
 // return wich component to fetch based on the component type
 const getComponentIncludes = (componentType: ComponentType) => ({
     Cpu: componentType === ComponentType.CPU,
@@ -741,6 +752,7 @@ export const postRouter = createTRPCRouter({
                 location: true,
             },
             where: {
+                isSold: false,
                 images: {
                     isEmpty: false,
                 },
@@ -759,6 +771,7 @@ export const postRouter = createTRPCRouter({
                 },
             },
             where: {
+                isSold: false,
                 component: {
                     type: "CASE",
                 },
@@ -777,6 +790,7 @@ export const postRouter = createTRPCRouter({
                 },
             },
             where: {
+                isSold: false,
                 component: {
                     type: "CPU",
                 },
@@ -795,6 +809,7 @@ export const postRouter = createTRPCRouter({
                 },
             },
             where: {
+                isSold: false,
                 component: {
                     type: "GPU",
                 },
@@ -809,6 +824,10 @@ export const postRouter = createTRPCRouter({
         };
     }),
 
+    availableColors: publicProcedure.query(async () => {
+        return getAvailableColors();
+    }),
+
     search: publicProcedure
         .input(
             z.object({
@@ -819,9 +838,8 @@ export const postRouter = createTRPCRouter({
                     .optional(),
                 priceMin: z.number().min(0).optional(),
                 priceMax: z.number().min(0).optional(),
-                colors: z
-                    .array(z.enum(["Black", "White", "Gray", "Silver"]))
-                    .optional(),
+                colors: z.array(z.string()).optional(),
+                excludeSold: z.boolean().optional(),
                 limit: z.number().min(1).max(50).default(20),
                 offset: z.number().min(0).default(0),
             })
@@ -845,10 +863,19 @@ export const postRouter = createTRPCRouter({
                 filters.push(`price <= ${input.priceMax}`);
             }
             if (input.colors && input.colors.length > 0) {
-                const colorFilters = input.colors
-                    .map((c) => `component.color = "${c}"`)
-                    .join(" OR ");
-                filters.push(`(${colorFilters})`);
+                const validColors = await getAvailableColors();
+                const safeColors = input.colors.filter((c) =>
+                    validColors.includes(c)
+                );
+                if (safeColors.length > 0) {
+                    const colorFilters = safeColors
+                        .map((c) => `component.color = "${c}"`)
+                        .join(" OR ");
+                    filters.push(`(${colorFilters})`);
+                }
+            }
+            if (input.excludeSold) {
+                filters.push(`isSold = false`);
             }
 
             const results = await index.search(input.query ?? "", {
@@ -862,6 +889,7 @@ export const postRouter = createTRPCRouter({
                     id: string;
                     title: string;
                     price: number;
+                    isSold: boolean;
                     componentId: string;
                     component: {
                         type: ComponentType;

@@ -9,6 +9,7 @@ export type SearchHit = {
     id: string;
     title: string;
     price: number;
+    isSold: boolean;
     component: {
         type: ComponentType;
         name: string;
@@ -35,15 +36,18 @@ export const SearchResultItem = memo(function SearchResultItem({
                     src={post.images[0] || "/images/fallback.webp"}
                     alt={post.title}
                     fill
-                    className="object-cover"
+                    className={`object-cover${post.isSold ? " opacity-50" : ""}`}
                 />
+                {post.isSold && (
+                    <span className="absolute top-1.5 left-1.5 bg-destructive text-destructive-foreground text-xs font-semibold px-2 py-0.5 rounded">
+                        Vendu
+                    </span>
+                )}
                 <div
                     className="absolute top-1.5 right-1.5 sm:hidden"
                     onClick={(e) => e.preventDefault()}
                 >
-                    <FavoriteButton
-                        post={{ id: post.id, seller: { id: post.userId } }}
-                    />
+                    <FavoriteButton post={post} />
                 </div>
             </div>
 
@@ -69,9 +73,7 @@ export const SearchResultItem = memo(function SearchResultItem({
                     {post.price} €
                 </p>
                 <div onClick={(e) => e.preventDefault()}>
-                    <FavoriteButton
-                        post={{ id: post.id, seller: { id: post.userId } }}
-                    />
+                    <FavoriteButton post={post} />
                 </div>
             </div>
         </Link>

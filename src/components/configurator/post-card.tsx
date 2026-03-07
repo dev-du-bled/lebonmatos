@@ -39,7 +39,9 @@ export function PostCard({
 
             <div className="flex items-center gap-2 px-3 py-2 sm:py-2 sm:pl-0 sm:pr-3 flex-1 min-w-0">
                 <div className="flex-1 min-w-0">
-                    <h4 className="font-medium truncate">{post.title}</h4>
+                    <h4 className="font-medium line-clamp-2 break-all">
+                        {post.title}
+                    </h4>
                     <p className="text-sm text-muted-foreground truncate">
                         {post.component.name}
                     </p>

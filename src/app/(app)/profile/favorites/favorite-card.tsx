@@ -61,6 +61,7 @@ export function FavoriteCard({ favorite }: FavoriteCardProps) {
                             </CardTitle>
                             <Button
                                 size="icon"
+                                aria-label="Retirer des favoris"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     handleRemoveFavorite();
