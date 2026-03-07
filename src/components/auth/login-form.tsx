@@ -80,7 +80,7 @@ export function LoginForm() {
                 form.setError("root", {
                     message: getAuthError(
                         result.error.code,
-                        "La connexion a échoué. Veuillez réessayer.",
+                        "La connexion a échoué. Veuillez réessayer."
                     ),
                 });
             } else {

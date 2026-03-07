@@ -14,17 +14,15 @@ test.describe("Profile", () => {
         await page.waitForURL("/", { timeout: 30_000 });
     });
 
-    test("Navigate to profile page and see quick actions", async ({
-        page,
-    }) => {
+    test("Navigate to profile page and see quick actions", async ({ page }) => {
         await page.getByRole("button", { name: "Menu utilisateur" }).click();
         await page.getByRole("menuitem", { name: "Mon profil" }).click();
         await page.waitForURL("**/profile", { timeout: 10_000 });
 
         // Verify user welcome message
-        await expect(
-            page.getByText(TEST_USER.username)
-        ).toBeVisible({ timeout: 10_000 });
+        await expect(page.getByText(TEST_USER.username)).toBeVisible({
+            timeout: 10_000,
+        });
 
         // Verify quick actions are visible
         await expect(
@@ -45,9 +43,9 @@ test.describe("Profile", () => {
         await page.goto("/profile/edit");
 
         // Verify the form is loaded with current user data
-        await expect(
-            page.getByText("Information Personnelles")
-        ).toBeVisible({ timeout: 10_000 });
+        await expect(page.getByText("Information Personnelles")).toBeVisible({
+            timeout: 10_000,
+        });
         await expect(
             page.getByText("Coordonnées", { exact: true })
         ).toBeVisible();
