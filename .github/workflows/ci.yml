@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
 
 env:
+  DATABASE_URL: postgresql://lbmuser:lbmsupersecurepassword@localhost:5432/lbmtestdb
   BETTER_AUTH_SECRET: placeholdersecret
   NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: placeholdersecret
   GOOGLE_RECAPTCHA_SECRET_KEY: placeholdersecret
@@ -32,9 +33,6 @@ jobs:
 
       - name: Install dependencies
         run: bun install
-        env:
-          DATABASE_URL: postgresql://placeholder
-
       - name: Lint code
         run: bun lint
 
@@ -43,9 +41,6 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-
-    env:
-      DATABASE_URL: postgresql://placeholder
 
     steps:
       - name: Checkout repository
@@ -61,13 +56,6 @@ jobs:
 
       - name: Build app
         run: bun run build:local
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: next-build
-          path: .next
-          include-hidden-files: true
 
   test:
     runs-on: ubuntu-latest
@@ -94,9 +82,6 @@ jobs:
         ports:
           - 7700:7700
 
-    env:
-      DATABASE_URL: postgresql://lbmuser:lbmsupersecurepassword@localhost:5432/lbmtestdb
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -108,12 +93,6 @@ jobs:
 
       - name: Install deps
         run: bun install
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: next-build
-          path: .next
 
       - name: Install Playwright chromium
         run: bunx playwright install --with-deps chromium
