@@ -3,20 +3,24 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { DynamicLogo } from "../dynamic-logo";
-import { SearchIcon } from "lucide-react";
+import { Plus, SearchIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { UserMenu } from "./user-menu";
 import { Kbd } from "@/components/ui/kbd";
-import { MobileHeader } from "./mobile-header";
 import Link from "next/link";
 import { SearchModal } from "./search-modal";
 import { useHotkey, formatForDisplay } from "@tanstack/react-hotkeys";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "../ui/tooltip";
 
 export default function Header({ className }: { className?: string }) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
-    const mobileRef = useRef<HTMLDivElement>(null);
-    const desktopRef = useRef<HTMLElement>(null);
+    const headerRef = useRef<HTMLElement>(null);
 
     useHotkey("Mod+K", () => {
         setSearchOpen((open) => !open);
@@ -24,9 +28,7 @@ export default function Header({ className }: { className?: string }) {
 
     useEffect(() => {
         const update = () => {
-            const h =
-                (mobileRef.current?.offsetHeight ?? 0) ||
-                (desktopRef.current?.offsetHeight ?? 0);
+            const h = headerRef.current?.offsetHeight ?? 0;
             document.documentElement.style.setProperty(
                 "--header-height",
                 `${h}px`
@@ -34,8 +36,7 @@ export default function Header({ className }: { className?: string }) {
         };
         update();
         const observer = new ResizeObserver(update);
-        if (mobileRef.current) observer.observe(mobileRef.current);
-        if (desktopRef.current) observer.observe(desktopRef.current);
+        if (headerRef.current) observer.observe(headerRef.current);
         return () => observer.disconnect();
     }, []);
 
@@ -51,22 +52,61 @@ export default function Header({ className }: { className?: string }) {
 
     return (
         <>
-            <div ref={mobileRef} className={cn("md:hidden", className)}>
-                <MobileHeader />
-            </div>
             <header
-                ref={desktopRef}
+                ref={headerRef}
                 className={cn(
-                    "sticky top-0 z-50 hidden w-full m-auto items-center justify-between bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 box-border p-5 md:flex",
+                    "sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 box-border p-4 md:p-5",
                     isScrolled && "border-b",
                     className
                 )}
             >
-                <div className="w-full items-center justify-between md:flex wide-lock-wider">
+                <div className="flex items-center justify-between md:wide-lock-wider">
                     <Link href={"/"}>
-                        <DynamicLogo width={175} className="shrink-0" />
+                        <DynamicLogo
+                            width={120}
+                            className="shrink-0 md:hidden"
+                        />
+                        <DynamicLogo
+                            width={175}
+                            className="shrink-0 hidden md:block"
+                        />
                     </Link>
-                    <div className="flex items-center gap-2 w-full justify-end">
+
+                    {/* Mobile */}
+                    <div className="flex items-center gap-1 md:hidden">
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link href="/create-post">
+                                        <Button
+                                            size="icon"
+                                            aria-label="Publier"
+                                        >
+                                            <Plus className="size-4 shrink-0" />
+                                        </Button>
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>Publier</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        aria-label="Rechercher"
+                                        onClick={() => setSearchOpen(true)}
+                                    >
+                                        <SearchIcon className="size-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Rechercher</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        <UserMenu />
+                    </div>
+
+                    {/* Desktop */}
+                    <div className="hidden md:flex items-center gap-2 w-full justify-end">
                         <Link href="/create-post">
                             <Button className="hover:cursor-pointer">
                                 Publier
