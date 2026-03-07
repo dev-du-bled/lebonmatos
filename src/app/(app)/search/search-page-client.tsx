@@ -169,13 +169,10 @@ export default function SearchPageClient({
         [debouncePrice]
     );
 
-    const handleSelectedColorsChange = useCallback(
-        (colors: string[]) => {
-            setSelectedColors(colors);
-            setPage(0);
-        },
-        []
-    );
+    const handleSelectedColorsChange = useCallback((colors: string[]) => {
+        setSelectedColors(colors);
+        setPage(0);
+    }, []);
 
     const handleExcludeSoldChange = useCallback((value: boolean) => {
         setExcludeSold(value);
@@ -191,7 +188,8 @@ export default function SearchPageClient({
         setPage(0);
     }, []);
 
-    const hasActiveFilters = priceActive || selectedColors.length > 0 || excludeSold;
+    const hasActiveFilters =
+        priceActive || selectedColors.length > 0 || excludeSold;
 
     return (
         <div className="wide-lock flex flex-col gap-3 mb-12.5!">
@@ -346,7 +344,9 @@ export default function SearchPageClient({
                             <div className="flex flex-col gap-2">
                                 <ExcludeSoldContent
                                     excludeSold={excludeSold}
-                                    onExcludeSoldChange={handleExcludeSoldChange}
+                                    onExcludeSoldChange={
+                                        handleExcludeSoldChange
+                                    }
                                 />
                             </div>
                         </div>

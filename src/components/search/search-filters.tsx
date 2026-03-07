@@ -285,7 +285,8 @@ export const SearchFilters = memo(function SearchFilters({
     const [priceOpen, setPriceOpen] = useState(false);
     const [colorOpen, setColorOpen] = useState(false);
 
-    const hasActiveFilters = priceActive || selectedColors.length > 0 || excludeSold;
+    const hasActiveFilters =
+        priceActive || selectedColors.length > 0 || excludeSold;
 
     return (
         <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>

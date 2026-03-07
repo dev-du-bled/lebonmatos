@@ -55,9 +55,7 @@ try {
                     ])
             );
             await wrappMeiliTask(
-                meilisearch
-                    .index(index)
-                    .updateSortableAttributes(["isSold"])
+                meilisearch.index(index).updateSortableAttributes(["isSold"])
             );
         }
 
