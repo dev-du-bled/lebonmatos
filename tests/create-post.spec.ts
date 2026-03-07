@@ -32,7 +32,6 @@ test.describe("Create Post", () => {
         await page
             .getByRole("textbox", { name: "Description détaillée *" })
             .fill("processeur acheté en 2023 puissant marche tres bien");
-        await page.getByPlaceholder("0.00").click();
         await page.getByPlaceholder("0.00").fill("300");
         await page
             .getByRole("textbox", { name: "Localisation *" })
@@ -46,6 +45,42 @@ test.describe("Create Post", () => {
         await expect(page.getByText("processeur acheté en 2023")).toBeVisible();
         await expect(
             page.getByText("Nevers - Bourgogne – Franche-")
+        ).toBeVisible();
+    });
+
+    test("Create Post form input validation", async ({ page }) => {
+        await page
+            .getByRole("textbox", { name: "Titre de l'annonce *" })
+            .fill("a");
+        await page
+            .getByRole("textbox", { name: "Description détaillée *" })
+            .fill("petite desc");
+        await page.getByPlaceholder("0.00").fill("");
+
+        await page.getByRole("textbox", { name: "Localisation *" }).fill("eee");
+        // cross btn to clear the location input and trigger validation
+        await page
+            .locator("form")
+            .getByRole("button")
+            .filter({ hasText: /^$/ })
+            .click();
+        await expect(
+            page
+                .locator("form")
+                .getByRole("button")
+                .filter({ hasText: "Publier l'annonce" })
+        ).toBeDisabled();
+        await expect(
+            page.getByText("Le titre doit contenir entre")
+        ).toBeVisible();
+        await expect(
+            page.getByText("La description doit contenir")
+        ).toBeVisible();
+        await expect(
+            page.getByText("Le prix doit être supérieur")
+        ).toBeVisible();
+        await expect(
+            page.getByText("Vous devez sélectionner une")
         ).toBeVisible();
     });
 });
