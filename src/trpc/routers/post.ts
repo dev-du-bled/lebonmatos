@@ -882,7 +882,6 @@ export const postRouter = createTRPCRouter({
                 limit: input.limit,
                 offset: input.offset,
                 filter: filters.length > 0 ? filters.join(" AND ") : undefined,
-                sort: ["isSold:asc"],
             });
 
             return {

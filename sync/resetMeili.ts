@@ -54,9 +54,6 @@ try {
                         "isSold",
                     ])
             );
-            await wrappMeiliTask(
-                meilisearch.index(index).updateSortableAttributes(["isSold"])
-            );
         }
 
         console.log(`Reset index: ${index}`);

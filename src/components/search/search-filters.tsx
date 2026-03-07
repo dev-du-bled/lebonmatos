@@ -90,11 +90,18 @@ function useFilterPopovers<T extends string>(keys: T[]) {
         [activeKey, pinned, clearTimer]
     );
 
+    const reset = useCallback(() => {
+        setActiveKey(null);
+        setPinned(false);
+        clearTimer();
+    }, [clearTimer]);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    return Object.fromEntries(keys.map((k) => [k, getProps(k)])) as Record<
-        T,
-        ReturnType<typeof getProps>
-    >;
+    const popovers = Object.fromEntries(
+        keys.map((k) => [k, getProps(k)])
+    ) as Record<T, ReturnType<typeof getProps>>;
+
+    return { ...popovers, reset };
 }
 
 function ActiveDot({
@@ -361,11 +368,19 @@ export const SearchFilters = memo(function SearchFilters({
     const [filtersOpen, setFiltersOpen] = useState(false);
     const filters = useFilterPopovers(["price", "color"]);
 
+    const handleFiltersOpenChange = useCallback(
+        (open: boolean) => {
+            setFiltersOpen(open);
+            if (!open) filters.reset();
+        },
+        [filters]
+    );
+
     const hasActiveFilters =
         priceActive || selectedColors.length > 0 || excludeSold;
 
     return (
-        <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <Popover open={filtersOpen} onOpenChange={handleFiltersOpenChange}>
             <PopoverTrigger asChild>
                 <Button variant="outline" className="h-12 font-normal w-28">
                     <Filter className="size-4" />
