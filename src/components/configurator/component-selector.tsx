@@ -152,7 +152,7 @@ export function ComponentSelector({
                             </div>
 
                             <ScrollArea className="h-[40vh] -mr-4 pr-1">
-                                <div className="space-y-2 pr-3">
+                                <div className="space-y-2 pr-3 overflow-hidden">
                                     {searchQuery$.isLoading ? (
                                         <>
                                             {Array.from({ length: 5 }).map(
@@ -190,7 +190,7 @@ export function ComponentSelector({
                         className="mt-4 min-h-[calc(40vh+3.25rem)]"
                     >
                         <ScrollArea className="h-[40vh] -mr-4 pr-1">
-                            <div className="space-y-2 pr-3">
+                            <div className="space-y-2 pr-3 overflow-hidden">
                                 {!isAuthenticated ? (
                                     <div className="text-center text-muted-foreground py-8">
                                         Connectez-vous pour voir vos favoris

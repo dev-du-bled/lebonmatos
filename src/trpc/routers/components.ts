@@ -1,11 +1,11 @@
 import { meilisearch } from "@/lib/meilisearch";
 import z from "zod";
-import { createTRPCRouter, privateProcedure, publicProcedure } from "../init";
+import { createTRPCRouter, publicProcedure } from "../init";
 import { ComponentType } from "@prisma/client";
 import { ReturnedComponent } from "@/utils/components";
 
 export const componentRouter = createTRPCRouter({
-    getComponents: privateProcedure
+    getComponents: publicProcedure
         .input(
             z.object({
                 query: z.string().min(3),
