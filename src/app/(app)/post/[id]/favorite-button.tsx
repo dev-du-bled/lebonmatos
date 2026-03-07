@@ -75,6 +75,11 @@ export default function FavoriteButton({ post, className }: FavoritePostProps) {
                         className={className}
                         loading={favMutation.isPending}
                         disabled={favMutation.isPending}
+                        aria-label={
+                            isFavorite
+                                ? "Retirer des favoris"
+                                : "Ajouter aux favoris"
+                        }
                     >
                         <Heart fill={isFavorite ? "currentColor" : "none"} />
                     </Button>

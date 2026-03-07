@@ -8,8 +8,8 @@ loadEnvConfig(process.cwd(), nodeEnv !== "production");
 export default defineConfig({
     schema: path.join("prisma", "schema"),
     migrations: {
-        path: path.join("prisma", "schema", "migrations"),
-        seed: path.join("prisma", "seed", "data.ts"),
+        path: "prisma/migrations",
+        seed: "prisma/data.ts",
     },
     datasource: {
         url: env("DATABASE_URL"),

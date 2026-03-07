@@ -310,7 +310,11 @@ export function getComponentSpecs(
         (spec) =>
             spec.value !== "null" &&
             spec.value !== "undefined" &&
-            spec.value !== ""
+            spec.value !== "" &&
+            !spec.value.startsWith("null") &&
+            !spec.value.startsWith("undefined") &&
+            !spec.value.includes("null") &&
+            !spec.value.includes("undefined")
     );
 }
 

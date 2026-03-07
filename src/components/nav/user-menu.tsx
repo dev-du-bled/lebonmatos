@@ -2,10 +2,11 @@
 
 import { Button } from "../ui/button";
 import {
-    HeartIcon,
-    ListIcon,
+    Cpu,
+    FileText,
+    Heart,
     MessageCircleIcon,
-    SettingsIcon,
+    Settings,
     UserIcon,
 } from "lucide-react";
 import {
@@ -57,7 +58,11 @@ export function UserMenu() {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Menu utilisateur"
+                            >
                                 <UserIcon className="size-4 shrink-0 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -77,25 +82,25 @@ export function UserMenu() {
                     </DropdownMenuLabel>
                     <DropdownMenuItem asChild>
                         <Link href="/profile">
-                            <UserIcon className="size-4" />
+                            <Settings className="size-4" />
                             Mon profil
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <Link href="/profile/listings">
-                            <ListIcon className="size-4" />
+                            <FileText className="size-4" />
                             Mes annonces
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <Link href="/profile/favorites">
-                            <HeartIcon className="size-4" />
+                            <Heart className="size-4" />
                             Favoris
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <Link href="/profile/configurations">
-                            <SettingsIcon className="size-4" />
+                            <Cpu className="size-4" />
                             Configurations
                         </Link>
                     </DropdownMenuItem>

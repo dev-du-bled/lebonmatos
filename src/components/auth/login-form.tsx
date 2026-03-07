@@ -22,6 +22,7 @@ import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 
 import { loginSchema, type LoginFormData } from "@/lib/schema/auth";
+import { getAuthError } from "@/lib/auth-errors";
 import AlreadyLoggedInRedirect from "./already-loggedin-redirect";
 
 export function LoginForm() {
@@ -42,7 +43,9 @@ export function LoginForm() {
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
         try {
-            const isProd = process.env.NODE_ENV === "production";
+            const isProd =
+                process.env.NODE_ENV === "production" &&
+                !process.env.NEXT_PUBLIC_TESTS_ENV;
             let recaptchaToken: string | null = null;
             if (isProd) {
                 // Executer le captcha en prod car sinon Eden ne peut pas utiliser le formulaire 💀 🥀
@@ -75,9 +78,10 @@ export function LoginForm() {
 
             if (result.error) {
                 form.setError("root", {
-                    message:
-                        result.error.message ||
-                        "La connexion a échoué. Veuillez réessayer.",
+                    message: getAuthError(
+                        result.error.code,
+                        "La connexion a échoué. Veuillez réessayer."
+                    ),
                 });
             } else {
                 router.push(redirect || "/");
