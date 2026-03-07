@@ -241,61 +241,11 @@ async function main() {
         )
     );
 
-<<<<<<< HEAD
-    // Prepare all post + location data in memory with pre-generated IDs
-    const postRows: {
-        id: string;
-        title: string;
-        description: string;
-        price: number;
-        userId: string;
-        componentId: string;
-        images: string[];
-    }[] = [];
-
-    const locationRows: {
-        postId: string;
-        lat: number;
-        lon: number;
-        name: string;
-        displayName: string;
-        city: string;
-        state: string;
-        region: string;
-        country: string;
-        countryCode: string;
-        coordinates: number[];
-    }[] = [];
-
-    for (let i = 0; i < ALL_COMPONENT_TYPES.length; i++) {
-        const type = ALL_COMPONENT_TYPES[i];
-        const components = componentsByType[i];
-
-        if (components.length === 0) {
-            console.log(`No components found for type ${type}, skipping.`);
-            continue;
-        }
-
-        for (const component of components) {
-            const user = faker.helpers.arrayElement(users);
-            const postId = crypto.randomUUID();
-
-            postRows.push({
-                id: postId,
-                title: generateTitle(component.name, component.type),
-||||||| 8720ac6
-    for (const component of [...cpus, ...gpus, ...cases]) {
-        const user = faker.helpers.arrayElement(users);
-        const post = await prisma.post.create({
-            data: {
-                title: `${component.name}`,
-=======
     for (const component of [...cpus, ...gpus, ...cases]) {
         const user = faker.helpers.arrayElement(users);
         const post = await prisma.post.create({
             data: {
                 title: component.name.slice(0, 50),
->>>>>>> tests/e2e
                 description: faker.lorem.paragraph(),
                 price: faker.number.int({
                     min: Math.max(0, (component.estimatedPrice || 100) - 100),
