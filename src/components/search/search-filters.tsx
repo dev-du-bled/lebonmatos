@@ -249,7 +249,12 @@ const PriceFilter = memo(function PriceFilter({
     contentProps?: React.HTMLAttributes<HTMLDivElement>;
 }) {
     return (
-        <PopoverContent side="left" align="start" className="w-64" {...contentProps}>
+        <PopoverContent
+            side="left"
+            align="start"
+            className="w-64"
+            {...contentProps}
+        >
             <p className="text-sm font-sans font-medium mb-4">Prix</p>
             <PriceFilterContent
                 priceRange={priceRange}
@@ -309,7 +314,12 @@ const ColorFilter = memo(function ColorFilter({
     contentProps?: React.HTMLAttributes<HTMLDivElement>;
 }) {
     return (
-        <PopoverContent side="left" align="start" className="w-64 p-0" {...contentProps}>
+        <PopoverContent
+            side="left"
+            align="start"
+            className="w-64 p-0"
+            {...contentProps}
+        >
             <div className="px-4 py-2.5">
                 <p className="text-sm font-sans font-medium mb-2">Couleur</p>
                 <ColorFilterContent
@@ -396,7 +406,10 @@ export const SearchFilters = memo(function SearchFilters({
                     Filtres
                 </div>
 
-                <Popover open={filters.price.open} onOpenChange={filters.price.onOpenChange}>
+                <Popover
+                    open={filters.price.open}
+                    onOpenChange={filters.price.onOpenChange}
+                >
                     <PopoverTrigger asChild>
                         <FilterMenuItem
                             label="Prix"
@@ -412,7 +425,10 @@ export const SearchFilters = memo(function SearchFilters({
                     />
                 </Popover>
 
-                <Popover open={filters.color.open} onOpenChange={filters.color.onOpenChange}>
+                <Popover
+                    open={filters.color.open}
+                    onOpenChange={filters.color.onOpenChange}
+                >
                     <PopoverTrigger asChild>
                         <FilterMenuItem
                             label="Couleur"
