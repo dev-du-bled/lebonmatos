@@ -22,8 +22,8 @@ env:
     RESEND_API_KEY: placeholdersecret
 
 jobs:
-    lint:
-        runs-on: blacksmith-2vcpu-ubuntu-2404
+    Checks:
+        runs-on: blacksmith-4vcpu-ubuntu-2404
         strategy:
             fail-fast: false
             matrix:
@@ -57,7 +57,7 @@ jobs:
             - name: Run ${{ matrix.name }}
               run: bun run ${{ matrix.command }}
 
-    build:
+    Build:
         runs-on: blacksmith-4vcpu-ubuntu-2404
         steps:
             - name: Checkout repository
@@ -97,10 +97,10 @@ jobs:
                   include-hidden-files: true
                   compression-level: 1
 
-    tests:
+    Tests:
         timeout-minutes: 30
         runs-on: blacksmith-4vcpu-ubuntu-2404
-        needs: [build, lint]
+        needs: [Checks, Build]
         services:
             postgres:
                 image: postgres:alpine
