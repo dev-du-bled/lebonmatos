@@ -35,7 +35,7 @@ export function UserMenu() {
             </Link>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" aria-label="Menu utilisateur">
                         <UserIcon className="size-4 shrink-0 opacity-50" />
                     </Button>
                 </DropdownMenuTrigger>

@@ -83,7 +83,9 @@ test.describe.serial("Signup", () => {
             .fill("testpassword");
         await page.getByRole("button", { name: "Créer le compte" }).click();
         await expect(
-            page.getByText("User already exists. Use another email.")
+            page.getByText(
+                "Email déja utilisé. Veuillez utiliser une autre adresse email."
+            )
         ).toBeVisible();
     });
 });

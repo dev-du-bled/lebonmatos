@@ -26,7 +26,11 @@ test.describe.serial("Login", () => {
             .getByRole("textbox", { name: "Mot de passe" })
             .fill("wrongpassword");
         await page.getByRole("button", { name: "Se connecter" }).click();
-        await expect(page.getByText("Invalid email or password")).toBeVisible();
+        await expect(
+            page.getByText("Email ou mot de passe incorrect")
+        ).toBeVisible({
+            timeout: 10_000,
+        });
     });
 
     test("Login with correct creds", async ({ page }) => {

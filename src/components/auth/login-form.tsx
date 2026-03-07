@@ -22,6 +22,7 @@ import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 
 import { loginSchema, type LoginFormData } from "@/lib/schema/auth";
+import { getAuthError } from "@/lib/auth-errors";
 import AlreadyLoggedInRedirect from "./already-loggedin-redirect";
 
 export function LoginForm() {
@@ -77,9 +78,10 @@ export function LoginForm() {
 
             if (result.error) {
                 form.setError("root", {
-                    message:
-                        result.error.message ||
+                    message: getAuthError(
+                        result.error.code,
                         "La connexion a échoué. Veuillez réessayer.",
+                    ),
                 });
             } else {
                 router.push(redirect || "/");

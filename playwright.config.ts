@@ -25,7 +25,7 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: process.env.CI ? "bun run start" : "bun run dev",
+        command: "bun run start",
         url: "http://localhost:3000",
         stdout: "pipe",
         stderr: "pipe",

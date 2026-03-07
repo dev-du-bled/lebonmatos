@@ -22,6 +22,7 @@ import { signupSchema, type SignupFormData } from "@/lib/schema/auth";
 import AlreadyLoggedInRedirect from "./already-loggedin-redirect";
 import { AlertCircle, Lock } from "lucide-react";
 import Link from "next/link";
+import { getAuthError } from "@/lib/auth-errors";
 
 export function SignupForm() {
     const [isLoading, setIsLoading] = useState(false);
@@ -81,9 +82,10 @@ export function SignupForm() {
 
             if (result.error) {
                 form.setError("root", {
-                    message:
-                        result.error.message ||
-                        "L'inscription a échoué. Veuillez réessayer.",
+                    message: getAuthError(
+                        result.error.code,
+                        "L'inscription a échoué. Veuillez réessayer."
+                    ),
                 });
             } else {
                 router.push(redirect || "/");

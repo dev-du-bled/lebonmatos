@@ -14,6 +14,9 @@ export default async function globalTeardown() {
     });
     const userIds = testUsers.map((u) => u.id);
 
+    await prisma.favorite.deleteMany({
+        where: { userId: { in: userIds } },
+    });
     await prisma.post.deleteMany({
         where: { userId: { in: userIds } },
     });

@@ -42,10 +42,17 @@ test.describe("Create Post", () => {
         await page.getByRole("button", { name: "Publier l'annonce" }).click();
         await page.waitForURL("/post/*", { timeout: 20_000 });
         await expect(page.getByText("AMD Ryzen 7")).toBeVisible();
+        await expect(page.getByText("300 €")).toBeVisible();
         await expect(page.getByText("processeur acheté en 2023")).toBeVisible();
         await expect(
             page.getByText("Nevers - Bourgogne – Franche-")
         ).toBeVisible();
+
+        await page.getByRole("button", { name: "Menu utilisateur" }).click();
+        await page.getByRole("menuitem", { name: "Mon profil" }).click();
+        await page.getByRole("link", { name: "Mes annonces Voir mes" }).click();
+        await expect(page.getByText("AMD Ryzen 7")).toBeVisible();
+        await expect(page.getByText("300 €")).toBeVisible();
     });
 
     test("Create Post form input validation", async ({ page }) => {

@@ -19,6 +19,8 @@ const forbiddenUsernames = [
 
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
+    // remove rate limit in tests env cause we login multiple times
+    rateLimit: { enabled: !process.env.NEXT_PUBLIC_TESTS_ENV },
     emailAndPassword: {
         enabled: true,
         sendResetPassword: async ({ user, url }) => {
