@@ -8,7 +8,10 @@ interface ReCaptchaProviderProps {
 
 export function ReCaptchaProvider({ children }: ReCaptchaProviderProps) {
     // On retourne pas le provider du captcha en prod
-    if (process.env.NODE_ENV !== "production") {
+    if (
+        process.env.NODE_ENV !== "production" ||
+        process.env.NEXT_PUBLIC_TESTS_ENV
+    ) {
         return <>{children}</>;
     }
 
