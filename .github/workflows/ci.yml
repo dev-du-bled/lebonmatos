@@ -1,8 +1,5 @@
 name: CI
 on:
-    push:
-        branches:
-            - tests/e2e
     pull_request:
     workflow_dispatch:
 
