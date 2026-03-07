@@ -41,7 +41,10 @@ export function UserMenu() {
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Link className="shrink-0 relative inline-flex" href="/messages">
+                    <Link
+                        className="shrink-0 relative inline-flex"
+                        href="/messages"
+                    >
                         <Button variant="ghost" size="icon">
                             <MessageCircleIcon className="size-4 shrink-0 opacity-50" />
                         </Button>
