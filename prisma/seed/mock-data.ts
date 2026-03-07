@@ -193,7 +193,7 @@ function pickImages(componentType: string): string[] {
     return [faker.helpers.arrayElement(typeImages)];
 }
 
-// components to mock
+// components to mocks
 const ALL_COMPONENT_TYPES = [
     "CPU",
     "GPU",
@@ -241,7 +241,7 @@ async function main() {
         )
     );
 
-    // Collect rows for bulk insert
+    // Prepare all post + location data in memory with pre-generated IDs
     const postRows: {
         id: string;
         title: string;
@@ -270,9 +270,14 @@ async function main() {
         const type = ALL_COMPONENT_TYPES[i];
         const components = componentsByType[i];
 
+        if (components.length === 0) {
+            console.log(`No components found for type ${type}, skipping.`);
+            continue;
+        }
+
         for (const component of components) {
             const user = faker.helpers.arrayElement(users);
-            const postId = faker.string.uuid();
+            const postId = crypto.randomUUID();
 
             postRows.push({
                 id: postId,
