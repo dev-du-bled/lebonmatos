@@ -14,12 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
 
-// not sure if it is worth it, but maybe fetching the available options for color as well as the minimum/max price
-// from the database/meili would be nice ? For now it's going to stay hardcoded -Lyna
 const PRICE_MAX_DEFAULT = 2000;
-const COMPONENT_COLORS = ["Black", "White", "Gray", "Silver"] as const;
-export type ComponentColor = (typeof COMPONENT_COLORS)[number];
-const COLORS = COMPONENT_COLORS;
 
 function ActiveDot({
     visible,
@@ -176,19 +171,21 @@ const PriceFilter = memo(function PriceFilter({
 });
 
 export const ColorFilterContent = memo(function ColorFilterContent({
+    availableColors,
     selectedColors,
     onSelectedColorsChange,
 }: {
-    selectedColors: ComponentColor[];
-    onSelectedColorsChange: (colors: ComponentColor[]) => void;
+    availableColors: string[];
+    selectedColors: string[];
+    onSelectedColorsChange: (colors: string[]) => void;
 }) {
     return (
         <>
-            <div className="flex flex-wrap gap-2 mt-1">
-                {COLORS.map((color) => (
+            <div className="grid grid-cols-1 gap-1.5 mt-1 max-h-60 overflow-y-auto pr-1">
+                {availableColors.map((color) => (
                     <Label
                         key={color}
-                        className="flex items-center gap-2 text-sm font-sans"
+                        className="flex items-center gap-2 text-sm font-sans whitespace-nowrap cursor-pointer"
                     >
                         <Checkbox
                             checked={selectedColors.includes(color)}
@@ -219,16 +216,20 @@ export const ColorFilterContent = memo(function ColorFilterContent({
 });
 
 const ColorFilter = memo(function ColorFilter({
+    availableColors,
     selectedColors,
     onSelectedColorsChange,
 }: {
-    selectedColors: ComponentColor[];
-    onSelectedColorsChange: (colors: ComponentColor[]) => void;
+    availableColors: string[];
+    selectedColors: string[];
+    onSelectedColorsChange: (colors: string[]) => void;
 }) {
     return (
-        <PopoverContent side="left" align="start" className="w-48 p-0">
-            <div className="px-4 py-2.5 border-b">
+        <PopoverContent side="left" align="start" className="w-64 p-0">
+            <div className="px-4 py-2.5">
+                <p className="text-sm font-sans font-medium mb-2">Couleur</p>
                 <ColorFilterContent
+                    availableColors={availableColors}
                     selectedColors={selectedColors}
                     onSelectedColorsChange={onSelectedColorsChange}
                 />
@@ -237,28 +238,54 @@ const ColorFilter = memo(function ColorFilter({
     );
 });
 
+export const ExcludeSoldContent = memo(function ExcludeSoldContent({
+    excludeSold,
+    onExcludeSoldChange,
+}: {
+    excludeSold: boolean;
+    onExcludeSoldChange: (value: boolean) => void;
+}) {
+    return (
+        <Label className="flex items-center gap-2 text-sm font-sans">
+            <Checkbox
+                checked={excludeSold}
+                onCheckedChange={(checked) =>
+                    onExcludeSoldChange(checked === true)
+                }
+            />
+            Exclure les vendus
+        </Label>
+    );
+});
+
 export const SearchFilters = memo(function SearchFilters({
     priceRange,
     priceActive,
     selectedColors,
+    availableColors,
+    excludeSold,
     onPriceRangeChange,
     onPriceActiveChange,
     onSelectedColorsChange,
+    onExcludeSoldChange,
     onReset,
 }: {
     priceRange: [number, number];
     priceActive: boolean;
-    selectedColors: ComponentColor[];
+    selectedColors: string[];
+    availableColors: string[];
+    excludeSold: boolean;
     onPriceRangeChange: (range: [number, number]) => void;
     onPriceActiveChange: (active: boolean) => void;
-    onSelectedColorsChange: (colors: ComponentColor[]) => void;
+    onSelectedColorsChange: (colors: string[]) => void;
+    onExcludeSoldChange: (value: boolean) => void;
     onReset: () => void;
 }) {
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [priceOpen, setPriceOpen] = useState(false);
     const [colorOpen, setColorOpen] = useState(false);
 
-    const hasActiveFilters = priceActive || selectedColors.length > 0;
+    const hasActiveFilters = priceActive || selectedColors.length > 0 || excludeSold;
 
     return (
         <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
@@ -293,14 +320,21 @@ export const SearchFilters = memo(function SearchFilters({
                         <FilterMenuItem
                             label="Couleur"
                             active={selectedColors.length > 0}
-                            className="border-b"
                         />
                     </PopoverTrigger>
                     <ColorFilter
+                        availableColors={availableColors}
                         selectedColors={selectedColors}
                         onSelectedColorsChange={onSelectedColorsChange}
                     />
                 </Popover>
+
+                <div className="px-4 py-3 border-b">
+                    <ExcludeSoldContent
+                        excludeSold={excludeSold}
+                        onExcludeSoldChange={onExcludeSoldChange}
+                    />
+                </div>
 
                 <div className="px-4 py-3">
                     <Button
