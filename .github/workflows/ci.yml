@@ -1,85 +1,126 @@
 name: CI
 
 on:
-    push:
-        branches:
-            # to test only cause dispatch doesnt work for whatever reason
-            - tests/e2e
-    pull_request:
-    workflow_dispatch:
+  push:
+    branches:
+      # to test only cause dispatch doesnt work for whatever reason
+      - tests/e2e
+  pull_request:
+  workflow_dispatch:
 
 jobs:
-    lint:
-        runs-on: ubuntu-latest
+  lint:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v6
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: latest
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-            - name: Install dependencies
-              run: bun install
-              env:
-                  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-            - name: Lint code
-              run: bun lint
-
-            - name: Format code
-              run: bunx prettier --check .
-
-    test:
-        runs-on: ubuntu-latest
-
-        services:
-            postgres:
-                image: postgres:alpine
-                env:
-                    POSTGRES_USER: lbmuser
-                    POSTGRES_PASSWORD: lbmsupersecurepassword
-                    POSTGRES_DB: lbmtestdb
-                ports:
-                    - 5432:5432
-                options: >-
-                    --health-cmd pg_isready
-                    --health-interval 10s
-                    --health-timeout 5s
-                    --health-retries 5
-            meilisearch:
-                image: getmeili/meilisearch:v1.26.0
-                env:
-                    MEILI_MASTER_KEY: placeholdersecret
-                ports:
-                    - 7700:7700
-
+      - name: Install dependencies
+        run: bun install
         env:
-            DATABASE_URL: postgresql://lbmuser:lbmsupersecurepassword@localhost:5432/lbmtestdb
-            BETTER_AUTH_SECRET: placeholdersecret
-            NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: placeholdersecret
-            GOOGLE_RECAPTCHA_SECRET_KEY: placeholdersecret
-            UPLOADTHING_TOKEN: placeholdersecret
-            MEILI_HOST: http://localhost:7700
-            MEILI_MASTER_KEY: placeholdersecret
-            RESEND_API_KEY: placeholdersecret
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v6
+      - name: Lint code
+        run: bun lint
 
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: latest
+      - name: Format code
+        run: bunx prettier --check .
 
-            - name: Install deps
-              run: bun install
+  build:
+    runs-on: ubuntu-latest
 
-            - name: Install Playwright chromium
-              run: bunx playwright install --with-deps chromium
+    env:
+      DATABASE_URL: postgresql://placeholder
+      BETTER_AUTH_SECRET: placeholdersecret
+      NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: placeholdersecret
+      GOOGLE_RECAPTCHA_SECRET_KEY: placeholdersecret
+      UPLOADTHING_TOKEN: placeholdersecret
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: placeholdersecret
+      RESEND_API_KEY: placeholdersecret
 
-            - name: Run tests
-              run: bun run tests:run
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install deps
+        run: bun install
+
+      - name: Build app
+        run: bun run build:local
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: .next
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    services:
+      postgres:
+        image: postgres:alpine
+        env:
+          POSTGRES_USER: lbmuser
+          POSTGRES_PASSWORD: lbmsupersecurepassword
+          POSTGRES_DB: lbmtestdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      meilisearch:
+        image: getmeili/meilisearch:v1.26.0
+        env:
+          MEILI_MASTER_KEY: placeholdersecret
+        ports:
+          - 7700:7700
+
+    env:
+      DATABASE_URL: postgresql://lbmuser:lbmsupersecurepassword@localhost:5432/lbmtestdb
+      BETTER_AUTH_SECRET: placeholdersecret
+      NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: placeholdersecret
+      GOOGLE_RECAPTCHA_SECRET_KEY: placeholdersecret
+      UPLOADTHING_TOKEN: placeholdersecret
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: placeholdersecret
+      RESEND_API_KEY: placeholdersecret
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install deps
+        run: bun install
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next
+
+      - name: Install Playwright chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run tests
+        run: bun run tests:run
