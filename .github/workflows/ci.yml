@@ -31,21 +31,20 @@ jobs:
                     - name: "Lint"
                       command: "lint"
                     - name: "Format Check"
-                      command: "prettier --check ."
-                      use_bunx: true
+                      command: "format:check"
                     - name: "Type Check"
                       command: "typecheck"
 
         name: ${{ matrix.name }}
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
 
             - name: Cache dependencies
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: node_modules
                   key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
@@ -56,22 +55,19 @@ jobs:
               run: bun install --frozen-lockfile
 
             - name: Run ${{ matrix.name }}
-              run: ${{ matrix.use_bunx && 'bunx' || 'bun run' }} ${{ matrix.command }}
+              run: bun run ${{ matrix.command }}
 
     build:
         runs-on: blacksmith-4vcpu-ubuntu-2404
-        needs: lint
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: "1.2"
 
             - name: Cache dependencies
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: node_modules
                   key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
@@ -79,7 +75,7 @@ jobs:
                       ${{ runner.os }}-bun-
 
             - name: Cache Next.js build
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: .next/cache
                   key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**/*.ts', '**/*.tsx') }}
@@ -94,7 +90,7 @@ jobs:
               run: bun run build
 
             - name: Upload build artifacts
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v6
               with:
                   name: next-build
                   path: .next
@@ -128,13 +124,13 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
 
             - name: Cache dependencies
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: node_modules
                   key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
@@ -143,7 +139,7 @@ jobs:
 
             - name: Cache Playwright binaries
               id: playwright-cache
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: ~/.cache/ms-playwright
                   key: ${{ runner.os }}-playwright-${{ hashFiles('**/bun.lock') }}
@@ -158,7 +154,7 @@ jobs:
               run: bunx playwright install --with-deps chromium
 
             - name: Download build artifacts
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@v6
               with:
                   name: next-build
                   path: .next
