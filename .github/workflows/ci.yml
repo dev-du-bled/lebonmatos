@@ -16,6 +16,7 @@ env:
   UPLOADTHING_TOKEN: placeholdersecret
   MEILI_HOST: http://localhost:7700
   MEILI_MASTER_KEY: placeholdersecret
+  NEXT_PUBLIC_TESTS_ENV: true
   RESEND_API_KEY: placeholdersecret
 
 jobs:
@@ -57,6 +58,13 @@ jobs:
       - name: Build app
         run: bun run build:local
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: next-build
+          path: .next
+          include-hidden-files: true
+
   test:
     runs-on: ubuntu-latest
     needs: build
@@ -96,6 +104,11 @@ jobs:
 
       - name: Install Playwright chromium
         run: bunx playwright install --with-deps chromium
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: next-build
 
       - name: Run tests
         run: bun run tests:run

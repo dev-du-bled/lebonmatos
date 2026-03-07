@@ -54,7 +54,7 @@ export const auth = betterAuth({
             },
         }),
         admin(),
-        ...(process.env.NODE_ENV === "production" // ReCaptcha en prod seulement
+        ...(process.env.NODE_ENV === "production" && !process.env.NEXT_PUBLIC_TESTS_ENV // ReCaptcha en prod seulement
             ? [
                   captcha({
                       provider: "google-recaptcha",
