@@ -20,7 +20,7 @@
         "sync:reset": "bun sync/resetMeili.ts",
         "sync:all": "bun run sync:reset && bun sync/syncAll.ts",
         "postinstall": "bun run prisma:generate",
-        "tests:setup": "bun prisma db push && bun prisma generate && bun ./prisma/seed/data.ts",
+        "tests:setup": "bun prisma db push && bun prisma generate && bun ./prisma/seed/data.ts && bun sync:all",
         "tests:run": "bun run tests:setup && bun playwright test"
     },
     "dependencies": {

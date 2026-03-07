@@ -42,7 +42,9 @@ export function LoginForm() {
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
         try {
-            const isProd = process.env.NODE_ENV === "production" && !process.env.NEXT_PUBLIC_TESTS_ENV;
+            const isProd =
+                process.env.NODE_ENV === "production" &&
+                !process.env.NEXT_PUBLIC_TESTS_ENV;
             let recaptchaToken: string | null = null;
             if (isProd) {
                 // Executer le captcha en prod car sinon Eden ne peut pas utiliser le formulaire 💀 🥀
