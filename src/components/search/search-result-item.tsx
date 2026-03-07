@@ -47,9 +47,7 @@ export const SearchResultItem = memo(function SearchResultItem({
                     className="absolute top-1.5 right-1.5 sm:hidden"
                     onClick={(e) => e.preventDefault()}
                 >
-                    <FavoriteButton
-                        post={{ id: post.id, seller: { id: post.userId } }}
-                    />
+                    <FavoriteButton post={post} />
                 </div>
             </div>
 
@@ -75,9 +73,7 @@ export const SearchResultItem = memo(function SearchResultItem({
                     {post.price} €
                 </p>
                 <div onClick={(e) => e.preventDefault()}>
-                    <FavoriteButton
-                        post={{ id: post.id, seller: { id: post.userId } }}
-                    />
+                    <FavoriteButton post={post} />
                 </div>
             </div>
         </Link>
