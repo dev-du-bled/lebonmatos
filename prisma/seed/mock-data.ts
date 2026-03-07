@@ -193,7 +193,7 @@ function pickImages(componentType: string): string[] {
     return [faker.helpers.arrayElement(typeImages)];
 }
 
-// components to mocks
+// components to mock
 const ALL_COMPONENT_TYPES = [
     "CPU",
     "GPU",
@@ -241,11 +241,42 @@ async function main() {
         )
     );
 
-    for (const component of [...cpus, ...gpus, ...cases]) {
-        const user = faker.helpers.arrayElement(users);
-        const post = await prisma.post.create({
-            data: {
-                title: component.name.slice(0, 50),
+    // Collect rows for bulk insert
+    const postRows: {
+        id: string;
+        title: string;
+        description: string;
+        price: number;
+        userId: string;
+        componentId: string;
+        images: string[];
+    }[] = [];
+
+    const locationRows: {
+        postId: string;
+        lat: number;
+        lon: number;
+        name: string;
+        displayName: string;
+        city: string;
+        state: string;
+        region: string;
+        country: string;
+        countryCode: string;
+        coordinates: number[];
+    }[] = [];
+
+    for (let i = 0; i < ALL_COMPONENT_TYPES.length; i++) {
+        const type = ALL_COMPONENT_TYPES[i];
+        const components = componentsByType[i];
+
+        for (const component of components) {
+            const user = faker.helpers.arrayElement(users);
+            const postId = faker.string.uuid();
+
+            postRows.push({
+                id: postId,
+                title: generateTitle(component.name, component.type),
                 description: faker.lorem.paragraph(),
                 price: faker.number.int({
                     min: Math.max(0, (component.estimatedPrice || 100) - 100),
