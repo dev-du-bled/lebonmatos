@@ -8,6 +8,15 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  BETTER_AUTH_SECRET: placeholdersecret
+  NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: placeholdersecret
+  GOOGLE_RECAPTCHA_SECRET_KEY: placeholdersecret
+  UPLOADTHING_TOKEN: placeholdersecret
+  MEILI_HOST: http://localhost:7700
+  MEILI_MASTER_KEY: placeholdersecret
+  RESEND_API_KEY: placeholdersecret
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -24,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: bun install
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: postgresql://placeholder
 
       - name: Lint code
         run: bun lint
@@ -37,13 +46,6 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://placeholder
-      BETTER_AUTH_SECRET: placeholdersecret
-      NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: placeholdersecret
-      GOOGLE_RECAPTCHA_SECRET_KEY: placeholdersecret
-      UPLOADTHING_TOKEN: placeholdersecret
-      MEILI_HOST: http://localhost:7700
-      MEILI_MASTER_KEY: placeholdersecret
-      RESEND_API_KEY: placeholdersecret
 
     steps:
       - name: Checkout repository
@@ -65,6 +67,7 @@ jobs:
         with:
           name: next-build
           path: .next
+          include-hidden-files: true
 
   test:
     runs-on: ubuntu-latest
@@ -93,13 +96,6 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://lbmuser:lbmsupersecurepassword@localhost:5432/lbmtestdb
-      BETTER_AUTH_SECRET: placeholdersecret
-      NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: placeholdersecret
-      GOOGLE_RECAPTCHA_SECRET_KEY: placeholdersecret
-      UPLOADTHING_TOKEN: placeholdersecret
-      MEILI_HOST: http://localhost:7700
-      MEILI_MASTER_KEY: placeholdersecret
-      RESEND_API_KEY: placeholdersecret
 
     steps:
       - name: Checkout repository
