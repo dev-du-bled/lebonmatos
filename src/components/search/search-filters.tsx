@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, forwardRef } from "react";
+import { memo, useState, useRef, useCallback, forwardRef } from "react";
 import { Filter, ChevronRight, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,87 @@ import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
 
 const PRICE_MAX_DEFAULT = 2000;
+
+function useFilterPopovers<T extends string>(keys: T[]) {
+    const [activeKey, setActiveKey] = useState<T | null>(null);
+    const [pinned, setPinned] = useState(false);
+    const closeTimer = useRef<ReturnType<typeof setTimeout>>(null);
+    const clickedTrigger = useRef(false);
+
+    const clearTimer = useCallback(() => {
+        if (closeTimer.current) {
+            clearTimeout(closeTimer.current);
+            closeTimer.current = null;
+        }
+    }, []);
+
+    const getProps = useCallback(
+        (key: T) => {
+            const open = activeKey === key;
+
+            const triggerProps = {
+                onMouseEnter: () => {
+                    clearTimer();
+                    if (!pinned) {
+                        setActiveKey(key);
+                    }
+                },
+                onMouseLeave: () => {
+                    if (!pinned) {
+                        closeTimer.current = setTimeout(
+                            () => setActiveKey(null),
+                            150
+                        );
+                    }
+                },
+                onClick: (e: React.MouseEvent) => {
+                    e.preventDefault();
+                    clickedTrigger.current = true;
+                    if (pinned && activeKey === key) {
+                        setPinned(false);
+                        setActiveKey(null);
+                    } else {
+                        setActiveKey(key);
+                        setPinned(true);
+                    }
+                },
+            };
+
+            const contentProps = {
+                onMouseEnter: () => clearTimer(),
+                onMouseLeave: () => {
+                    if (!pinned) {
+                        closeTimer.current = setTimeout(
+                            () => setActiveKey(null),
+                            150
+                        );
+                    }
+                },
+            };
+
+            const onOpenChange = (next: boolean) => {
+                if (clickedTrigger.current) {
+                    clickedTrigger.current = false;
+                    return;
+                }
+                if (!next) {
+                    setPinned(false);
+                    setActiveKey(null);
+                    clearTimer();
+                }
+            };
+
+            return { open, onOpenChange, triggerProps, contentProps };
+        },
+        [activeKey, pinned, clearTimer]
+    );
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return Object.fromEntries(keys.map((k) => [k, getProps(k)])) as Record<
+        T,
+        ReturnType<typeof getProps>
+    >;
+}
 
 function ActiveDot({
     visible,
@@ -153,13 +234,15 @@ const PriceFilter = memo(function PriceFilter({
     priceRange,
     onPriceRangeChange,
     onPriceActiveChange,
+    contentProps,
 }: {
     priceRange: [number, number];
     onPriceRangeChange: (range: [number, number]) => void;
     onPriceActiveChange: (active: boolean) => void;
+    contentProps?: React.HTMLAttributes<HTMLDivElement>;
 }) {
     return (
-        <PopoverContent side="left" align="start" className="w-64">
+        <PopoverContent side="left" align="start" className="w-64" {...contentProps}>
             <p className="text-sm font-sans font-medium mb-4">Prix</p>
             <PriceFilterContent
                 priceRange={priceRange}
@@ -203,14 +286,6 @@ export const ColorFilterContent = memo(function ColorFilterContent({
                     </Label>
                 ))}
             </div>
-            <Button
-                variant="ghost"
-                size="sm"
-                className="h-auto py-1 px-0 text-xs text-muted-foreground "
-                onClick={() => onSelectedColorsChange([])}
-            >
-                Tout désélectionner
-            </Button>
         </>
     );
 });
@@ -219,13 +294,15 @@ const ColorFilter = memo(function ColorFilter({
     availableColors,
     selectedColors,
     onSelectedColorsChange,
+    contentProps,
 }: {
     availableColors: string[];
     selectedColors: string[];
     onSelectedColorsChange: (colors: string[]) => void;
+    contentProps?: React.HTMLAttributes<HTMLDivElement>;
 }) {
     return (
-        <PopoverContent side="left" align="start" className="w-64 p-0">
+        <PopoverContent side="left" align="start" className="w-64 p-0" {...contentProps}>
             <div className="px-4 py-2.5">
                 <p className="text-sm font-sans font-medium mb-2">Couleur</p>
                 <ColorFilterContent
@@ -282,8 +359,7 @@ export const SearchFilters = memo(function SearchFilters({
     onReset: () => void;
 }) {
     const [filtersOpen, setFiltersOpen] = useState(false);
-    const [priceOpen, setPriceOpen] = useState(false);
-    const [colorOpen, setColorOpen] = useState(false);
+    const filters = useFilterPopovers(["price", "color"]);
 
     const hasActiveFilters =
         priceActive || selectedColors.length > 0 || excludeSold;
@@ -305,28 +381,35 @@ export const SearchFilters = memo(function SearchFilters({
                     Filtres
                 </div>
 
-                <Popover open={priceOpen} onOpenChange={setPriceOpen}>
+                <Popover open={filters.price.open} onOpenChange={filters.price.onOpenChange}>
                     <PopoverTrigger asChild>
-                        <FilterMenuItem label="Prix" active={priceActive} />
+                        <FilterMenuItem
+                            label="Prix"
+                            active={priceActive}
+                            {...filters.price.triggerProps}
+                        />
                     </PopoverTrigger>
                     <PriceFilter
                         priceRange={priceRange}
                         onPriceRangeChange={onPriceRangeChange}
                         onPriceActiveChange={onPriceActiveChange}
+                        contentProps={filters.price.contentProps}
                     />
                 </Popover>
 
-                <Popover open={colorOpen} onOpenChange={setColorOpen}>
+                <Popover open={filters.color.open} onOpenChange={filters.color.onOpenChange}>
                     <PopoverTrigger asChild>
                         <FilterMenuItem
                             label="Couleur"
                             active={selectedColors.length > 0}
+                            {...filters.color.triggerProps}
                         />
                     </PopoverTrigger>
                     <ColorFilter
                         availableColors={availableColors}
                         selectedColors={selectedColors}
                         onSelectedColorsChange={onSelectedColorsChange}
+                        contentProps={filters.color.contentProps}
                     />
                 </Popover>
 
