@@ -241,6 +241,7 @@ async function main() {
         )
     );
 
+<<<<<<< HEAD
     // Prepare all post + location data in memory with pre-generated IDs
     const postRows: {
         id: string;
@@ -282,6 +283,19 @@ async function main() {
             postRows.push({
                 id: postId,
                 title: generateTitle(component.name, component.type),
+||||||| 8720ac6
+    for (const component of [...cpus, ...gpus, ...cases]) {
+        const user = faker.helpers.arrayElement(users);
+        const post = await prisma.post.create({
+            data: {
+                title: `${component.name}`,
+=======
+    for (const component of [...cpus, ...gpus, ...cases]) {
+        const user = faker.helpers.arrayElement(users);
+        const post = await prisma.post.create({
+            data: {
+                title: component.name.slice(0, 50),
+>>>>>>> tests/e2e
                 description: faker.lorem.paragraph(),
                 price: faker.number.int({
                     min: Math.max(0, (component.estimatedPrice || 100) - 100),
