@@ -65,6 +65,12 @@ const reportTypeConfig: Record<
     },
 };
 
+const typeLabels: Record<"POST" | "USER" | "REVIEW", string> = {
+    POST: "cette annonce",
+    USER: "cet utilisateur",
+    REVIEW: "cet avis",
+};
+
 interface ReportButtonProps {
     type: "POST" | "USER" | "REVIEW";
     width: "full" | "icon";
@@ -111,9 +117,9 @@ export default function ReportButton({
     const { mutate: createReport, isPending } =
         trpc.reports.createReport.useMutation({
             onSuccess: () => {
-                toast.success("Signalement envoyé", {
+                toast.success("Merci du signalement !", {
                     description:
-                        "Merci, nous avons bien reçu votre signalement.",
+                        "Nous avons bien reçu votre signalement et allons l'examiner.",
                 });
                 handleClose();
             },
@@ -121,7 +127,7 @@ export default function ReportButton({
                 toast.error("Erreur", {
                     description:
                         error.data?.code === "CONFLICT"
-                            ? "Vous avez déjà signalé cette annonce."
+                            ? `Vous avez déjà signalé ${typeLabels[type]}.`
                             : (error.message ??
                               "Une erreur est survenue. Réessayez."),
                 });
@@ -174,7 +180,7 @@ export default function ReportButton({
                     </DialogTrigger>
                 </TooltipTrigger>
                 <TooltipContent>
-                    {tooltipText || "Signaler cette annonce"}
+                    {tooltipText || `Signaler ${typeLabels[type]}`}
                 </TooltipContent>
             </Tooltip>
 
@@ -197,7 +203,7 @@ export default function ReportButton({
                                 {reportTypeConfig[selectedType].label}
                             </div>
                         ) : (
-                            "Signaler cette annonce"
+                            `Signaler ${typeLabels[type]}`
                         )}
                     </DialogTitle>
                 </DialogHeader>
@@ -206,7 +212,8 @@ export default function ReportButton({
                 {!selectedType ? (
                     <>
                         <p className="text-sm text-muted-foreground px-4 pb-3">
-                            Pourquoi souhaitez-vous signaler cette annonce ?
+                            Pourquoi souhaitez-vous signaler {typeLabels[type]}{" "}
+                            ?
                         </p>
                         <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 px-4 pb-4">
                             {reportTypes.map((type, index) => {
