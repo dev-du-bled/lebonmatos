@@ -43,12 +43,12 @@ export function PostCard({
                     <h4 className="font-medium line-clamp-2 break-all">
                         {post.title}
                     </h4>
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className="text-sm text-muted-foreground line-clamp-2 break-word">
                         {post.component.name}
                     </p>
 
                     {details && (
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="text-xs text-muted-foreground line-clamp-2 break-word">
                             {details}
                         </p>
                     )}
