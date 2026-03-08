@@ -243,7 +243,7 @@ export function PublicProfileDialog({
                 if (!uploadResult || uploadResult.length === 0) {
                     throw new Error("Échec du téléchargement de l'image");
                 }
-                avatarUrl = uploadResult[0].serverData.source;
+                avatarUrl = uploadResult[0].ufsUrl;
             }
 
             const payload = normalizePublicProfileInput(values, {
