@@ -8,6 +8,8 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { trpc } from "@/trpc/server";
 import { getUser } from "@/utils/getUser";
@@ -189,20 +191,34 @@ export default async function PostPage({
                                     )}
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-2 pt-1">
-                                <ContactButton
-                                    postId={post.id}
-                                    sellerId={post.seller?.id ?? ""}
-                                    isSold={post.isSold}
-                                    className="w-full"
-                                />
-                                <OfferButton
-                                    postId={post.id}
-                                    sellerId={post.seller?.id ?? ""}
-                                    isSold={post.isSold}
-                                    className="w-full"
-                                />
-                            </div>
+                            {currentUser?.id !== post.seller?.id && (
+                                <div className="flex flex-col gap-2 pt-1">
+                                    <ContactButton
+                                        postId={post.id}
+                                        sellerId={post.seller?.id ?? ""}
+                                        isSold={post.isSold}
+                                        className="w-full"
+                                    />
+                                    <OfferButton
+                                        postId={post.id}
+                                        sellerId={post.seller?.id ?? ""}
+                                        isSold={post.isSold}
+                                        className="w-full"
+                                    />
+                                </div>
+                            )}
+                            {currentUser?.id === post.seller?.id &&
+                                !post.isSold && (
+                                    <Link
+                                        href={`/create-post?edit=${post.id}`}
+                                        className="mt-1"
+                                    >
+                                        <Button className="w-full">
+                                            <Pencil className="size-4" />
+                                            Modifier l&apos;annonce
+                                        </Button>
+                                    </Link>
+                                )}
                         </CardContent>
                     </Card>
 
