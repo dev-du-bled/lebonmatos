@@ -13,13 +13,14 @@
 
 Pour démarrer le serveur de développement, exécuter les étapes suivantes :
 
-1. `bun install` installer les dépendances
-2. `bun dev:docker` démarrer les services de l'app (base de données, meilisearch)
-3. `bun prisma:generate` générer les types Prisma
-4. `bun prisma:push` appliquer les migrations
-5. `bun prisma:data` seed les données des composants en base de donnée
-6. `bun prisma:mockdata` seed des données de tests en base de donnée **(optionnel)**
-7. `bun sync:all` synchroniser meilisearch avec la base de donnée
+1. `cp .env.example .env.development`
+2. `bun install` installer les dépendances
+3. `bun dev:docker` démarrer les services de l'app (base de données, meilisearch)
+4. `bun prisma:generate` générer les types Prisma
+5. `bun prisma:push` appliquer les migrations
+6. `bun prisma:data` seed les données des composants en base de donnée
+7. `bun prisma:mockdata` seed des données de tests en base de donnée **(optionnel)**
+8. `bun sync:all` synchroniser meilisearch avec la base de donnée
 
 > [!WARNING]
 > Toujours démarrer le service de synchronisation **après** avoir seed la base de donnée avec les données des composants
