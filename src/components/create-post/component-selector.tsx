@@ -227,7 +227,7 @@ export default function ComponentSelector({
                                         Sélectionnez le type de composant que
                                         vous vendez :
                                     </p>
-                                    <ScrollArea className="max-h-125">
+                                    <ScrollArea className="max-h-[70vh]">
                                         <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 px-4 pb-4">
                                             {componentTypes.map((type) => {
                                                 const Icon =
@@ -281,7 +281,7 @@ export default function ComponentSelector({
                                         </div>
                                     </div>
 
-                                    <ScrollArea className="max-h-125 border-t">
+                                    <ScrollArea className="max-h-[70vh] border-t">
                                         <div className="p-2">
                                             {query.length < 3 ? (
                                                 <div className="py-12 text-center text-sm text-muted-foreground">

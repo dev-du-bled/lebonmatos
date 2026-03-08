@@ -8,10 +8,10 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatComponentDetails(
     component: ComponentWithDetails
-): string {
+): string | null {
     if (component.Motherboard) {
         const mb = component.Motherboard;
-        return `${mb.socket} | ${mb.formFactor} | ${mb.memorySlots} slots | ${mb.maxMemory} Go`;
+        return `${mb.socket} • ${mb.formFactor} • ${mb.memorySlots} slots • ${mb.maxMemory} Go`;
     }
 
     if (component.Cpu) {
@@ -20,7 +20,7 @@ export function formatComponentDetails(
         if (cpu.coreCount) parts.push(`${cpu.coreCount} cœurs`);
         if (cpu.coreClock) parts.push(`${cpu.coreClock} GHz`);
         if (cpu.boostClock) parts.push(`${cpu.boostClock} GHz (boost)`);
-        return parts.join(" | ");
+        return parts.join(" • ");
     }
 
     if (component.Ram) {
@@ -29,7 +29,7 @@ export function formatComponentDetails(
         if (ram.type) parts.push(ram.type);
         parts.push(`${ram.modules}x${ram.size / ram.modules}Go`);
         if (ram.speed) parts.push(`${ram.speed} MHz`);
-        return parts.join(" | ");
+        return parts.join(" • ");
     }
 
     if (component.Gpu) {
@@ -38,7 +38,7 @@ export function formatComponentDetails(
         if (gpu.coreClock) parts.push(`${gpu.coreClock} MHz`);
         if (gpu.boostClock) parts.push(`${gpu.boostClock} MHz (boost)`);
         if (gpu.length) parts.push(`${gpu.length} mm`);
-        return parts.join(" | ");
+        return parts.join(" • ");
     }
 
     if (component.Psu) {
@@ -46,7 +46,7 @@ export function formatComponentDetails(
         const parts = [`${psu.wattage} W`];
         if (psu.efficiency) parts.push(psu.efficiency);
         if (psu.modular) parts.push(psu.modular);
-        return parts.join(" | ");
+        return parts.join(" • ");
     }
 
     if (component.Case) {
@@ -55,17 +55,17 @@ export function formatComponentDetails(
         if (cas.sidePanel) parts.push(cas.sidePanel);
         if (cas.volume) parts.push(`${cas.volume} L`);
         parts.push(`${cas.bays3_5} baies 3.5"`);
-        return parts.join(" | ");
+        return parts.join(" • ");
     }
 
     if (component.Hdd) {
         const hdd = component.Hdd;
-        return `${hdd.capacity} Go | ${hdd.cache} Mo | ${hdd.formFactor}"`;
+        return `${hdd.capacity} Go • ${hdd.cache} Mo • ${hdd.formFactor}"`;
     }
 
     if (component.Ssd) {
         const ssd = component.Ssd;
-        return `${ssd.capacity} Go | ${ssd.cache} Mo | ${ssd.interface} | ${ssd.formFactor}`;
+        return `${ssd.capacity} Go • ${ssd.cache} Mo • ${ssd.interface} • ${ssd.formFactor}`;
     }
 
     if (component.CpuCooler) {
@@ -75,7 +75,7 @@ export function formatComponentDetails(
         if (cooler.rpmMax) parts.push(`${cooler.rpmMax} RPM (max)`);
         if (cooler.noiseIdle) parts.push(`${cooler.noiseIdle} dB (idle)`);
         if (cooler.noiseMax) parts.push(`${cooler.noiseMax} dB (max)`);
-        return parts.join(" | ");
+        return parts.join(" • ");
     }
 
     if (component.CaseFan) {
@@ -88,7 +88,7 @@ export function formatComponentDetails(
         if (fan.airflowIdle) parts.push(`${fan.airflowIdle} CFM (idle)`);
         if (fan.airflowMax) parts.push(`${fan.airflowMax} CFM (max)`);
         if (fan.pwm !== null) parts.push(fan.pwm ? "PWM" : "Non-PWM");
-        return parts.join(" | ");
+        return parts.join(" • ");
     }
 
     if (component.SoundCard) {
@@ -97,7 +97,7 @@ export function formatComponentDetails(
         if (sc.sampleRate) parts.push(`${sc.sampleRate} Hz`);
         if (sc.chipset) parts.push(sc.chipset);
         if (sc.interface) parts.push(sc.interface);
-        return parts.join(" | ");
+        return parts.join(" • ");
     }
 
     if (component.WirelessNetworkCard) {
@@ -105,8 +105,8 @@ export function formatComponentDetails(
         const parts = [];
         if (wnc.interface) parts.push(wnc.interface);
         if (wnc.protocol) parts.push(wnc.protocol);
-        return parts.join(" | ");
+        return parts.join(" • ");
     }
 
-    return "";
+    return null;
 }

@@ -23,6 +23,11 @@ const MICROARCH_TO_SOCKET: Record<string, string> = {
     "Zen 2": "AM4",
     "Zen+": "AM4",
     Zen: "AM4",
+    Piledriver: "AM3+",
+    Bulldozer: "AM3+",
+    K10: "AM3",
+    Steamroller: "FM2+",
+    Excavator: "FM2+",
     // Intel
     "Arrow Lake": "LGA1851",
     "Raptor Lake Refresh": "LGA1700",
@@ -32,6 +37,19 @@ const MICROARCH_TO_SOCKET: Record<string, string> = {
     "Comet Lake": "LGA1200",
     "Coffee Lake Refresh": "LGA1151",
     "Coffee Lake": "LGA1151",
+    "Kaby Lake": "LGA1151",
+    Skylake: "LGA1151",
+    Broadwell: "LGA1150",
+    Haswell: "LGA1150",
+    "Ivy Bridge": "LGA1155",
+    "Sandy Bridge": "LGA1155",
+    Westmere: "LGA1156",
+    Nehalem: "LGA1156",
+    Penryn: "LGA775",
+    Conroe: "LGA775",
+    "Wolf Dale": "LGA775",
+    Yorkfield: "LGA775",
+    Core: "LGA775",
 };
 
 // Default memory type by socket (for sockets that only support one type)
@@ -46,8 +64,12 @@ const SOCKET_DEFAULT_MEMORY_TYPE: Record<string, string> = {
     // DDR3
     "AM3+": "DDR3",
     AM3: "DDR3",
+    "FM2+": "DDR3",
+    LGA1150: "DDR3",
     LGA1155: "DDR3",
     LGA1156: "DDR3",
+    // DDR2
+    LGA775: "DDR2",
 };
 
 // Sockets that can have both DDR4 and DDR5 depending on the board
@@ -132,8 +154,11 @@ export function checkCompatibility(
         const mbSocket = motherboard.Motherboard.socket;
 
         if (!cpuSocket) {
-            // If we can't determine the socket, we can't verify compatibility
-            // We could add a warning here if strict mode is desired
+            issues.push({
+                type: "warning",
+                message: `Impossible de vérifier la compatibilité du socket pour l'architecture "${cpu.Cpu.microarch}" — vérifiez manuellement`,
+                affectedComponents: ["CPU", "MOTHERBOARD"],
+            });
         } else if (cpuSocket !== mbSocket) {
             issues.push({
                 type: "error",

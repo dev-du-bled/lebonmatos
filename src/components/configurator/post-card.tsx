@@ -4,6 +4,7 @@ import { ComponentWithDetails } from "@/lib/compatibility";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Image from "next/image";
+import { formatComponentDetails } from "@/lib/utils";
 
 export type SelectedPost = {
     id: string;
@@ -23,8 +24,8 @@ export function PostCard({
     post: SelectedPost;
     onSelect?: (post: SelectedPost) => void;
 }) {
+    const details = formatComponentDetails(post.component);
     const imageUrl = post.images?.[0];
-    const componentType = post.component.type;
 
     return (
         <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-3 border rounded-lg hover:bg-muted/50 transition-colors w-full overflow-hidden">
@@ -42,28 +43,13 @@ export function PostCard({
                     <h4 className="font-medium line-clamp-2 break-all">
                         {post.title}
                     </h4>
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className="text-sm text-muted-foreground line-clamp-2 break-word">
                         {post.component.name}
                     </p>
-                    {componentType === "MOTHERBOARD" &&
-                        post.component.Motherboard?.socket && (
-                            <p className="text-xs text-muted-foreground truncate">
-                                Socket: {post.component.Motherboard.socket} |{" "}
-                                {post.component.Motherboard.formFactor}
-                            </p>
-                        )}
-                    {componentType === "CPU" &&
-                        post.component.Cpu?.microarch && (
-                            <p className="text-xs text-muted-foreground truncate">
-                                {post.component.Cpu.microarch}
-                            </p>
-                        )}
-                    {componentType === "RAM" && post.component.Ram?.type && (
-                        <p className="text-xs text-muted-foreground truncate">
-                            {post.component.Ram.type} |{" "}
-                            {post.component.Ram.modules}x
-                            {post.component.Ram.size}
-                            Go
+
+                    {details && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 break-word">
+                            {details}
                         </p>
                     )}
                 </div>
