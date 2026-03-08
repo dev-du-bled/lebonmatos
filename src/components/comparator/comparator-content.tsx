@@ -38,6 +38,7 @@ import { extractNumber, Trend, humanizeKey } from "./comparator-utils";
 
 import { mapSelectedToAnnonce, Annonce } from "./comparator-mapper";
 import { useSession } from "../auth/session-provider";
+import { ScrollArea } from "../ui/scroll-area";
 
 /* ===================================== */
 
@@ -223,36 +224,41 @@ export default function ComparatorContent() {
 
             {/* TYPE PICKER */}
             <Dialog open={typePickerOpen} onOpenChange={setTypePickerOpen}>
-                <DialogContent>
-                    <DialogHeader>
+                <DialogContent className="xs:max-w-lg p-0 gap-0">
+                    <DialogHeader className="px-4 pt-4 pb-2">
                         <DialogTitle>Choisir un composant</DialogTitle>
                     </DialogHeader>
+                    <p className="text-sm text-muted-foreground px-4 pb-3">
+                        Sélectionnez une annonce à comparer pour commencer :
+                    </p>
 
-                    <div className="grid grid-cols-2 gap-2">
-                        {componentTypes.map((type) => {
-                            const Icon = componentTypeIcons[type];
+                    <ScrollArea className="max-h-[70vh]">
+                        <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 px-4 pb-4">
+                            {componentTypes.map((type) => {
+                                const Icon = componentTypeIcons[type];
 
-                            return (
-                                <Button
-                                    key={type}
-                                    variant="outline"
-                                    className="justify-start gap-3"
-                                    onClick={() => {
-                                        setPickerType(type);
-                                        setTypePickerOpen(false);
-                                        setTimeout(
-                                            () => setSelectorOpen(true),
-                                            150
-                                        );
-                                    }}
-                                >
-                                    <Icon size={16} />
-                                    {COMPONENT_TYPE_LABELS[type]}
-                                    <ChevronRight className="ml-auto" />
-                                </Button>
-                            );
-                        })}
-                    </div>
+                                return (
+                                    <Button
+                                        key={type}
+                                        variant="outline"
+                                        className="justify-start gap-3"
+                                        onClick={() => {
+                                            setPickerType(type);
+                                            setTypePickerOpen(false);
+                                            setTimeout(
+                                                () => setSelectorOpen(true),
+                                                150
+                                            );
+                                        }}
+                                    >
+                                        <Icon size={16} />
+                                        {COMPONENT_TYPE_LABELS[type]}
+                                        <ChevronRight className="ml-auto" />
+                                    </Button>
+                                );
+                            })}
+                        </div>
+                    </ScrollArea>
                 </DialogContent>
             </Dialog>
 
