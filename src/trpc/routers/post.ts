@@ -844,7 +844,7 @@ export const postRouter = createTRPCRouter({
                 offset: z.number().min(0).default(0),
             })
         )
-        .query(async ({ input }) => {
+        .query(async ({ input, ctx }) => {
             const index = meilisearch.index("posts");
             const filters: string[] = [];
 
@@ -884,24 +884,44 @@ export const postRouter = createTRPCRouter({
                 filter: filters.length > 0 ? filters.join(" AND ") : undefined,
             });
 
+            type SearchHit = {
+                id: string;
+                title: string;
+                price: number;
+                isSold: boolean;
+                componentId: string;
+                component: {
+                    type: ComponentType;
+                    name: string;
+                    color: string | null;
+                };
+                location: {
+                    city: string;
+                } | null;
+                images: string[];
+                userId: string;
+            };
+
+            const hits = results.hits as SearchHit[];
+
+            const session = await ctx.getSession();
+            let favoritedPostIds: string[] = [];
+            if (session?.user?.id && hits.length > 0) {
+                const favorites = await prisma.favorite.findMany({
+                    where: {
+                        userId: session.user.id,
+                        postId: { in: hits.map((h) => h.id) },
+                    },
+                    select: { postId: true },
+                });
+                favoritedPostIds = favorites.map((f) => f.postId);
+            }
+
             return {
-                hits: results.hits as Array<{
-                    id: string;
-                    title: string;
-                    price: number;
-                    isSold: boolean;
-                    componentId: string;
-                    component: {
-                        type: ComponentType;
-                        name: string;
-                        color: string | null;
-                    };
-                    location: {
-                        city: string;
-                    } | null;
-                    images: string[];
-                    userId: string;
-                }>,
+                hits: hits.map((hit) => ({
+                    ...hit,
+                    isFavorited: favoritedPostIds.includes(hit.id),
+                })),
                 totalHits: results.estimatedTotalHits ?? 0,
             };
         }),

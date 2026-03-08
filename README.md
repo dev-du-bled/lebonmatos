@@ -33,7 +33,7 @@ Pour démarrer le serveur de développement, exécuter les étapes suivantes :
 - Renseigner les différentes clés dans le fichier `.env.production`. <br />
 
 > [!NOTE]
-> _[BetterAuth](https://better-auth.com/docs/installation#set-environment-variables)_, _[reCAPTCHA](https://www.google.com/recaptcha/admin/create?hl=fr)_ et _[Resend](https://resend.com/api-keys)_ sont les 3 services externes utilisés nécessitant des clés d'API.
+> _[BetterAuth](https://better-auth.com/docs/installation#set-environment-variables)_, _[Uploadthing](https://uploadthing.com/)_, _[reCAPTCHA](https://www.google.com/recaptcha/admin/create?hl=fr)_, _[AdSense](https://adsense.google.com/intl/fr_fr/start/)_ et _[Resend](https://resend.com/api-keys)_ sont les 5 services externes utilisés nécessitant des clés d'API.
 
 3. `docker compose up -d` lancer les services de l'app (base de données, meilisearch, serveur de production)
 

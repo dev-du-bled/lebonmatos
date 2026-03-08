@@ -10,6 +10,7 @@ export type SearchHit = {
     title: string;
     price: number;
     isSold: boolean;
+    isFavorited: boolean;
     component: {
         type: ComponentType;
         name: string;

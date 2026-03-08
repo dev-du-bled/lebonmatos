@@ -1,5 +1,11 @@
 import { type ComponentType } from "@prisma/client";
 import SearchPageClient from "./search-page-client";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Annonces",
+    description: "Recherchez des annonces de matos à travers le site",
+};
 
 type SearchParams = Promise<{
     query?: string;
