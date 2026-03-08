@@ -4,7 +4,7 @@ services:
         volumes:
             - lbm_data:/var/lib/postgresql/data
         env_file:
-            - .env.docker
+            - .env.production
         healthcheck:
             test:
                 [
@@ -21,7 +21,7 @@ services:
         volumes:
             - lbm_search_data:/meili_data
         env_file:
-            - .env.docker
+            - .env.production
         depends_on:
             lbm_db:
                 condition: service_healthy
@@ -31,7 +31,7 @@ services:
         expose:
             - 3000
         env_file:
-            - .env.docker
+            - .env.production
         depends_on:
             lbm_db:
                 condition: service_healthy
