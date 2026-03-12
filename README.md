@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./src/assets/logo/dark.png" alt="LeBonMatos Logo" width="375"/>
+    <img src="./src/assets/logo/light.png" alt="LeBonMatos Logo" width="375"/>
 <br />
 <h3>L'expérience du pc de seconde main simplifiée.</h3>
 </div>
